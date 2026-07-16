@@ -6,6 +6,7 @@ import Contato from "../pages/Contato/Contato";
 import Eua from "../pages/Eua/Eua";
 import Duvidas from "../pages/Duvidas/Duvidas";
 import Marceneiro from "../pages/Marceneiro/Marceneiro";
+import Login from "../pages/login/Login";
 
 function Router() {
     return (
@@ -17,6 +18,7 @@ function Router() {
                 <Route path="/eua" element={<Eua />} />
                 <Route path="/duvidas" element={<Duvidas />} />
                 <Route path="/marceneiro" element={<Marceneiro />} />
+                <Route path="/login" element={<Login />} />
 
             </Routes>
         </BrowserRouter>

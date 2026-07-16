@@ -42,7 +42,7 @@ function Footer() {
                     <a href="/Sobre">Sobre</a>
                     <a href="/projetos">Projetos</a>
                     <a href="/contato">Contato</a>
-
+                    <a href="/login">Área administrativa</a>
                 </div>
 
                 <div className="footer__column">
