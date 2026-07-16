@@ -1,102 +1,121 @@
 .login {
 
-    position: relative;
+  position: relative;
 
-    width: 100%;
-    height: 100svh;
+  width:100%;
 
-    overflow: hidden;
+  min-height:100svh;
 
-    font-family: "Arial", sans-serif;
+  overflow:hidden;
+
+  font-family:"Inter","Arial",sans-serif;
 
 }
 
 
 
-/* ========================= */
 /* BACKGROUND */
-/* ========================= */
 
 .login__background {
 
-    position: absolute;
+  position:absolute;
 
-    inset: 0;
-
-
-    background:
-
-    linear-gradient(
-        90deg,
-        rgba(0,0,0,.35) 0%,
-        rgba(0,0,0,.12) 45%,
-        rgba(0,0,0,.35) 100%
-    ),
-
-    url("../../imgs/herologin.png");
+  inset:0;
 
 
-    background-size: cover;
+  background:
 
-    background-position: center;
+  linear-gradient(
+    90deg,
+    rgba(0,0,0,.65),
+    rgba(0,0,0,.18),
+    rgba(0,0,0,.55)
+  ),
 
+  url("../../imgs/herologin.png");
+
+
+  background-size:cover;
+
+  background-position:center;
+
+  z-index:0;
 
 }
 
 
 
-/* ========================= */
-/* CARD LOGIN */
-/* ========================= */
+.login__content {
+
+  position:relative;
+
+  width:100%;
+
+  min-height:100svh;
+
+  z-index:2;
+
+}
+
+
+
+/* CARD */
 
 
 .login__card {
 
 
-    position: absolute;
+  position:absolute;
 
 
-    left: clamp(40px, 8vw, 120px);
-
-    top:50%;
-
-    transform:translateY(-50%);
+  left:clamp(40px,8vw,120px);
 
 
-
-    width:min(420px,90%);
-
+  top:56%;
 
 
-    background:rgba(255,255,255,.96);
+  transform:translateY(-50%);
 
 
 
-    padding:
-
-    55px
-
-    50px
-
-    60px;
+  width:min(430px,90%);
 
 
 
-    border-radius:4px;
+  padding:55px 48px;
 
 
 
-    box-shadow:
+  background:
 
-    0 30px 80px rgba(0,0,0,.25);
-
-
-
-    z-index:2;
+  rgba(255,255,255,.90);
 
 
 
-    backdrop-filter:blur(10px);
+  backdrop-filter:
+
+  blur(18px);
+
+
+
+  border-radius:18px;
+
+
+
+  border:1px solid rgba(255,255,255,.45);
+
+
+
+  box-shadow:
+
+  0 30px 80px rgba(0,0,0,.35);
+
+
+
+  animation:
+
+  cardShow .8s ease;
+
 
 
 }
@@ -108,28 +127,19 @@
 .login__card h1 {
 
 
-    margin:0 0 45px;
+  margin:0 0 42px;
 
 
-
-    text-align:left;
-
+  font-size:42px;
 
 
-    font-size:42px;
+  font-weight:300;
 
 
-
-    font-weight:300;
-
+  letter-spacing:5px;
 
 
-    letter-spacing:3px;
-
-
-
-    color:#4a2108;
-
+  color:#552709;
 
 
 }
@@ -138,24 +148,19 @@
 
 
 
-/* ========================= */
 /* FORM */
-/* ========================= */
 
 
 .login__card form {
 
 
-    display:flex;
+  display:flex;
 
-    flex-direction:column;
-
-
-
-    gap:0;
+  flex-direction:column;
 
 
 }
+
 
 
 
@@ -163,31 +168,26 @@
 .login__card label {
 
 
-    display:block;
+  margin-bottom:10px;
 
 
-
-    margin-bottom:10px;
-
+  color:#70452b;
 
 
-    color:#6b4328;
+  font-size:12px;
 
 
-
-    font-size:13px;
-
+  font-weight:700;
 
 
-    font-weight:500;
+  letter-spacing:1px;
 
 
-
-    letter-spacing:.5px;
-
+  text-transform:uppercase;
 
 
 }
+
 
 
 
@@ -195,60 +195,31 @@
 .login__card input {
 
 
-
-    width:100%;
-
+  height:55px;
 
 
-    height:52px;
+  margin-bottom:26px;
 
 
-
-    border:
-
-    1px solid #ddd;
+  padding:0 18px;
 
 
-
-    background:#faf9f7;
-
+  border-radius:10px;
 
 
-    padding:
-
-    0 18px;
+  border:1px solid #ddd;
 
 
-
-    margin-bottom:28px;
-
+  background:#faf9f7;
 
 
-    font-size:15px;
+  outline:none;
 
 
-
-    color:#3d210d;
-
+  font-size:15px;
 
 
-    outline:none;
-
-
-
-    transition:.3s;
-
-
-
-}
-
-
-
-
-.login__card input:hover {
-
-
-    border-color:#b18a62;
+  transition:.3s;
 
 
 }
@@ -260,19 +231,15 @@
 .login__card input:focus {
 
 
-
-    border-color:#6b320d;
-
+  background:white;
 
 
-    background:white;
+  border-color:#71370e;
 
 
+  box-shadow:
 
-    box-shadow:
-
-    0 0 0 3px rgba(107,50,13,.12);
-
+  0 0 0 4px rgba(113,55,14,.12);
 
 
 }
@@ -281,61 +248,52 @@
 
 
 
-/* ========================= */
-/* BOTÃO */
-/* ========================= */
+
+
+/* BUTTON */
 
 
 .login__card button {
 
 
-
-    width:100%;
-
+  height:56px;
 
 
-    height:55px;
+  margin-top:10px;
 
 
-
-    margin-top:10px;
-
+  border:none;
 
 
-    border:none;
+  border-radius:10px;
 
 
 
-    background:#542607;
+  background:
+
+  linear-gradient(
+    135deg,
+    #4d2207,
+    #935522
+  );
 
 
-
-    color:white;
-
+  color:white;
 
 
-    font-size:14px;
+  cursor:pointer;
 
 
-
-    letter-spacing:2px;
-
+  letter-spacing:2px;
 
 
-    font-weight:500;
+  font-weight:600;
 
 
-
-    cursor:pointer;
-
-
-
-    transition:.35s;
-
+  transition:.35s;
 
 
 }
-
 
 
 
@@ -343,13 +301,12 @@
 .login__card button:hover {
 
 
-
-    background:#7b3c0b;
-
+  transform:translateY(-3px);
 
 
-    transform:translateY(-2px);
+  box-shadow:
 
+  0 20px 35px rgba(80,35,10,.35);
 
 
 }
@@ -361,51 +318,36 @@
 .login__card button:disabled {
 
 
-
-    opacity:.6;
-
-    cursor:not-allowed;
-
+  opacity:.6;
 
 }
 
 
 
-/* ========================= */
+
+
 /* TEXTO DIREITA */
-/* ========================= */
 
 
 .login__title {
 
 
-
-    position:absolute;
-
+  position:absolute;
 
 
-    right:clamp(40px,7vw,100px);
+  right:clamp(40px,8vw,120px);
 
 
-
-    top:50%;
-
+  top:50%;
 
 
-    transform:translateY(-50%);
+  transform:translateY(-50%);
 
 
-
-    z-index:2;
-
+  color:white;
 
 
-    color:white;
-
-
-
-    text-align:right;
-
+  text-align:right;
 
 
 }
@@ -417,53 +359,26 @@
 .login__title h2 {
 
 
-
-    margin:0;
-
+  margin:0;
 
 
-    font-size:
+  font-size:
 
-    clamp(42px,5vw,72px);
-
-
-
-    font-weight:300;
+  clamp(45px,5vw,78px);
 
 
-
-    line-height:1.05;
-
+  font-weight:300;
 
 
-    letter-spacing:-2px;
+  line-height:1.05;
 
 
-
-    text-shadow:
-
-    0 10px 30px rgba(0,0,0,.35);
+  letter-spacing:-2px;
 
 
+  text-shadow:
 
-}
-
-
-
-/* ========================= */
-/* MOBILE */
-/* ========================= */
-
-
-@media(max-width:768px){
-
-
-
-.login {
-
-
-
-    height:100svh;
+  0 15px 35px rgba(0,0,0,.5);
 
 
 }
@@ -472,12 +387,31 @@
 
 
 
-.login__background {
+
+/* ANIMATION */
 
 
+@keyframes cardShow {
 
-    background-position:center;
 
+  from {
+
+    opacity:0;
+
+    transform:
+    translateY(-40%);
+
+  }
+
+
+  to {
+
+    opacity:1;
+
+    transform:
+    translateY(-50%);
+
+  }
 
 }
 
@@ -485,77 +419,88 @@
 
 
 
-.login__card {
+/* RESPONSIVO */
 
+
+@media(max-width:900px){
+
+
+  .login__title{
+
+    display:none;
+
+  }
+
+
+
+  .login__card{
 
 
     left:50%;
 
-
-    top:50%;
-
-
-    transform:translate(-50%,-50%);
+    top:58%;
 
 
+    transform:
+    translate(-50%,-50%);
 
-    width:calc(100% - 40px);
 
+
+    width:
+
+    calc(100% - 40px);
+
+
+  }
+
+
+}
+
+
+
+
+
+@media(max-width:500px){
+
+
+  .login__card{
 
 
     padding:
 
-    40px
-
-    28px
-
-    45px;
+    38px 24px;
 
 
+    border-radius:16px;
 
-}
+
+  }
 
 
 
+  .login__card h1{
 
 
-.login__card h1 {
+    text-align:center;
 
 
-
-    font-size:34px;
-
-
-    margin-bottom:35px;
+    font-size:30px;
 
 
-}
+  }
 
 
 
+  .login__card input,
 
 
-.login__card input {
+  .login__card button{
 
 
-
-    height:50px;
-
-
-}
+    height:52px;
 
 
-
-
-
-.login__title {
-
-
-
-    display:none;
-
-
-}
+  }
 
 
 

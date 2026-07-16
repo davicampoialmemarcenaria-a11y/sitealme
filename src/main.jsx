@@ -1,6 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import App from "./App";
+
+import { AuthProvider } from "./contexts/AuthContext";
 
 import { Toaster } from "react-hot-toast";
 
@@ -9,67 +12,42 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import "./styles/main.scss";
 
-
 ReactDOM.createRoot(
-    document.getElementById("root")
+  document.getElementById("root")
 ).render(
+  <React.StrictMode>
+    <AuthProvider>
+      <App />
 
-    <React.StrictMode>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
 
-        <App />
+          style: {
+            background: "#4b2108",
+            color: "#fff",
+            borderRadius: "6px",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "14px",
+            padding: "14px 18px",
+          },
 
-        <Toaster
+          success: {
+            iconTheme: {
+              primary: "#d88a16",
+              secondary: "#fff",
+            },
+          },
 
-            position="top-right"
-
-            toastOptions={{
-
-                duration: 4000,
-
-                style: {
-
-                    background: "#4b2108",
-
-                    color: "#fff",
-
-                    borderRadius: "6px",
-
-                    fontFamily: "Arial, sans-serif",
-
-                    fontSize: "14px",
-
-                    padding: "14px 18px"
-
-                },
-
-                success: {
-
-                    iconTheme: {
-
-                        primary: "#d88a16",
-
-                        secondary: "#fff"
-
-                    }
-
-                },
-
-                error: {
-
-                    iconTheme: {
-
-                        primary: "#ffb4a2",
-
-                        secondary: "#fff"
-
-                    }
-
-                }
-
-            }}
-
-        />
-
-    </React.StrictMode>
-
+          error: {
+            iconTheme: {
+              primary: "#ffb4a2",
+              secondary: "#fff",
+            },
+          },
+        }}
+      />
+    </AuthProvider>
+  </React.StrictMode>
 );
