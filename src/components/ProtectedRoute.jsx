@@ -1,0 +1,65 @@
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
+export default function ProtectedRoute({
+
+    children,
+
+    allowedRoles = []
+
+}) {
+
+    const {
+
+        user,
+
+        role,
+
+        loading
+
+    } = useAuth();
+
+    if (loading) {
+
+        return (
+
+            <div
+                style={{
+                    width: "100%",
+                    height: "100svh",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "18px"
+                }}
+            >
+
+                Carregando...
+
+            </div>
+
+        );
+
+    }
+
+    if (!user) {
+
+        return <Navigate to="/login" replace />;
+
+    }
+
+    if (
+
+        allowedRoles.length > 0 &&
+
+        !allowedRoles.includes(role)
+
+    ) {
+
+        return <Navigate to="/" replace />;
+
+    }
+
+    return children;
+
+}

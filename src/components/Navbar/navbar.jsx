@@ -18,7 +18,7 @@ const extraLinks = [
     { name: "ÁREAS DE ATUAÇÃO", path: "/eua" },
     { name: "DÚVIDAS FREQUENTES", path: "/duvidas" },
     { name: "SEJA UM HOMOLOGADO", path: "/marceneiro" },
-    { name: "ALME NEWS", path: "/news" }
+    { name: "ALME NEWS", path: "/newsu" }
 ];
 
 function Navbar() {

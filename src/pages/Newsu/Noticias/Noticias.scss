@@ -1,0 +1,492 @@
+@use "../../../styles/variables" as *;
+
+/*======================================================
+NOTÍCIAS
+======================================================*/
+
+.noticias{
+
+    width:100%;
+
+    padding:120px 0;
+
+    background:#F8F7F5;
+
+}
+
+.noticias__container{
+
+    width:min(1400px,92%);
+
+    margin:auto;
+
+}
+
+/*======================================================
+HEADER
+======================================================*/
+
+.noticias__header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:55px;
+
+}
+
+.noticias__titulo{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:28px;
+
+}
+
+.noticias__titulo span{
+
+    font-size:.82rem;
+
+    font-weight:700;
+
+    letter-spacing:.18em;
+
+    color:#B98B47;
+
+    text-transform:uppercase;
+
+    white-space:nowrap;
+
+}
+
+.linha{
+
+    width:220px;
+
+    height:1px;
+
+    background:#D7C5A4;
+
+}
+
+/*======================================================
+SETAS
+======================================================*/
+
+.noticias__arrows{
+
+    display:flex;
+
+    gap:14px;
+
+}
+
+.noticias__arrows button{
+
+    width:54px;
+
+    height:54px;
+
+    border:none;
+
+    border-radius:50%;
+
+    background:#FFFFFF;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.noticias__arrows button:hover{
+
+    background:$primary;
+
+    color:white;
+
+    transform:translateY(-3px);
+
+}
+
+.noticias__arrows svg{
+
+    font-size:22px;
+
+}
+
+/*======================================================
+SWIPER
+======================================================*/
+
+.noticias .swiper{
+
+    overflow:visible;
+
+}
+
+.noticias .swiper-slide{
+
+    height:auto;
+
+}
+
+/*======================================================
+CARD
+======================================================*/
+
+.news-card{
+
+    background:white;
+
+    border-radius:22px;
+
+    overflow:hidden;
+
+    cursor:pointer;
+
+    transition:.35s;
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    box-shadow:
+
+        0 10px 35px rgba(0,0,0,.06);
+
+}
+
+.news-card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:
+
+        0 22px 55px rgba(0,0,0,.12);
+
+}
+
+/*======================================================
+IMAGEM
+======================================================*/
+
+.news-card__image{
+
+    width:100%;
+
+    height:280px;
+
+    overflow:hidden;
+
+}
+
+.news-card__image img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+    transition:.45s;
+
+}
+
+.news-card:hover .news-card__image img{
+
+    transform:scale(1.08);
+
+}
+
+/*======================================================
+CONTEÚDO
+======================================================*/
+
+.news-card__content{
+
+    padding:28px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    flex:1;
+
+}
+
+.news-card__content h3{
+
+    margin:0;
+
+    font-family:$font-title;
+
+    font-size:1.55rem;
+
+    line-height:1.35;
+
+    color:#222;
+
+}
+
+.news-card__content p{
+
+    margin-top:18px;
+
+    color:#6E6E6E;
+
+    line-height:1.8;
+
+    font-size:.94rem;
+
+    display:-webkit-box;
+
+    -webkit-box-orient:vertical;
+
+    -webkit-line-clamp:3;
+
+    line-clamp:3;
+
+    overflow:hidden;
+
+} /*======================================================
+RODAPÉ DO CARD
+======================================================*/
+
+.news-card__footer{
+
+    margin-top:26px;
+
+    padding-top:20px;
+
+    border-top:1px solid #ECE8E3;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+}
+
+.news-card__footer span{
+
+    font-size:.88rem;
+
+    font-weight:600;
+
+    color:#B98B47;
+
+    letter-spacing:.02em;
+
+}
+
+/*======================================================
+ANIMAÇÕES
+======================================================*/
+
+.news-card,
+.news-card__image img,
+.noticias__arrows button{
+
+    transition:
+        .35s ease;
+
+}
+
+.news-card:hover h3{
+
+    color:$primary;
+
+}
+
+/*======================================================
+SWIPER
+======================================================*/
+
+.noticias .swiper-wrapper{
+
+    padding-bottom:18px;
+
+}
+
+.noticias .swiper-button-disabled{
+
+    opacity:.35;
+
+    pointer-events:none;
+
+}
+
+/*======================================================
+RESPONSIVO
+======================================================*/
+
+@media (max-width:1200px){
+
+    .noticias{
+
+        padding:100px 0;
+
+    }
+
+    .news-card__image{
+
+        height:250px;
+
+    }
+
+}
+
+@media (max-width:992px){
+
+    .noticias__header{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+        gap:25px;
+
+    }
+
+    .noticias__titulo{
+
+        width:100%;
+
+        justify-content:space-between;
+
+    }
+
+    .linha{
+
+        flex:1;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .noticias{
+
+        padding:80px 0;
+
+    }
+
+    .noticias__header{
+
+        margin-bottom:40px;
+
+    }
+
+    .noticias__titulo{
+
+        gap:18px;
+
+    }
+
+    .linha{
+
+        width:100px;
+
+    }
+
+    .noticias__arrows{
+
+        width:100%;
+
+        justify-content:flex-end;
+
+    }
+
+    .noticias__arrows button{
+
+        width:46px;
+
+        height:46px;
+
+    }
+
+    .news-card__image{
+
+        height:230px;
+
+    }
+
+    .news-card__content{
+
+        padding:22px;
+
+    }
+
+    .news-card__content h3{
+
+        font-size:1.35rem;
+
+    }
+
+}
+
+@media (max-width:480px){
+
+    .noticias{
+
+        padding:65px 0;
+
+    }
+
+    .noticias__titulo{
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+    .linha{
+
+        width:70px;
+
+    }
+
+    .news-card__image{
+
+        height:210px;
+
+    }
+
+    .news-card__content{
+
+        padding:20px;
+
+    }
+
+    .news-card__content h3{
+
+        font-size:1.2rem;
+
+    }
+
+    .news-card__content p{
+
+        font-size:.9rem;
+
+    }
+
+}
