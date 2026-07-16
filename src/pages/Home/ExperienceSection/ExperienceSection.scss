@@ -1,0 +1,199 @@
+.experience {
+    position: relative;
+
+    background: #fff;
+
+    min-height: 550px;
+
+    display: flex;
+    align-items: center;
+
+    overflow: hidden;
+    isolation: isolate;
+
+    padding: 80px 60px;
+}
+
+.experience__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 40px;
+
+    width: 100%;
+
+    position: relative;
+    z-index: 2;
+
+    /* espaço reservado para o vaso */
+    padding-right: 220px;
+}
+
+.experience__left {
+    max-width: 420px;
+
+    h2 {
+        font-size: 38px;
+        line-height: 1.15;
+        font-weight: 300;
+        color: #252525;
+    }
+
+    span {
+        display: block;
+
+        font-size: 38px;
+        font-style: italic;
+        color: #D48821;
+
+        line-height: 1;
+        margin-bottom: 45px;
+    }
+}
+
+.experience__right {
+    display: flex;
+    gap: 40px;
+
+    margin-bottom: 50px;
+
+    /* removido o margin negativo */
+    margin-left: 0;
+}
+
+.experience__item {
+    max-width: 180px;
+
+    padding-left: 30px;
+
+    border-left: 1px solid #d9d9d9;
+
+    h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: #3d3d3d;
+
+        margin-bottom: 14px;
+    }
+
+    p {
+        font-size: 14px;
+        line-height: 1.4;
+        color: #4d4d4d;
+    }
+}
+
+.experience__item:first-child {
+    border-left: none;
+    padding-left: 0;
+}
+
+/* =========================
+   IMAGEM
+========================= */
+
+.experience__image {
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+
+    width: clamp(220px, 20vw, 320px);
+    height: auto;
+
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 992px) {
+
+    .experience {
+        padding: 80px 24px;
+        min-height: auto;
+    }
+
+    .experience__content {
+        flex-direction: column;
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding-right: 0;
+    }
+
+    .experience__left {
+
+        h2 {
+            font-size: 35px;
+        }
+
+        span {
+            font-size: 52px;
+        }
+    }
+
+    .experience__right {
+        flex-direction: column;
+
+        width: 100%;
+
+        gap: 30px;
+
+        margin-left: 0;
+        margin-bottom: 0;
+    }
+
+    .experience__item {
+        max-width: 100%;
+
+        border-left: none;
+        border-top: 1px solid #d9d9d900;
+
+        padding-left: 0;
+        padding-top: 20px;
+    }
+
+    .experience__item:first-child {
+        border-top: none;
+    }
+
+    /* vaso continua na direita */
+    .experience__image {
+        width: 260px;
+
+        right: -40px;
+        bottom: 0;
+    }
+}
+
+/* =========================
+   CELULAR
+========================= */
+
+@media (max-width: 576px) {
+
+    .experience__image {
+        width: 220px;
+
+        right: -50px;
+        bottom: 0;
+
+        opacity: 0.95;
+    }
+
+    .experience__left {
+
+        h2 {
+            font-size: 32px;
+        }
+
+        span {
+            font-size: 42px;
+        }
+    }
+}

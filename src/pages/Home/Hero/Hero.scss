@@ -1,0 +1,156 @@
+@use "../../../styles/variables" as v;
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* VIDEO */
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* OVERLAY */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+}
+
+/* CONTENT */
+.hero__content {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+
+  max-width: 1200px;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+  color: white;
+
+  padding: 0 20px;
+}
+
+/* SUBTITLE */
+.hero__content span {
+  font-size: 13px;
+  letter-spacing: 4px;
+  margin-bottom: 18px;
+  opacity: .9;
+}
+
+/* TITLE */
+.hero__content h1 {
+  font-family: v.$font-title;
+  font-size: 84px;
+  font-weight: 500;
+  line-height: 1.05;
+  margin-bottom: 30px;
+}
+
+/* DESCRIPTION */
+.hero__content p {
+  max-width: 520px;
+  font-size: 18px;
+  line-height: 1.8;
+  margin-bottom: 45px;
+}
+
+/* BUTTON */
+.hero__content button {
+  width: max-content;
+  padding: 18px 34px;
+
+  border: 2px solid #ECE9E7;
+  background: transparent;
+
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+
+  transition: .35s;
+}
+
+.hero__content button:hover {
+  transform: translateY(-3px);
+  color: rgba(0, 0, 0, .87);
+  background: #ECE9E7;
+}
+
+/* DESKTOP MENOR */
+@media (max-width: 1600px) and (max-height: 1250px) {
+
+  .hero__content {
+    top: -40px; /* sobe um pouco */
+  }
+
+  .hero__content p {
+    margin-bottom: 30px;
+  }
+
+}
+
+/* TABLET */
+@media (max-width: 992px) {
+
+  .hero__content {
+    top: -70px; /* sobe no mobile */
+    padding: 0 24px;
+  }
+
+  .hero__content span {
+    font-size: 11px;
+    letter-spacing: 3px;
+  }
+
+  .hero__content h1 {
+    font-size: 42px;
+    line-height: 1.15;
+    margin-bottom: 22px;
+  }
+
+  .hero__content p {
+    font-size: 15px;
+    max-width: 90%;
+    line-height: 1.7;
+    margin-bottom: 26px;
+  }
+
+  .hero__content button {
+    padding: 14px 26px;
+    font-size: 12px;
+  }
+
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+
+  .hero__content {
+    top: -90px; /* aumenta se quiser subir mais */
+    padding: 0 18px;
+  }
+
+  .hero__content h1 {
+    font-size: 34px;
+  }
+
+  .hero__content p {
+    font-size: 14px;
+    max-width: 95%;
+  }
+
+}

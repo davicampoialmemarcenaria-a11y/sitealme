@@ -1,0 +1,626 @@
+@use "../../../styles/variables" as *;
+
+/*====================================================*/
+/* GERAL */
+/*====================================================*/
+
+.temporal {
+    width: 100%;
+    padding: 120px 0;
+    background: rgb(250, 249, 248);
+}
+
+.temporal__container {
+    width: min(1500px, 92%);
+    margin: auto;
+
+    display: grid;
+    grid-template-columns: 39% 61%;
+    gap: clamp(48px, 5vw, 80px);
+    align-items: start;
+}
+
+/*====================================================*/
+/* ESQUERDA */
+/*====================================================*/
+
+.temporal__tag {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    margin-bottom: 42px;
+
+    color: $primary;
+    font-size: 16px;
+    letter-spacing: .08em;
+}
+
+.temporal__tag::after {
+    content: "";
+
+    width: 55px;
+    height: 2px;
+
+    background: $primary;
+}
+
+.temporal__left h2 {
+    font-family: $font-title;
+    font-size: clamp(40px, 4vw, 40px);
+    line-height: 1.15;
+    font-weight: 400;
+
+    color: #4b250d;
+
+    margin-bottom: 38px;
+}
+
+.temporal__left p {
+    max-width: 560px;
+
+    font-size: 15px;
+    line-height: 1.75;
+
+    color: #5b514b;
+
+    margin-bottom: 30px;
+}
+
+/*====================================================*/
+/* DIREITA */
+/*====================================================*/
+.temporal__right{
+
+    display:grid;
+
+    grid-template-columns:235px 1fr;
+
+    gap:36px;
+
+    align-items:start;
+
+}
+/*====================================================*/
+/* TIMELINE */
+/*====================================================*/
+
+.temporal__timeline {
+    display: flex;
+    flex-direction: column;
+}
+
+.temporal__item {
+    display: grid;
+
+    grid-template-columns: 60px 1fr;
+
+    gap: 22px;
+
+    position: relative;
+
+    padding-bottom: 68px;
+}
+
+.temporal__marker {
+    position: relative;
+
+    display: flex;
+    justify-content: center;
+}
+
+.temporal__marker::after {
+    content: "";
+
+    position: absolute;
+
+    top: 30px;
+    bottom: -78px;
+
+    width: 6px;
+
+    background: $primary;
+    border-radius: 999px;
+}
+
+.temporal__item:last-child .temporal__marker::after {
+    display: none;
+}
+
+.temporal__circle {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+
+    background: $primary;
+
+    cursor: pointer;
+
+    position: relative;
+    z-index: 2;
+
+    transition: .35s;
+}
+
+.temporal__circle.active {
+    transform: scale(1.15);
+
+    box-shadow: 0 0 0 12px rgba($primary,.15);
+}
+
+.temporal__year {
+    font-family:montserrat, sans-serif;
+
+    font-size: 25px;
+    line-height: 46px;
+
+    color: #5a3418;
+
+    transition: .3s;
+}
+
+.temporal__year.active {
+    color: $primary;
+}
+
+/*====================================================*/
+/* CARD */
+/*====================================================*/
+
+.temporal__card{
+
+    position: relative;
+
+    background: $primary;
+
+    border-radius:18px;
+
+    overflow:visible;
+
+    padding:14px;
+
+    width:min(100%, 500px);
+
+    justify-self:start;
+
+    animation:fadeCard .35s ease;
+
+}
+
+.temporal__cardArrow {
+    position: absolute;
+
+    left: -20px;
+    top: 18px;
+
+    width: 0;
+    height: 0;
+
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 20px solid $primary;
+}
+
+.temporal__card img {
+    width: 100%;
+    height: 255px;
+
+    object-fit: cover;
+
+    border-radius: 12px;
+
+    display: block;
+
+    transition: .35s;
+}
+
+.temporal__card:hover img {
+    transform: scale(1.03);
+}
+
+.temporal__cardContent {
+    padding: 22px 12px 12px;
+}
+
+.temporal__cardContent p {
+    color: #fff;
+
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+@keyframes fadeCard {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+} /*====================================================*/
+/* <= 1400px */
+/*====================================================*/
+
+@media (max-width: 1400px) {
+
+    .temporal__container {
+        grid-template-columns: 40% 60%;
+        gap: 56px;
+    }
+ .temporal__card{
+        width: min(100%, 430px);
+    }
+
+    .temporal__left h2 {
+        font-size: 52px;
+    }
+
+    .temporal__right {
+        grid-template-columns: 130px minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    .temporal__item {
+        grid-template-columns: 56px 1fr;
+        gap: 20px;
+        padding-bottom: 58px;
+    }
+
+    .temporal__circle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .temporal__circle.active {
+        box-shadow: 0 0 0 10px rgba($primary, .15);
+    }
+
+    .temporal__marker::after {
+        width: 5px;
+        top: 26px;
+        bottom: -64px;
+    }
+
+    .temporal__year {
+        font-size: 22px;
+        line-height: 40px;
+    }
+
+    .temporal__card img {
+        height: 225px;
+    }
+
+}
+
+
+/*====================================================*/
+/* <= 1100px */
+/*====================================================*/
+
+@media (max-width:1100px){
+
+    .temporal{
+        padding:90px 0;
+    }
+
+    .temporal__container{
+        grid-template-columns:1fr;
+        gap:70px;
+    }
+
+    .temporal__left{
+        max-width:760px;
+        margin:auto;
+        text-align:center;
+    }
+
+    .temporal__tag{
+        justify-content:center;
+    }
+
+    .temporal__left h2{
+        font-size:46px;
+    }
+
+    .temporal__left p{
+        margin-inline:auto;
+    }
+
+    .temporal__right{
+
+        width:fit-content;
+
+        margin:auto;
+
+        display:grid;
+
+        grid-template-columns:110px minmax(320px,360px);
+
+        gap:34px;
+
+        align-items:start;
+
+    }
+
+    .temporal__timeline{
+        width:110px;
+    }
+
+    .temporal__item{
+
+        grid-template-columns:34px 60px;
+
+        gap:18px;
+
+        padding-bottom:52px;
+
+    }
+
+    .temporal__circle{
+
+        width:28px;
+        height:28px;
+
+    }
+
+    .temporal__circle.active{
+
+        box-shadow:0 0 0 8px rgba($primary,.15);
+
+    }
+
+    .temporal__marker::after{
+
+        width:4px;
+
+        top:22px;
+        bottom:-56px;
+
+    }
+
+    .temporal__year{
+
+        font-size:20px;
+        line-height:28px;
+
+    }
+
+    .temporal__card{
+
+        width:100%;
+
+        padding:12px;
+
+        border-radius:14px;
+
+    }
+
+    .temporal__cardArrow{
+
+        display:none;
+
+    }
+
+    .temporal__card img{
+
+        height:190px;
+
+        border-radius:10px;
+
+    }
+
+    .temporal__cardContent{
+
+        padding:16px 10px 10px;
+
+    }
+
+    .temporal__cardContent p{
+
+        font-size:15px;
+        line-height:1.65;
+
+    }
+
+}
+
+/*====================================================*/
+/* <= 768px */
+/*====================================================*/
+
+@media (max-width:768px){
+
+    .temporal{
+
+        padding:70px 0;
+
+    }
+
+    .temporal__container{
+
+        width:94%;
+
+        gap:56px;
+
+    }
+
+    .temporal__left h2{
+
+        font-size:36px;
+
+    }
+
+    .temporal__left p{
+
+        font-size:15px;
+        line-height:1.8;
+
+    }
+
+    .temporal__right{
+
+        grid-template-columns:85px minmax(250px,280px);
+
+        gap:22px;
+
+    }
+
+    .temporal__timeline{
+
+        width:85px;
+
+    }
+
+    .temporal__item{
+
+        grid-template-columns:26px 50px;
+
+        gap:12px;
+
+        padding-bottom:44px;
+
+    }
+
+    .temporal__circle{
+
+        width:22px;
+        height:22px;
+
+    }
+
+    .temporal__circle.active{
+
+        box-shadow:0 0 0 7px rgba($primary,.15);
+
+    }
+
+    .temporal__marker::after{
+
+        width:4px;
+
+        top:18px;
+        bottom:-48px;
+
+    }
+
+    .temporal__year{
+
+        font-size:18px;
+        line-height:22px;
+
+    }
+
+    .temporal__card{
+
+        width:100%;
+
+        padding:10px;
+
+        border-radius:12px;
+
+    }
+
+    .temporal__card img{
+
+        height:150px;
+
+        border-radius:8px;
+
+    }
+
+    .temporal__cardContent{
+
+        padding:14px 8px 8px;
+
+    }
+
+    .temporal__cardContent p{
+
+        font-size:14px;
+        line-height:1.6;
+
+    }
+
+}
+
+/*====================================================*/
+/* <= 480px */
+/*====================================================*/
+
+@media (max-width:480px){
+
+    .temporal{
+
+        padding:60px 0;
+
+    }
+
+    .temporal__left h2{
+
+        font-size:30px;
+
+    }
+
+    .temporal__right{
+
+        grid-template-columns:70px minmax(210px,1fr);
+
+        gap:16px;
+
+    }
+
+    .temporal__timeline{
+
+        width:70px;
+
+    }
+
+    .temporal__item{
+
+        grid-template-columns:22px 42px;
+
+        gap:10px;
+
+        padding-bottom:36px;
+
+    }
+
+    .temporal__circle{
+
+        width:18px;
+        height:18px;
+
+    }
+
+    .temporal__marker::after{
+
+        width:3px;
+
+        top:15px;
+        bottom:-40px;
+
+    }
+
+    .temporal__year{
+
+        font-size:16px;
+        line-height:18px;
+
+    }
+
+    .temporal__card img{
+
+        height:130px;
+
+    }
+
+    .temporal__cardContent p{
+
+        font-size:13px;
+
+    }
+
+}

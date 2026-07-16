@@ -1,0 +1,479 @@
+@use "../../../styles/variables" as *;
+
+/*==================================================
+SEÇÃO
+==================================================*/
+
+.principles{
+
+    width:100%;
+    background:#f5f5f5;
+    overflow:hidden;
+    
+   padding:20px 0 150px;
+   
+
+}
+
+/*==================================================
+CONTAINER
+==================================================*/
+
+.principles__container{
+
+    width:100%;
+
+    display:grid;
+    grid-template-columns:48% 52%;
+
+    align-items:center;
+
+}
+
+/*==================================================
+IMAGEM
+==================================================*/
+.principles__image{
+
+    width:100%;
+
+    display:flex;
+
+    justify-content:flex-start;
+
+    align-items:flex-start;
+
+    overflow:visible;
+
+}
+
+.principles__image img{
+
+    width:120%;
+
+    max-width:1520px;
+
+    display:block;
+
+    transform:translate(-260px,120px);
+
+}
+/*==================================================
+CONTEÚDO
+==================================================*/
+
+.principles__content{
+    width: min(900px, 95%);
+    justify-self: start;
+    margin-left: -60px;
+}
+
+/*==================================================
+TÍTULO
+==================================================*/
+
+.principles__subtitle{
+
+    display:block;
+
+    margin-bottom:60px;
+
+    font-family:$font-title;
+    font-size:64px;
+    font-style:italic;
+    font-weight:500;
+
+    color:$primary;
+
+}
+
+/*==================================================
+LISTA
+==================================================*/
+
+.principles__list{
+
+    display:flex;
+    flex-direction:column;
+
+    gap:30px;
+
+}
+
+/*==================================================
+ITEM
+==================================================*/
+
+.principles__item{
+
+    display:grid;
+
+    grid-template-columns:300px 1fr;
+
+    gap:55px;
+
+    align-items:flex-start;
+
+}
+
+.principles__item h3{
+
+    font-family:$font-title;
+
+    font-size:22px;
+    font-weight:400;
+    line-height:1.15;
+
+    color:#5b3619;
+
+}
+
+.principles__item p{
+
+    font-family:$font-text;
+
+    font-size:15px;
+    line-height:1.6;
+
+    color:#4d4d4d;
+
+}
+
+/*==================================================
+NOTEBOOK
+==================================================*/
+
+@media(max-width:1500px){
+
+    .principles__subtitle{
+
+        font-size:56px;
+
+    }
+
+    .principles__item{
+
+        grid-template-columns:260px 1fr;
+
+        gap:42px;
+
+    }
+
+}
+/*==================================================
+TABLET
+==================================================*/
+/*==================================================
+TABLET
+==================================================*/
+
+@media (max-width:1200px){
+
+    .principles{
+
+        padding:80px 0 70px;
+
+    }
+
+    .principles__container{
+
+        position:relative;
+
+        display:block;
+
+        width:100%;
+
+    }
+
+    /*======================================
+    FOTO
+    ======================================*/
+
+    .principles__image{
+
+        position:absolute;
+
+        top:150px;
+
+        left:-620px;
+
+        width:125%;
+
+        z-index:1;
+
+        pointer-events:none;
+
+    }
+
+    .principles__image img{
+
+        width:100%;
+
+        max-width:none;
+
+        transform:none;
+
+        opacity:.95;
+
+    }
+
+    /*======================================
+    CONTEÚDO
+    ======================================*/
+
+    .principles__content{
+
+        position:relative;
+
+        z-index:2;
+
+        width:100%;
+
+        padding:0 34px;
+
+    }
+
+    /*======================================
+    TÍTULO
+    ======================================*/
+
+    .principles__subtitle{
+
+        text-align:center;
+
+        font-size:54px;
+
+        margin-bottom:120px;
+
+    }
+
+    /*======================================
+    LISTA
+    ======================================*/
+
+    .principles__list{
+
+        gap:24px;
+
+    }
+
+    /*======================================
+    CARDS
+    ======================================*/
+
+    .principles__item{
+
+        margin-left:24%;
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:16px;
+
+        padding:30px;
+
+        background:#fff;
+
+        border-radius:26px;
+
+        box-shadow:0 18px 45px rgba(0,0,0,.08);
+
+        backdrop-filter:blur(5px);
+
+    }
+
+    .principles__item h3{
+
+        font-size:28px;
+
+    }
+
+    .principles__item p{
+
+        font-size:17px;
+
+        line-height:1.7;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .principles{
+
+        padding:70px 0 60px;
+
+    }
+
+    .principles__container{
+
+        position:relative;
+
+        display:block;
+
+    }
+
+    /* FOTO */
+.principles__image{
+
+    position:absolute;
+
+    top:170px;
+
+    left:-550px;
+
+    width:165%;
+
+    z-index:1;
+
+    pointer-events:none;
+
+}
+
+    .principles__image img{
+
+        width:100%;
+        max-width:none;
+
+        transform:none;
+
+        opacity:.95;
+
+    }
+
+    /* CONTEÚDO */
+
+.principles__content{
+
+    position:relative;
+
+    z-index:2;
+
+    width:100%;
+
+    padding:0 22px;
+
+    
+
+}
+
+    /* TÍTULO */
+.principles__subtitle{
+
+    text-align:center;
+
+    font-size:40px;
+
+   
+
+
+}
+
+    /* LISTA */
+
+    .principles__list{
+
+        gap:18px;
+
+    }
+
+    /* CARDS */
+
+    .principles__item{
+
+        margin-left:28%;
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:14px;
+
+        background:#fff;
+
+        padding:22px;
+
+        border-radius:22px;
+
+        box-shadow:0 14px 35px rgba(0,0,0,.08);
+
+        backdrop-filter:blur(4px);
+
+    }
+
+    .principles__item h3{
+
+        font-size:24px;
+
+    }
+
+    .principles__item p{
+
+        font-size:16px;
+
+        line-height:1.65;
+
+    }
+
+}
+/*==================================================
+CELULARES PEQUENOS
+==================================================*/
+
+@media(max-width:480px){
+
+    .principles{
+
+        padding:55px 0;
+
+    }
+
+.principles__image{
+
+    width:185%;
+
+    left:-210px;
+
+    top:110px;
+
+}
+
+.principles__subtitle{
+
+    font-size:34px;
+
+    margin-bottom:190px;
+
+}
+
+    .principles__content{
+
+        padding:0 16px;
+
+    }
+
+    .principles__item{
+
+        margin-left:18%;
+
+        padding:18px;
+
+        border-radius:18px;
+
+    }
+
+    .principles__item h3{
+
+        font-size:22px;
+
+    }
+
+    .principles__item p{
+
+        font-size:15px;
+
+    }
+
+}

@@ -1,0 +1,606 @@
+.section-mapabr {
+
+
+    width:100%;
+
+    padding:70px 7% 80px;
+
+    background:#fff;
+
+    font-family:"Montserrat", sans-serif;
+
+
+}
+
+
+
+
+
+.container-mapabr {
+
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:40px;
+
+
+}
+
+
+
+
+
+
+
+/* =========================
+   TEXTO
+========================= */
+
+
+.content-text-mapabr {
+
+
+    width:48%;
+
+
+
+
+
+    .subtitle-mapabr {
+
+
+        display:flex;
+
+        align-items:center;
+
+        gap:18px;
+
+
+        color:#d48821;
+
+
+        font-size:16px;
+
+
+        letter-spacing:1px;
+
+
+        margin-bottom:65px;
+
+
+
+
+
+
+        span {
+
+
+            width:50px;
+
+            height:2px;
+
+
+            background:#d48821;
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+    h1 {
+
+
+        font-family:"Playfair Display", serif;
+
+
+        color:#431c01;
+
+
+        font-size:38px;
+
+
+        font-weight:400;
+
+
+        line-height:1.35;
+
+
+        max-width:520px;
+
+
+        margin:0 0 35px;
+
+
+    }
+
+
+
+
+
+
+
+
+    p {
+
+
+        color:#765c4a;
+
+
+        font-size:18px;
+
+
+        line-height:1.45;
+
+
+        max-width:620px;
+
+
+        margin:0;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================
+       MAPA
+========================= */
+
+
+.map-area-mapabr {
+
+
+    width:80%;
+
+
+    position:relative;
+
+
+    display:flex;
+
+
+    justify-content:flex-end;
+
+
+    align-items:center;
+
+
+    transform:translateX(50px);
+
+
+}
+
+
+
+
+
+
+
+.mapa-mapabr {
+
+
+    width:85%;
+
+
+}
+
+
+
+
+
+
+
+.map-info-mapabr {
+
+
+    position:absolute;
+
+
+    right:-10px;
+
+
+    top:40px;
+
+
+    width:240px;
+
+
+    padding-left:30px;
+
+
+    border-left:1px solid #d48821;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================
+       CARDS
+========================= */
+
+
+
+.cards-container-mapabr {
+
+
+    margin-top:70px;
+
+
+    background:#ededed;
+
+
+    border-radius:30px;
+
+
+    padding:35px 45px;
+
+
+    display:grid;
+
+
+    grid-template-columns:repeat(4,1fr);
+
+
+
+}
+
+
+
+
+
+
+
+
+.card-mapabr {
+
+
+    padding:0 35px;
+
+
+    border-right:1px solid #d6d6d6;
+
+
+    background:transparent;
+
+
+
+
+
+    &:last-child {
+
+
+        border:none;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    .card-title-mapabr {
+
+
+        display:flex;
+
+
+        align-items:center;
+
+
+        gap:15px;
+
+
+        margin-bottom:25px;
+
+
+
+
+
+
+
+
+        img {
+
+
+            width:30px;
+
+            height:30px;
+
+
+            object-fit:contain;
+
+
+        }
+
+
+
+
+
+
+
+
+
+        h3 {
+
+
+            margin:0;
+
+
+            font-size:18px;
+
+
+            font-weight:600;
+
+
+            letter-spacing:1px;
+
+
+            color:#343434;
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    p {
+
+
+        margin:0;
+
+
+        color:#666;
+
+
+        font-size:16px;
+
+
+        line-height:1.45;
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+/* =========================
+       RESPONSIVO
+========================= */
+
+
+@media(max-width:1100px){
+
+
+
+    .container-mapabr {
+
+
+        flex-direction:column;
+
+
+    }
+
+
+
+
+
+
+
+    .content-text-mapabr,
+    .map-area-mapabr {
+
+
+        width:100%;
+
+
+    }
+
+
+
+
+
+
+    .map-info-mapabr {
+
+
+        right:0;
+
+
+    }
+
+
+
+
+
+
+
+    .cards-container-mapabr {
+
+
+        grid-template-columns:repeat(2,1fr);
+
+
+        gap:40px;
+
+
+    }
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@media(max-width:650px){
+
+
+
+    .section-mapabr {
+
+
+        padding:50px 25px;
+
+
+    }
+
+
+
+
+
+
+
+    .content-text-mapabr {
+
+
+
+        h1 {
+
+
+            font-size:32px;
+
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+    .map-area-mapabr {
+
+
+        transform:none;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    .map-info-mapabr {
+
+
+        position:relative;
+
+
+        top:auto;
+
+
+        right:auto;
+
+
+        margin-top:25px;
+
+
+    }
+
+
+
+
+
+
+
+
+    .cards-container-mapabr {
+
+
+        grid-template-columns:1fr;
+
+
+        padding:30px;
+
+
+    }
+
+
+
+
+
+
+
+
+    .card-mapabr {
+
+
+        padding:25px 0;
+
+
+        border-right:none;
+
+
+        border-bottom:1px solid #ddd;
+
+
+    }
+
+
+
+}

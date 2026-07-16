@@ -1,0 +1,523 @@
+@use "../../styles/variables" as *;
+
+/*======================================================
+CONTATO
+======================================================*/
+
+.contato {
+
+    position: relative;
+    isolation: isolate; 
+    width: 100%;
+
+    min-height: 100svh;
+
+    display: flex;
+
+    align-items: center;
+
+    overflow: hidden;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+}
+
+.contato > .navbar{
+    position: absolute;
+    inset: 20 auto auto 750px;
+    width: 94%;
+    z-index: 1000;
+    
+}
+/*======================================================
+OVERLAY
+======================================================*/
+
+.contato__overlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0,0,0,.58) 0%,
+            rgba(0,0,0,.35) 45%,
+            rgba(0,0,0,.18) 100%
+        );
+
+    z-index: 1;
+
+}
+
+/*======================================================
+CONTAINER
+======================================================*/
+
+.contato__container {
+
+    position: relative;
+
+    z-index: 2;
+
+    width: min(1680px, 92%);
+
+    margin: 0 auto;
+
+    padding-top: 70px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 660px; // antes 760px
+
+    align-items: center;
+
+    gap: 70px; // antes 90px
+
+}
+
+/*======================================================
+COLUNA ESQUERDA
+======================================================*/
+
+.contato__left {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    color: white;
+
+}
+
+.contato__left h1 {
+
+    font-family: $font-title;
+
+    font-size: clamp(5rem, 5vw, 6.4rem);
+
+    line-height: .92;
+
+    font-weight: 400;
+
+    letter-spacing: -.04em;
+
+    margin: 0;
+
+}
+
+.linha {
+
+    width: 145px;
+
+    height: 5px;
+
+    background: #D48821;
+
+    border-radius: 20px;
+
+    margin: 42px 0;
+
+}
+
+.contato__left p {
+
+    max-width: 610px;
+
+    font-family: $font-text;
+
+    font-size: 1.22rem;
+
+    line-height: 1.9;
+
+    color: rgba(255,255,255,.88);
+
+}
+
+/*======================================================
+CARD
+======================================================*/
+.contato__card {
+
+    background: #582300;
+
+    border-radius: 22px;
+
+    padding: 42px;
+
+    display: grid;
+
+    grid-template-columns: 1.2fr 1px .85fr;
+
+    align-items: center;
+
+    gap: 30px;
+
+    box-shadow:
+        0 20px 45px rgba(0,0,0,.35);
+
+}
+
+/*======================================================
+DIVISÓRIA
+======================================================*/
+
+.card__divider{
+
+    width:1px;
+
+    height:100%;
+
+    background:rgba(255, 255, 255, 0);
+
+}/*======================================================
+TEXTO DO CARD
+======================================================*/
+
+.card__texto{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+}
+
+.card__texto h2{
+
+    font-family:$font-title;
+
+    font-size:2.35rem;
+
+    line-height:1.08;
+
+    font-weight:400;
+
+    color:white;
+
+    margin:0 0 24px;
+
+}
+
+.card__texto p{
+
+    font-family:$font-text;
+
+    font-size:.96rem;
+
+    line-height:1.75;
+
+    color:rgba(255,255,255,.82);
+
+}
+
+/*======================================================
+AÇÃO
+======================================================*/
+
+.card__acao{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+}
+
+.logo{
+
+    width:125px;
+
+    margin-bottom:24px;
+
+}
+
+.card__acao span{
+
+    font-family:$font-text;
+
+    color:white;
+
+    font-size:.95rem;
+
+    line-height:1.55;
+
+    max-width:200px;
+
+    margin-bottom:28px;
+
+}
+
+/*======================================================
+BOTÃO
+======================================================*/
+
+.card__acao button{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:12px;
+
+    padding:12px 24px; // diminui a altura
+
+    min-height:50px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#D48821;
+
+    color:white;
+
+    font-family:$font-text;
+
+    font-size:.88rem; // fonte menor
+
+    font-weight:600;
+
+    letter-spacing:.3px;
+
+    white-space:nowrap; // impede quebra de linha
+
+    cursor:pointer;
+
+    transition:
+        transform .35s,
+        box-shadow .35s,
+        background .35s;
+
+}
+
+.card__acao button img{
+
+    width:24px;
+
+    height:24px;
+
+}
+
+.card__acao button:hover{
+
+    transform:translateY(-4px);
+
+    background:#e59b33;
+
+    box-shadow:0 15px 35px rgba(212,136,33,.35);
+
+}
+
+/*======================================================
+1400px
+======================================================*/
+
+@media(max-width:1400px){
+
+    .contato__container{
+
+        width:min(94%,1400px);
+
+        grid-template-columns:1fr 700px;
+
+        gap:70px;
+
+    }
+
+    .contato__left h1{
+
+        font-size:4.6rem;
+
+    }
+
+    .contato__card{
+
+        padding:48px;
+
+    }
+
+    .card__texto h2{
+
+        font-size:2.5rem;
+
+    }
+
+}
+
+/*======================================================
+1100px
+======================================================*/
+
+@media(max-width:1100px){
+
+    .contato{
+
+        padding:150px 0 80px;
+
+        min-height:auto;
+
+    }
+
+    .contato__container{
+
+        grid-template-columns:1fr;
+
+        gap:55px;
+
+        padding-top:0;
+
+    }
+
+    .contato__left{
+
+        text-align:center;
+
+        align-items:center;
+
+    }
+
+    .linha{
+
+        margin:34px auto;
+
+    }
+
+    .contato__left p{
+
+        max-width:700px;
+
+    }
+
+    .contato__card{
+
+        grid-template-columns:1fr;
+
+        gap:38px;
+
+        text-align:center;
+
+    }
+
+    .card__divider{
+
+        display:none;
+
+    }
+
+    .card__texto{
+
+        align-items:center;
+
+    }
+
+    .card__texto p{
+
+        max-width:600px;
+
+    }
+
+}
+
+/*======================================================
+768px
+======================================================*/
+
+@media(max-width:768px){
+
+    .contato{
+
+        padding:120px 0 60px;
+
+    }
+
+    .contato__container{
+
+        width:92%;
+
+    }
+
+    .contato__left h1{
+
+        font-size:3.3rem;
+
+        line-height:.95;
+
+    }
+
+    .linha{
+
+        width:120px;
+
+        height:4px;
+
+    }
+
+    .contato__left p{
+
+        font-size:1rem;
+
+        line-height:1.8;
+
+    }
+
+    .contato__card{
+
+    padding:34px 28px;
+
+    border-radius:22px;
+
+    transform: translateX(2.5spx);
+
+}
+
+    .card__texto h2{
+
+        font-size:2rem;
+
+    }
+
+    .card__texto p{
+
+        font-size:.95rem;
+
+    }
+
+    .logo{
+
+        width:120px;
+
+        margin-bottom:24px;
+
+    }
+
+    .card__acao span{
+
+        font-size:.95rem;
+
+        margin-bottom:28px;
+
+    }
+
+    .card__acao button{
+
+        width:100%;
+
+        padding:16px;
+
+    }
+
+}

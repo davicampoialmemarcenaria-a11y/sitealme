@@ -1,0 +1,249 @@
+.postit-section {
+  width: 100%;
+  padding: 120px 8%;
+  background: #faf9f8;
+
+  &__container {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 90px;
+    align-items: start;
+  }
+
+  &__title {
+    font-family: "Cormorant Garamond", serif;
+    font-size: clamp(48px, 4vw, 66px);
+    font-weight: 500;
+    color: #4b2d1b;
+    line-height: 1.08;
+    margin-bottom: 42px;
+  }
+
+  &__content {
+    max-width: 760px;
+
+    p {
+      font-family: "Montserrat", sans-serif;
+      font-size: 1rem; // menor
+      line-height: 2; // mais confortável
+      color: #5f5047;
+      margin-bottom: 7px;
+      letter-spacing: .2px;
+    }
+  }
+
+  &__aside {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    align-self: flex-start;
+  }
+}
+
+/* ---------------- POST IT ---------------- */
+
+.postit-card {
+  background: #d99221;
+  padding: 40px;
+  color: #3b2416;
+
+  &__quote {
+    display: block;
+    font-size: 82px;
+    line-height: 1;
+    
+    font-family: "Cormorant Garamond", serif;
+  }
+
+  p {
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.80rem;
+    line-height: 1.9;
+    margin-bottom: 34px;
+    
+  }
+
+  &__line {
+    width: 72px;
+    height: 2px;
+    background: #3b2416;
+    margin-top: 8px;
+  }
+}
+
+/* ---------------- BOTÃO ---------------- */
+
+.postit-btn {
+  width: 100%;
+  border: none;
+  background: #d99221;
+  color: white;
+  padding: 24px 30px;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 26px;
+
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 3px;
+  transition: .35s ease;
+
+  span:last-child {
+    font-size: 2rem;
+    transition: .35s;
+  }
+
+  &:hover {
+    background: #c48218;
+
+    span:last-child {
+      transform: translateX(8px);
+    }
+  }
+}
+
+/* ======================== */
+/* NOTEBOOK */
+/* ======================== */
+
+@media (max-width:1200px){
+
+.postit-section{
+
+padding:100px 7%;
+
+&__container{
+grid-template-columns:1fr;
+gap:70px;
+}
+
+&__content{
+max-width:100%;
+}
+
+&__aside{
+align-items:center;
+}
+
+}
+
+.postit-card{
+max-width:600px;
+width:100%;
+}
+
+.postit-btn{
+max-width:600px;
+}
+
+}
+
+/* ======================== */
+/* TABLET */
+/* ======================== */
+
+@media (max-width:768px){
+
+.postit-section{
+
+padding:80px 7%;
+
+&__title{
+font-size:52px;
+margin-bottom:30px;
+}
+
+&__content{
+
+p{
+font-size:.98rem;
+line-height:1.95;
+margin-bottom:30px;
+}
+
+}
+
+}
+
+.postit-card{
+
+padding:42px;
+
+&__quote{
+font-size:68px;
+margin-bottom:26px;
+}
+
+p{
+font-size:1rem;
+line-height:1.8;
+}
+
+}
+
+.postit-btn{
+
+padding:22px;
+font-size:.95rem;
+letter-spacing:2px;
+
+}
+
+}
+
+/* ======================== */
+/* CELULAR */
+/* ======================== */
+
+@media (max-width:576px){
+
+.postit-section{
+
+padding:70px 6%;
+
+&__title{
+font-size:42px;
+}
+
+&__content{
+
+p{
+font-size:.95rem;
+line-height:1.9;
+}
+
+}
+
+}
+
+.postit-card{
+
+padding:32px;
+
+&__quote{
+font-size:56px;
+}
+
+p{
+font-size:.95rem;
+line-height:1.75;
+}
+
+}
+
+.postit-btn{
+
+font-size:.9rem;
+padding:18px;
+gap:18px;
+
+span:last-child{
+font-size:1.6rem;
+}
+
+}
+
+}

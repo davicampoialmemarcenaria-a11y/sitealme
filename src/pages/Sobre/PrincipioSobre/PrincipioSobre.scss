@@ -1,0 +1,200 @@
+.principioSobre {
+  width: 100%;
+  padding: 120px 8%;
+   background: rgb(250, 249, 248);
+
+  .topo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 90px;
+
+    .quemSomos {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+
+      span {
+        font-size: 16px;
+        font-weight: 500;
+        color: #d88b27;
+        letter-spacing: 2px;
+      }
+
+      .linha {
+        width: 55px;
+        height: 1px;
+        background: #d88b27;
+      }
+    }
+
+    h2 {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 62px;
+      font-weight: 400;
+      color: #4a2b1b;
+      text-align: center;
+      line-height: 1.15;
+      max-width: 900px;
+    }
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(240px, 1fr));
+    gap: 80px;
+    align-items: flex-start;
+  }
+
+.principio-card {
+    display: flex;
+    flex-direction: column;
+
+    .titulo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;   display: flex;
+  flex-direction: column;
+
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent;
+
+
+      img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f2f2f;
+        letter-spacing: .5px;
+      }
+    }
+
+    p {
+      font-size: 15px;
+  line-height: 1.9;
+  color: #5f5f5f;
+  font-weight: 300;
+
+  max-width: 320px;
+  margin: 0 auto;     // 👈 centraliza horizontalmente
+  text-align: center; // 👈 centraliza o texto
+    }
+  }
+}
+
+/* ========================= */
+/* TABLETS */
+/* ========================= */
+
+@media (max-width: 1200px) {
+
+  .principioSobre {
+
+    padding: 100px 8%;
+
+    .topo {
+
+      margin-bottom: 70px;
+
+      h2 {
+        font-size: 50px;
+      }
+
+    }
+
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 70px 60px;
+      justify-items: center;
+    }
+
+    .card {
+
+      width: 100%;
+      max-width: 340px;
+
+      p {
+        max-width: 100%;
+      }
+
+    }
+
+  }
+
+}
+
+/* ========================= */
+/* CELULAR */
+/* ========================= */
+
+@media (max-width: 768px) {
+
+  .principioSobre {
+
+    padding: 80px 8%;
+
+    .topo {
+
+      margin-bottom: 55px;
+
+      .quemSomos {
+
+        span {
+          font-size: 14px;
+        }
+
+      }
+
+      h2 {
+        font-size: 40px;
+        max-width: 100%;
+      }
+
+    }
+
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 50px;
+      justify-items: center;
+    }
+
+    .card {
+
+      max-width: 420px;
+
+      .titulo {
+
+        margin-bottom: 20px;
+
+        img {
+          width: 22px;
+          height: 22px;
+        }
+
+        h3 {
+          font-size: 19px;
+        }
+
+      }
+
+      p {
+        font-size: 17px;
+        line-height: 1.8;
+        max-width: 100%;
+      }
+
+    }
+
+  }
+
+}
