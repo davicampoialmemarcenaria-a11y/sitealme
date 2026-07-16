@@ -1,0 +1,8 @@
+# Dependências
+node_modules/
+
+# Arquivos de ambiente
+.env
+
+# Vídeo pesado do hero
+src/imgs/videohome.mp4
