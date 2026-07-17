@@ -161,11 +161,20 @@ export default function NewsPage(){
 
                                         {bloco.titulo}
 
-                                    </h2>
+                                    </h2>   
+                                    
 
                                 }
 
+{
+    bloco.autor &&
 
+    <span className="news-block__author">
+
+        Por {bloco.autor}
+
+    </span>
+}
 
                                 <p>
 

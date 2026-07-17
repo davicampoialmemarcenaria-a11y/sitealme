@@ -22,21 +22,23 @@ export default function News() {
 
     const [uploading, setUploading] = useState(false);
 
-    const blocoInicial = {
+const blocoInicial = {
 
-        ordem: 1,
+    ordem: 1,
 
-        titulo: "",
+    titulo: "",
 
-        texto: "",
+    texto: "",
 
-        imagem_url: "",
+    autor: "",
 
-        imagem_file: null,
+    imagem_url: "",
 
-        imagem_preview: ""
+    imagem_file: null,
 
-    };
+    imagem_preview: ""
+
+};
 
     const [form, setForm] = useState({
 
@@ -230,6 +232,8 @@ export default function News() {
                         titulo: bloco.titulo || "",
 
                         texto: bloco.texto || "",
+
+                        autor: bloco.autor || "",
 
                         imagem_url: bloco.imagem_url || "",
 
@@ -516,6 +520,8 @@ export default function News() {
                     titulo: bloco.titulo,
 
                     texto: bloco.texto,
+
+                    autor: bloco.autor,
 
                     imagem_url: imagemFinal
 
@@ -1022,6 +1028,38 @@ export default function News() {
                                                     />
 
                                                 </div>
+
+                                                <div className="form-group">
+
+    <label>
+        Autor da seção
+    </label>
+
+    <input
+
+        type="text"
+
+        value={bloco.autor}
+
+        placeholder="Nome do autor"
+
+        onChange={e =>
+
+            alterarBloco(
+
+                index,
+
+                "autor",
+
+                e.target.value
+
+            )
+
+        }
+
+    />
+
+</div>
 
                                                 <div className="form-group">
 
