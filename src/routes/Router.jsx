@@ -16,6 +16,7 @@ import News from "../pages/admin/News/News";
 import Projetos from "../pages/admin/Projetos/Projetos";
 import Newsu from "../pages/Newsu/Newsu";
 import ProtectedRoute from "../components/ProtectedRoute";
+import NewsPage from "../pages/Newsu/NewsPage/NewsPage";
 
 export default function Router() {
     return (
@@ -39,6 +40,7 @@ export default function Router() {
 
                 <Route path="/login" element={<Login />} />
                 <Route path="/newsu" element={<Newsu />} />
+                <Route path="/news/:id" element={<NewsPage />} />
 
 
                 {/* ADMINISTRATIVO */}

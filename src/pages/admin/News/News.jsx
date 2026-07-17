@@ -525,11 +525,19 @@ export default function News() {
 
          if (blocos.length > 0) {
 
+    console.log("BLOCOS QUE SERÃO SALVOS:", blocos);
+
     const {
+        data: blocosSalvos,
         error: blocoError
     } = await supabase
         .from("news_blocks")
-        .insert(blocos);
+        .insert(blocos)
+        .select();
+
+
+    console.log("RETORNO SUPABASE:", blocosSalvos);
+    console.log("ERRO BLOCOS:", blocoError);
 
 
     if (blocoError) {
@@ -537,6 +545,8 @@ export default function News() {
         throw blocoError;
 
     }
+
+
 
 }
 

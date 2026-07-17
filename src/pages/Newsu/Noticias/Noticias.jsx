@@ -12,13 +12,18 @@ import "swiper/css/navigation";
 
 import "./Noticias.scss";
 
+
 export default function Noticias() {
 
+
     const navigate = useNavigate();
+
 
     const [news, setNews] = useState([]);
 
     const [loading, setLoading] = useState(true);
+
+
 
     useEffect(() => {
 
@@ -26,9 +31,13 @@ export default function Noticias() {
 
     }, []);
 
+
+
     async function buscarNoticias() {
 
+
         setLoading(true);
+
 
         const { data, error } = await supabase
 
@@ -44,6 +53,8 @@ export default function Noticias() {
 
             });
 
+
+
         if (error) {
 
             console.log(error);
@@ -54,19 +65,43 @@ export default function Noticias() {
 
         }
 
+
+
         setNews(data || []);
 
         setLoading(false);
 
+
     }
+
+
+
 
     function abrirNoticia(id) {
+    navigate(`/news/${id}`);
+}
 
-        navigate(`/news/${id}`);
+
+
+
+    function handleCardKey(event, id) {
+
+
+        if(event.key === "Enter") {
+
+            abrirNoticia(id);
+
+        }
+
 
     }
 
+
+
+
+
     if (loading) {
+
 
         return (
 
@@ -74,7 +109,11 @@ export default function Noticias() {
 
                 <div className="noticias__container">
 
-                    <p>Carregando notícias...</p>
+                    <p>
+
+                        Carregando notícias...
+
+                    </p>
 
                 </div>
 
@@ -82,17 +121,28 @@ export default function Noticias() {
 
         );
 
+
     }
+
+
+
+
 
     return (
 
+
         <section className="noticias">
+
 
             <div className="noticias__container">
 
+
+
                 <div className="noticias__header">
 
+
                     <div className="noticias__titulo">
+
 
                         <span>
 
@@ -100,11 +150,17 @@ export default function Noticias() {
 
                         </span>
 
+
                         <div className="linha"></div>
+
 
                     </div>
 
+
+
+
                     <div className="noticias__arrows">
+
 
                         <button className="prev-news">
 
@@ -112,83 +168,141 @@ export default function Noticias() {
 
                         </button>
 
+
+
                         <button className="next-news">
 
                             <FiChevronRight />
 
                         </button>
 
+
                     </div>
+
 
                 </div>
 
+
+
+
+
+
                 <Swiper
+
 
                     modules={[Navigation, Autoplay]}
 
+
+
                     navigation={{
+
 
                         prevEl: ".prev-news",
 
                         nextEl: ".next-news"
 
+
                     }}
+
+
 
                     autoplay={{
 
-                        delay: 5000,
 
-                        disableOnInteraction: false
+                        delay:5000,
+
+                        disableOnInteraction:false
+
 
                     }}
+
+
 
                     loop={true}
 
+
+
                     spaceBetween={18}
+
+
 
                     breakpoints={{
 
+
                         0: {
 
-                            slidesPerView: 1
+                            slidesPerView:1
 
                         },
+
 
                         768: {
 
-                            slidesPerView: 2
+                            slidesPerView:2
 
                         },
 
+
                         1200: {
 
-                            slidesPerView: 3
+                            slidesPerView:3
 
                         }
 
+
                     }}
 
-                >                     {
 
-                        news.map((item) => (
 
-                            <SwiperSlide
+                >
 
-                                key={item.id}
 
-                            >
+
+
+
+                    {
+
+                        news.map((item)=>(
+
+
+
+                            <SwiperSlide key={item.id}>
+
 
                                 <article
 
+
                                     className="news-card"
+
+
 
                                     onClick={() => abrirNoticia(item.id)}
 
+
+
+                                    onKeyDown={(e)=>handleCardKey(e,item.id)}
+
+
+
+                                    role="button"
+
+
+
+                                    tabIndex="0"
+
+
+
                                 >
+
+
+
+
 
                                     <div className="news-card__image">
 
+
                                         <img
+
 
                                             src={
 
@@ -198,33 +312,81 @@ export default function Noticias() {
 
                                             }
 
-                                            alt={item.titulo}
+
+
+                                            alt={
+
+                                                item.titulo ||
+
+                                                "Notícia"
+
+                                            }
+
+
 
                                         />
 
+
                                     </div>
+
+
+
+
+
+
 
                                     <div className="news-card__content">
 
+
+
                                         <h3>
 
-                                            {item.titulo}
+
+                                            {
+
+                                                item.titulo ||
+
+                                                "Sem título"
+
+                                            }
+
 
                                         </h3>
 
+
+
+
+
                                         <p>
 
-                                            {item.descricao}
+
+                                            {
+
+                                                item.descricao ||
+
+                                                "Confira esta notícia."
+
+                                            }
+
 
                                         </p>
 
+
+
+
+
+
                                         <div className="news-card__footer">
 
+
+
                                             <span>
+
 
                                                 Autor:
 
                                                 {" "}
+
 
                                                 {
 
@@ -234,26 +396,59 @@ export default function Noticias() {
 
                                                 }
 
+
+
                                             </span>
+
+
+
 
                                         </div>
 
+
+
+
                                     </div>
+
+
+
+
 
                                 </article>
 
+
+
+
+
                             </SwiperSlide>
+
+
 
                         ))
 
+
                     }
+
+
+
+
 
                 </Swiper>
 
+
+
+
+
             </div>
+
+
+
 
         </section>
 
+
+
     );
+
 
 }
