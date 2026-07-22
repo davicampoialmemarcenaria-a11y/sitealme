@@ -70,7 +70,7 @@ export default function CardProjetos(){
 
                         key={projeto.id}
 
-                        onClick={()=>navigate(`/projeto/${projeto.id}`)}
+                        onClick={()=>navigate(`/projetos/${projeto.id}`)}
 
                     >
 

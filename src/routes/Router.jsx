@@ -20,9 +20,10 @@ import Newsu from "../pages/Newsu/Newsu";
 import NewsPage from "../pages/Newsu/NewsPage/NewsPage";
 
 
-import ProjetosPage from "../pages/Projetosu/Projetosu";
+import Projetosu from "../pages/Projetosu/Projetosu";
+import ProjetosPage from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 
-import ProjetoPage from "../pages/Projetosu/ProjetosPage/ProjetosPage";
+
 
 
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -118,26 +119,21 @@ export default function Router() {
 
 
 
-
-                {/* =====================
-                    PROJETOS PÚBLICO
-                ====================== */}
-
+{/* =====================
+    PROJETOS PÚBLICO
+====================== */}
 
 
-                <Route 
-                    path="/projetos" 
-                    element={<ProjetosPage />} 
-                />
+<Route 
+    path="/projetos" 
+    element={<Projetosu />} 
+/>
 
 
-
-                <Route 
-                    path="/projetos/:id" 
-                    element={<ProjetoPage />} 
-                />
-
-
+<Route 
+    path="/projetos/:id" 
+    element={<ProjetosPage />} 
+/>
 
 
 

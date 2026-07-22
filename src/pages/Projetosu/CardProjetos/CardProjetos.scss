@@ -220,8 +220,7 @@
 
     position:absolute;
 
-
-    bottom:0;
+    bottom:-10px;
 
     left:0;
 
@@ -234,7 +233,7 @@
     opacity:0;
 
 
-    transform:translateY(30px);
+    transform:translateY(50px);
 
 
     transition:
@@ -292,19 +291,14 @@
 
 
 
-
-
-
 .card-projeto:hover 
 .card-projeto__content h2{
 
 
-    transform:translateY(-120px);
+    transform:translateY(-150px);
 
 
 }
-
-
 
 
 
@@ -321,7 +315,6 @@
 
 
 }
-
 
 
 
