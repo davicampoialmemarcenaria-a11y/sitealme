@@ -10,6 +10,8 @@ import {
     FiX
 } from "react-icons/fi";
 
+
+
 import "./News.scss";
 
 export default function News() {
@@ -19,6 +21,10 @@ export default function News() {
 
     const [modal, setModal] = useState(false);
     const [editando, setEditando] = useState(null);
+
+    const [modalExcluir, setModalExcluir] = useState(false);
+    const [idExcluir, setIdExcluir] = useState(null);
+
 
     const [uploading, setUploading] = useState(false);
 
@@ -170,6 +176,11 @@ const blocoInicial = {
         }
 
     }
+
+    function abrirConfirmacao(id) {
+    setIdExcluir(id);
+    setModalExcluir(true);
+}
 
     function abrirModal() {
 
@@ -586,39 +597,27 @@ const blocoInicial = {
 
     }
 
-    async function excluirNoticia(id) {
+    async function excluirNoticia() {
 
-        const confirmar = window.confirm(
+    if (!idExcluir) return;
 
-            "Deseja realmente excluir este artigo?"
+    const { error } = await supabase
+        .from("news")
+        .delete()
+        .eq("id", idExcluir);
 
-        );
-
-        if (!confirmar)
-
-            return;
-
-        const { error } = await supabase
-
-            .from("news")
-
-            .delete()
-
-            .eq("id", id);
-
-        if (error) {
-
-            toast.error("Erro ao excluir.");
-
-            return;
-
-        }
-
-        toast.success("Artigo removido.");
-
-        buscarNoticias();
-
+    if (error) {
+        toast.error("Erro ao excluir.");
+        return;
     }
+
+    toast.success("Artigo removido.");
+
+    setModalExcluir(false);
+    setIdExcluir(null);
+
+    buscarNoticias();
+}
 
     return (
 
@@ -748,7 +747,7 @@ const blocoInicial = {
 
                                                     className="danger"
 
-                                                    onClick={() => excluirNoticia(item.id)}
+                                                    onClick={() => abrirConfirmacao(item.id)}
 
                                                 >
 
@@ -806,18 +805,12 @@ const blocoInicial = {
                                 </div>
 
                                 <button
-
-                                    type="button"
-
-                                    className="close"
-
-                                    onClick={() => setModal(false)}
-
-                                >
-
-                                    <FiX />
-
-                                </button>
+    type="button"
+    className="closebotaodenoticiias"
+    onClick={() => setModal(false)}
+>
+    X
+</button>
 
                             </div>
 
@@ -922,20 +915,34 @@ const blocoInicial = {
                                     </label>
 
                                     {
+    form.capa_url && (
 
-                                        form.capa_url &&
+        <div className="preview-wrapper">
 
-                                        <img
+            <img
+                className="preview-capa"
+                src={form.capa_url}
+                alt=""
+            />
 
-                                            className="preview-capa"
+           <button
+    type="button"
+    className="btn-remove-image"
+    onClick={() =>
+        setForm({
+            ...form,
+            capa_url: "",
+            capa_file: null
+        })
+    }
+>
+    X
+</button>
 
-                                            src={form.capa_url}
+        </div>
 
-                                            alt=""
-
-                                        />
-
-                                    }
+    )
+}
 
                                 </div>
 
@@ -978,22 +985,12 @@ const blocoInicial = {
                                                         form.blocos.length > 1 &&
 
                                                         <button
-
-                                                            type="button"
-
-                                                            className="btn-remove"
-
-                                                            onClick={() =>
-
-                                                                removerBloco(index)
-
-                                                            }
-
-                                                        >
-
-                                                            <FiTrash2 />
-
-                                                        </button>
+    type="button"
+    className="btn-remove"
+    onClick={() => removerBloco(index)}
+>
+    X
+</button>
 
                                                     }
 
@@ -1143,21 +1140,41 @@ const blocoInicial = {
 
                                                     </label>
 
-                                                    {
+                                                   {
+    bloco.imagem_preview && (
 
-                                                        bloco.imagem_preview &&
+        <div className="preview-wrapper">
 
-                                                        <img
+            <img
+                src={bloco.imagem_preview}
+                className="preview-bloco"
+                alt=""
+            />
 
-                                                            src={bloco.imagem_preview}
+            <button
+    type="button"
+    className="btn-remove-image"
+    onClick={() => {
 
-                                                            className="preview-bloco"
+        const novos = [...form.blocos];
 
-                                                            alt=""
+        novos[index].imagem_preview = "";
+        novos[index].imagem_file = null;
+        novos[index].imagem_url = "";
 
-                                                        />
+        setForm({
+            ...form,
+            blocos: novos
+        });
 
-                                                    }
+    }}
+>
+    X
+</button>
+        </div>
+
+    )
+}
 
                                                 </div>
 
@@ -1236,9 +1253,60 @@ const blocoInicial = {
                 )
 
             }
+            {
+    modalExcluir && (
+
+        <div className="confirm-modal">
+
+            <div
+                className="confirm-modal__overlay"
+                onClick={() => setModalExcluir(false)}
+            />
+
+            <div className="confirm-modal__content">
+
+                <div className="confirm-icon">
+                    <FiTrash2 />
+                </div>
+
+                <h2>Excluir artigo?</h2>
+
+                <p>
+                    Esta ação não poderá ser desfeita.
+                    O artigo será removido permanentemente.
+                </p>
+
+                <div className="confirm-actions">
+
+                    <button
+                        className="btn-cancel"
+                        onClick={() => setModalExcluir(false)}
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        className="btn-delete"
+                        onClick={excluirNoticia}
+                    >
+                        Sim, excluir
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    )
+}
+
 
         </section>
 
     );
 
 }
+
+
+

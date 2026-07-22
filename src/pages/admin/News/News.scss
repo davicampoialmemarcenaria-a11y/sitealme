@@ -478,38 +478,34 @@ HEADER MODAL
     color:#1E1E1E;
 
 }
-
-.close{
-
+.closebotaodenoticiias{
     width:46px;
-
     height:46px;
 
     border:none;
-
     border-radius:14px;
 
-    background:#F5F5F5;
-
-    cursor:pointer;
+    background:#6b2d08;
 
     display:flex;
-
+    justify-content:center;
     align-items:center;
 
-    justify-content:center;
+    color:white;
 
-    transition:.25s;
-
+    cursor:pointer;
 }
 
-.close svg{
-
-    font-size:22px;
-
+.closebotaodenoticiias svg{
+    width:24px !important;
+    height:24px !important;
+    color:white !important;
+    stroke:white !important;
+    display:block !important;
 }
 
-.close:hover{
+
+.closebotaodenoticiias:hover{
 
     background:#EAEAEA;
 
@@ -732,45 +728,31 @@ TOPO DA SEÇÃO
     color:#222;
 
 }
-
 .btn-remove{
+    width: 34px;
+    height: 34px;
 
-    width:44px;
+    border: none;
+    border-radius: 50%;
 
-    height:44px;
+    background: #6b2f0f;
+    color: #fff;
 
-    border:none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    border-radius:14px;
+    cursor: pointer;
 
-    cursor:pointer;
+    font-size: 18px;
+    font-weight: 700;
 
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    background:#F8F5F2;
-
-    color:#B33A3A;
-
-    transition:.25s;
-
+    transition: .2s;
 }
 
 .btn-remove:hover{
-
-    background:#FDECEC;
-
-    transform:rotate(8deg);
-
-}
-
-.btn-remove svg{
-
-    font-size:18px;
-
+    background: #8b3d15;
+    transform: scale(1.05);
 }
 
 /*======================================================
@@ -1049,6 +1031,206 @@ ANIMAÇÕES
     transform:scale(1.01);
 
 }
+/*======================================================
+POPUP DE CONFIRMAÇÃO
+======================================================*/
+
+.confirm-modal{
+
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    z-index:10000;
+
+}
+
+.confirm-modal__overlay{
+
+    position:absolute;
+    inset:0;
+
+    background:rgba(20,20,20,.55);
+    backdrop-filter:blur(6px);
+
+}
+
+.confirm-modal__content{
+
+    position:relative;
+
+    width:420px;
+    max-width:90%;
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:40px;
+
+    text-align:center;
+
+    animation:modal .25s ease;
+
+    box-shadow:
+        0 30px 70px rgba(0,0,0,.18);
+
+}
+
+.confirm-icon{
+
+    width:85px;
+    height:85px;
+
+    margin:auto;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:#FFF4EC;
+
+    color:#d66604;
+
+    font-size:38px;
+
+}
+
+.confirm-modal h2{
+
+    margin-top:25px;
+
+    font-family:$font-title;
+
+    font-size:2rem;
+
+    color:#1E1E1E;
+
+}
+
+.confirm-modal p{
+
+    margin-top:18px;
+
+    color:#666;
+
+    line-height:1.8;
+
+}
+.confirm-actions{
+
+    display:flex;
+
+    gap:15px;
+
+    margin-top:35px;
+
+}
+
+.confirm-actions button{
+
+    flex:1;
+
+    border:none;
+
+    cursor:pointer;
+
+    border-radius:16px;
+
+    padding:16px;
+
+    font-weight:700;
+
+    transition:.25s;
+
+}
+.confirm-actions .btn-cancel{
+
+    background:#EFEAE4;
+
+    color:#333;
+
+}
+
+.confirm-actions .btn-cancel:hover{
+
+    background:#DDD5CB;
+
+}
+.confirm-actions .btn-cancel{
+
+    background:#EFEAE4;
+
+    color:#333;
+
+}
+
+.confirm-actions .btn-cancel:hover{
+
+    background:#DDD5CB;
+
+}
+.confirm-actions .btn-delete{
+
+    background:#d66604;
+
+    color:white;
+
+    box-shadow:
+        0 10px 30px rgba(214,102,4,.30);
+
+}
+
+.confirm-actions .btn-delete:hover{
+
+    background:#bf5600;
+
+    transform:translateY(-2px);
+
+}
+.preview-wrapper{
+    position: relative;
+    display: inline-block;
+}
+
+.btn-remove-image{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #6b2f0f;
+    color: #fff;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    transition: .2s;
+}
+
+.btn-remove-image:hover{
+    background: #8b3d15;
+    transform: scale(1.05);
+}
+
+
+
 
 /*======================================================
 RESPONSIVO
