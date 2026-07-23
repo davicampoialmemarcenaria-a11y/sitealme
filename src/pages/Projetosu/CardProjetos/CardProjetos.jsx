@@ -10,6 +10,8 @@ import "./CardProjetos.scss";
 export default function CardProjetos(){
 
 
+
+
     const [projetos,setProjetos] = useState([]);
 
     const navigate = useNavigate();
@@ -58,6 +60,17 @@ export default function CardProjetos(){
     return(
 
         <section className="cards-projetos">
+
+
+             
+                
+                <div className="text__top">
+
+                    <span>FOCO INTERNACIONAL</span>
+
+                    <h2>Perguntas frequentes</h2>
+
+                </div>
 
 
             {
