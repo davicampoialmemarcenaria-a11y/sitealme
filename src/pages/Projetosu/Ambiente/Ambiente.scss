@@ -1,0 +1,156 @@
+.ambiente{
+
+    width:100%;
+    background:#fff;
+
+    padding:120px 40px;
+
+}
+
+.ambiente__container{
+
+    max-width:1500px;
+
+    margin:0 auto;
+
+    display:flex;
+
+    align-items:flex-start;
+
+    justify-content:space-between;
+
+    gap:80px;
+
+}
+
+.ambiente__image{
+
+    flex:1.7;
+
+}
+
+.ambiente__image img{
+
+    width:100%;
+
+    display:block;
+
+}
+
+.ambiente__content{
+
+    flex:1;
+
+    padding-top:25px;
+
+    text-align:center;
+
+}
+
+.ambiente__content h2{
+
+    font-family:"Cormorant Garamond", serif;
+
+    font-style:italic;
+
+    font-weight:400;
+
+    font-size:4rem;
+
+    color:#D48821;
+
+    margin-bottom:40px;
+
+}
+
+.ambiente__content p{
+
+    font-family:"Montserrat", sans-serif;
+
+    font-size:1.5rem;
+
+    line-height:1.4;
+
+    color:#4A3225;
+
+    font-weight:300;
+
+    max-width:540px;
+
+    margin:0 auto;
+
+}
+
+@media(max-width:1200px){
+
+    .ambiente{
+
+        padding:100px 30px;
+
+    }
+
+    .ambiente__container{
+
+        gap:50px;
+
+    }
+
+    .ambiente__content h2{
+
+        font-size:3.2rem;
+
+    }
+
+    .ambiente__content p{
+
+        font-size:1.5rem;
+
+    }
+
+}
+
+@media(max-width:900px){
+
+    .ambiente{
+
+        padding:70px 20px;
+
+    }
+
+    .ambiente__container{
+
+        flex-direction:column-reverse;
+
+        align-items:center;
+
+        gap:50px;
+
+    }
+
+    .ambiente__content{
+
+        padding-top:0;
+
+    }
+
+    .ambiente__content h2{
+
+        font-size:2.7rem;
+
+    }
+
+    .ambiente__content p{
+
+        font-size:1.2rem;
+
+        max-width:100%;
+
+    }
+
+    .ambiente__image{
+
+        width:100%;
+
+    }
+
+}
