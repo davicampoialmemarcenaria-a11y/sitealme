@@ -305,23 +305,44 @@
 }
 
 
-
 .project-modal header button{
+
+    width:38px;
+
+    height:38px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
 
     border:none;
 
-    background:#eee;
+    border-radius:8px;
 
-    width:35px;
+    background:#4b2108;
 
-    height:35px;
-
-    border-radius:50%;
+    color:white;
 
     cursor:pointer;
 
+    font-size:18px;
+
+    line-height:1;
+
+    padding:0;
+
+    transition:.3s ease;
+
 }
 
+
+.project-modal header button:hover{
+
+    background:#d38a17;
+
+}
 
 
 
@@ -454,37 +475,63 @@
 
 }
 
-
-
 .preview button{
 
     position:absolute;
 
-    top:10px;
+    top:12px;
 
-    right:10px;
+    right:12px;
 
-    width:35px;
 
-    height:35px;
+    width:38px;
 
-    border-radius:50%;
+    height:38px;
+
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+
+    border-radius:8px;
 
     border:none;
+
 
     background:#b3261e;
 
     color:white;
 
+
     cursor:pointer;
 
-    font-size:18px;
+    font-size:20px;
+
+    padding:0;
+
+
+    transition:.3s ease;
 
 }
 
 
+.preview button:hover{
+
+    background:#8f1c16;
+
+}
 
 
+.preview button svg{
+
+    width:20px;
+
+    height:20px;
+
+}
 
 
 
@@ -516,11 +563,35 @@
 
     cursor:pointer;
 
-    background:#eee;
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.3s ease;
 
 }
 
 
+/* CANCELAR */
+
+.actions button:first-child{
+
+    background:#4b2108;
+
+    color:white;
+
+}
+
+
+.actions button:first-child:hover{
+
+    background:#6c3311;
+
+}
+
+
+
+/* SALVAR */
 
 .actions button:last-child{
 
@@ -529,6 +600,15 @@
     color:white;
 
 }
+
+
+.actions button:last-child:hover{
+
+    background:#b87310;
+
+}
+
+
 
 
 
