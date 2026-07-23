@@ -24,10 +24,7 @@ function Heroeua() {
                 <div className="hero-eua__line"></div>
 
                 <p>
-                    Acompanhamos todas<br />
-                    as etapas,
-                    do início ao fim,<br />
-                    garantindo organização.
+                   Padrão de processos,  <br /> construções e qualidade  <br />independente da distância.
                 </p>
 
             </div>

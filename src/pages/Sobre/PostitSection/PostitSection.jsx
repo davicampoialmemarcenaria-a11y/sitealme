@@ -1,6 +1,8 @@
 import "./PostitSection.scss";
+import { useNavigate } from "react-router-dom";
 
 const PostitSection = () => {
+  const navigate = useNavigate(); 
   return (
     <section className="postit-section">
       <div className="postit-section__container">
@@ -15,13 +17,13 @@ const PostitSection = () => {
           </p>
 
           <p>
-            Acompanhamos todas as etapas do projeto e contamos com uma rede de marceneiros homologados, selecionados para assegurar qualidade, eficiência e consistência em cada entrega. Com atuação nacional e internacional, atendemos principalmente arquitetos que buscam um parceiro comprometido com a excelência em cada detalhe.
+            Acompanhamos todas as etapas do projeto e contamos com uma rede de marceneiros homologados, selecionados para assegurar qualidade, eficiência e consistência em todas as entrega. Com atuação nacional e internacional, atendemos principalmente arquitetos que buscam um parceiro comprometido com a excelência nos detalhes.
           </p>
 
           <p>
             Nossa forma de trabalhar é guiada por cinco valores fundamentais: excelência na experiência, pensamento de longo prazo, compromisso com a palavra, crescimento aos que nos acompanham e qualidade no que desempenhamos. São princípios que orientam nossas decisões e relações todos os dias.
           </p>
-       <p>Mais do que entregar marcenaria, buscamos construir confiança. Queremos que cada cliente se sinta acolhido, seguro e amparado durante toda a jornada, sabendo que seu projeto está em boas mãos.</p>
+       <p>Mais do que entregar marcenaria, buscamos construir confiança. Queremos que nossos cliente se sintam acolhidos, seguros e amparados durante toda a jornada, sabendo que seu projeto está em boas mãos.</p>
          
         </div>
 
@@ -38,10 +40,14 @@ const PostitSection = () => {
               Afinal, nossa maior conquista não é apenas entregar uma obra concluída, mas construir relações de confiança que permanecem muito depois da entrega.
             </p>
 
+            <p>
+              Marcio Marques | Sócio-Diretor
+            </p>
+
             <div className="postit-card__line"></div>
           </div>
 
-          <button className="postit-btn">
+          <button className="postit-btn" onClick={() => navigate("/marceneiro")}>
             <span>SEJA UM HOMOLOGADO</span>
             <span>→</span>
           </button>

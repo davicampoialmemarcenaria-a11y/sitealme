@@ -16,11 +16,11 @@ const principles = [
         text: "Acreditamos que uma empresa próspera e perene é aquela onde todos crescem juntos. Nosso desenvolvimento deve gerar valor para o time, clientes, fornecedores, parceiros e todos que fazem parte da nossa jornada."
     },
     {
-        title: "Excelência na Experiência",
-        text: "Devemos sempre manter o respeito e cordialidade, e no final das contas, entender que a experiência valeu a pena. o cronograma com responsabilidade e planejamento, assegurando que cada etapa seja cumprida dentro do prazo estabelecido."},
+        title: "Excelência na experiência",
+        text: "Devemos sempre manter o respeito, a cordialidade e entender que cada interação deve transmitir excelência. Agindo com prudência, comprometimento e empenho em cada projeto, transformamos a experiência de nossos clientes em um padrão de qualidade e confiança."},
     {
         title: "Pensamento de longo prazo",
-        text: "O pensamento de longo prazo guia nossas decisões, fazendo com que o hoje seja construído não apenas pensando no presente, mas no futuro que queremos alcançar. Projetos com alto padrão de execução, refletindo cuidado, atenção aos detalhes e consistência em cada projeto."
+        text: "O pensamento de longo prazo guia nossas decisões, fazendo com que, o hoje, seja construído não apenas pensando no presente, mas no futuro que iremos alcançar."
     }
 ];
 

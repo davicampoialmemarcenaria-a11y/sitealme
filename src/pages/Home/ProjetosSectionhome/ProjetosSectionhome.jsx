@@ -2,9 +2,17 @@ import "./ProjetosSectionHome.scss";
 
 import fotoCasa from "../../../imgs/fotocasahome.png";
 import { HiArrowRight } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 function ProjetosSectionHome() {
-    return (
+  const navigate = useNavigate();  
+  
+  return (
+
+
+         
+
+
         <section className="projetos-home">
 
             <img
@@ -17,15 +25,16 @@ function ProjetosSectionHome() {
 
             <div className="projetos-home__content">
 
-                <span>DESTAQUES DA MARCENARIA</span>
+               
 
                 <h2>Sonhos realizados</h2>
 
                 <p>
                     Cada detalhe é pensado e executado especialmente para você.
                 </p>
-
-                <button>
+                 <span>DESTAQUES DA MARCENARIA</span>
+                
+                <button onClick={() => navigate("/Projetos")}>
                     VEJA NOSSOS PROJETOS DE PERTO
                     <HiArrowRight />
                 </button>

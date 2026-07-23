@@ -25,7 +25,7 @@ const timeline = [
   {
     year: "2024",
     image: foto2024,
-    text: "Assinamos nosso primeiro contrato para o setor hoteleiro.  146 apartamentos e centenas de ambientes executados sob os mesmos padrões de qualidade. Reestruturamos a equipe, redefinimos nosso posicionamento estratégico e passamos a atuar em um novo segmento de mercado. Foi nesse momento que a Aura Marcenaria tornou-se oficialmente Alme Marcenaria. "
+    text: "Assinamos nosso primeiro contrato para o setor hoteleiro.  146 apartamentos e centenas de ambientes executados sob os mesmos padrões de qualidade, mudando a perspectiva e as visões da marca."
   },
   {
     year: "2025",
@@ -54,7 +54,7 @@ function Temporal() {
         <div className="temporal__left">
 
           <span className="temporal__tag">
-            QUEM SOMOS
+            LINHA DO TEMPO
           </span>
 
           <h2>
@@ -66,9 +66,9 @@ function Temporal() {
           </h2>
 
           <p>
-           Cada etapa da nossa trajetória representa uma decisão de evoluir. Cada projeto entregue reforça o compromisso que assumimos desde o primeiro dia: transformar desafios em processos bem executados e entregar excelência do início ao fim. E esta história continua sendo escrita, projeto após projeto. 
+           Todas as etapas da nossa trajetória representam a decisão de evoluir. Projetos entregues reforçam o compromisso que assumimos desde o primeiro dia: transformar desafios em processos bem executados e entregar excelência do início ao fim. Esta história continua sendo escrita, projeto após projeto. 
           </p>
-          <p>Mais do que produzir mobiliário sob medida, assumimos a responsabilidade de conduzir cada projeto com planejamento, acompanhamento técnico e compromisso absoluto com aquilo que foi definido.  </p>
+          <p>Mais do que produzir mobiliário sob medida, assumimos a responsabilidade de conduzir projetos com planejamento, acompanhamento técnico e compromisso absoluto com aquilo que foi definido.  </p>
 
 
         </div>

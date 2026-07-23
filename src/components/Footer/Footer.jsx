@@ -27,7 +27,7 @@ function Footer() {
         fluida em cada detalhe.
     </p>
 
-    <a href="#">
+    <a href="/Sobre">
         SAIBA MAIS SOBRE NOSSA HISTÓRIA
         <span>→</span>
     </a>

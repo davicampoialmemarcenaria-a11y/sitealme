@@ -54,12 +54,13 @@ export default function PrincipioSobre() {
       <div className="topo">
 
         <div className="quemSomos">
-          <span>QUEM SOMOS</span>
+          <div className="linha"></div>
+          <span>O QUE ACREDITAMOS</span>
           <div className="linha"></div>
         </div>
 
         <h2>
-          Princípios que guiam nossas escolhas
+          Fundamentos que guiam nossas escolhas
         </h2>
 
       </div>

@@ -44,7 +44,7 @@
 
 .postit-card {
   background: #d99221;
-  padding: 40px;
+  padding: 25px;
   color: #3b2416;
 
   &__quote {
@@ -75,10 +75,11 @@
 
 .postit-btn {
   width: 100%;
+  
   border: none;
   background: #d99221;
   color: white;
-  padding: 24px 30px;
+  padding: 10px 20px;
   cursor: pointer;
 
   display: flex;
@@ -87,7 +88,7 @@
   gap: 26px;
 
   font-family: "Montserrat", sans-serif;
-  font-size: 1.05rem;
+  font-size: 1rem;
   letter-spacing: 3px;
   transition: .35s ease;
 
