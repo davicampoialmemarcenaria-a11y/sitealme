@@ -38,7 +38,7 @@ function Footer() {
 
                     <h4>NAVEGAÇÃO</h4>
 
-                    <a href="/Home.jsx">Home</a>
+                    <a href="/">Home</a>
                     <a href="/Sobre">Sobre</a>
                     <a href="/projetos">Projetos</a>
                     <a href="/contato">Contato</a>
@@ -49,10 +49,11 @@ function Footer() {
 
                     <h4>INFORMAÇÕES</h4>
 
-                    <a href="#">Modelo Internacional</a>
-                    <a href="#">Dúvidas frequentes</a>
-                    <a href="#">Regiões em que atendemos</a>
-
+                   
+                    <a href="/duvidas">Dúvidas frequentes</a>
+                    <a href="/eua">Regiões em que atendemos</a>
+                     <a href="/marceneiro">Seja um homologado</a>
+                      <a href="/newsu">ALME News</a>
                 </div>
 
                 <div className="footer__column">
@@ -76,11 +77,11 @@ function Footer() {
 
                     <h4>LINKS</h4>
 
-                    <a href="#">WhatsApp</a>
-                    <a href="#">Instagram</a>
-                    <a href="#">E-mail</a>
-                    <a href="#">TikTok</a>
-                    <a href="#">Pinterest</a>
+ <a href="https://wa.me/5511944956944">WhatsApp</a>   
+                    <a href="https://www.instagram.com/alme.marcenaria/">Instagram</a>
+                    <a href="mailto:marketing@almemarcenaria.com.br">E-mail</a>
+                    <a href="https://www.tiktok.com/@alme.marcenaria">TikTok</a>
+                    <a href="https://br.pinterest.com/Alme_Marcenaria/">Pinterest</a>
 
                 </div>
 

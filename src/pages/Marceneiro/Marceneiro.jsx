@@ -15,7 +15,7 @@ export default function Marceneiro() {
 
         <Navbar />
 
-        <div className="hero-content">
+        <div className="marceneiro-hero-content">
           <div></div>
 
           <div className="texto">
@@ -39,7 +39,7 @@ export default function Marceneiro() {
 
         {/* ========= FORMULÁRIO SOBRE O HERO ========= */}
 
-        <div className="formulario-wrapper">
+        <div className="formulario-wrapper-marceneiro">
           <div className="formulario">
             <iframe
               src="https://app.pipefy.com/public/form/PPeFD_qA"

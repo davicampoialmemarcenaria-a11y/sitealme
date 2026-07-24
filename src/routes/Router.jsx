@@ -29,6 +29,8 @@ import ProjetosPage from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 
+import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
+
 
 export default function Router() {
 
@@ -36,7 +38,7 @@ export default function Router() {
     return (
 
         <BrowserRouter>
-
+        <ScrollToTop />
 
             <Routes>
 

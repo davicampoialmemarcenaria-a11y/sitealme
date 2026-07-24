@@ -149,49 +149,55 @@ function Campo() {
                                 Na Alme entregamos o que prometemos.
                             </p>
 
-                            <div className="faq__contatos">
+                           <div className="faq__contatos">
 
-                                <div>
+    <a
+        href="https://wa.me/5511944956944"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
 
-                                    <img src={whatsapp} alt="WhatsApp" />
+        <img src={whatsapp} alt="WhatsApp" />
 
-                                    <div>
+        <div>
+            <strong>WhatsApp</strong>
+            <span>11 9657-4365</span>
+        </div>
 
-                                        <strong>WhatsApp</strong>
+    </a>
 
-                                        <span>11 9657-4365</span>
 
-                                    </div>
+    <a
+        href="https://www.instagram.com/alme.marcenaria/"
+        target="_blank"
+        rel="noopener noreferrer"
+    >
 
-                                </div>
+        <img src={instagram} alt="Instagram" />
 
-                                <div>
+        <div>
+            <strong>Instagram</strong>
+            <span>@alme.marcenaria</span>
+        </div>
 
-                                    <img src={instagram} alt="Instagram" />
+    </a>
 
-                                    <div>
 
-                                        <strong>Instagram</strong>
+    <a
+        href="mailto:marketing@almemarcenaria.com.br"
+    >
 
-                                        <span>@alme.marcenaria</span>
+        <img src={gmail} alt="E-mail" />
 
-                                    </div>
+        <div>
+            <strong>E-mail</strong>
+            <span>marketing@almemarcenaria.com.br</span>
+        </div>
 
-                                </div>
+    </a>
 
-                                <div>
 
-                                    <img src={gmail} alt="Gmail" />
-
-                                    <div>
-
-                                        <strong>Gmail</strong>
-
-                                        <span>aura@auramarcenaria.com.br</span>
-
-                                    </div>
-
-                                </div>
+                                
 
                             </div>
 
