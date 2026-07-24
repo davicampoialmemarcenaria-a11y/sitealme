@@ -9,96 +9,83 @@ import Footer from "../../../components/Footer/Footer";
 import { supabase } from "../../../services/supabase";
 
 export default function ProjetosPage() {
-
     const { id } = useParams();
 
     const [projeto, setProjeto] = useState(null);
 
     useEffect(() => {
-
         buscarProjeto();
-
     }, [id]);
 
     async function buscarProjeto() {
-
         const { data, error } = await supabase
-
             .from("projects")
-
             .select(`
                 *,
                 project_images(*)
             `)
-
             .eq("id", id)
-
             .single();
 
         if (error) {
-
             console.log(error);
-
             return;
-
         }
 
-        data.project_images =
-            (data.project_images || [])
-                .sort((a, b) => a.ordem - b.ordem);
+        data.project_images = (data.project_images || []).sort(
+            (a, b) => a.ordem - b.ordem
+        );
 
         setProjeto(data);
-
     }
 
     if (!projeto) {
-
         return (
-
             <main className="project-loading">
-
-                Carregando projeto...
-
+                <div className="loading-content">
+                    <span></span>
+                    <p>Carregando projeto...</p>
+                </div>
             </main>
-
         );
-
     }
 
     return (
-
         <main className="project-page">
 
-            {/* HERO */}
+            {/* ================= HERO ================= */}
 
             <section className="project-hero">
 
                 <img
-
                     src={
                         projeto.imagem_capa ||
                         "https://placehold.co/1800x1000"
                     }
-
                     alt={projeto.titulo}
-
                 />
 
                 <Navbar />
 
                 <div className="project-hero__overlay">
 
-                    <h1>
+                    <div className="hero-content">
 
-                        {projeto.titulo}
+                        
 
-                    </h1>
+                        <h1>{projeto.titulo}</h1>
+
+                        
+
+                       
+
+                    </div>
 
                 </div>
 
             </section>
 
-            {/* INTRO */}
+            {/* ================= INTRO ================= */}
 
             <section className="project-about">
 
@@ -106,24 +93,22 @@ export default function ProjetosPage() {
 
                     <div className="project-about__text">
 
-                        <span>
-
-                            QUEM SOMOS
-
+                        <span className="section-number">
+                            01
                         </span>
 
-                        <div className="line"></div>
+                        <span className="section-subtitle">
+                            SOBRE O PROJETO
+                        </span>
+
+                        <div className="section-divider"></div>
 
                         <h2>
-
                             {projeto.nome}
-
                         </h2>
 
                         <p>
-
                             {projeto.texto}
-
                         </p>
 
                     </div>
@@ -131,15 +116,11 @@ export default function ProjetosPage() {
                     <div className="project-about__image">
 
                         <img
-
                             src={
                                 projeto.project_images?.[0]?.imagem_url ||
-
                                 projeto.imagem_capa
                             }
-
                             alt={projeto.nome}
-
                         />
 
                     </div>
@@ -148,80 +129,60 @@ export default function ProjetosPage() {
 
             </section>
 
-            {/* INFORMAÇÕES */}
+            {/* ================= INFO ================= */}
 
             <section className="project-info">
 
                 <div className="project-info__container">
 
-                    <h2>
+                    <div className="project-title">
 
-                        Informações do projeto
+                        
 
-                    </h2>
+                        <h2>
+                            Informações do Projeto
+                        </h2>
+
+                    </div>
 
                     <div className="project-info__grid">
 
-                        <div>
+                        <div className="info-card">
 
-                            <span>
-
-                                Área
-
-                            </span>
+                            <small>Área</small>
 
                             <strong>
-
                                 {projeto.area}
-
                             </strong>
 
                         </div>
 
-                        <div>
+                        <div className="info-card">
 
-                            <span>
-
-                                Tempo de produção
-
-                            </span>
+                            <small>Tempo</small>
 
                             <strong>
-
                                 {projeto.tempo_producao}
-
                             </strong>
 
                         </div>
 
-                        <div>
+                        <div className="info-card">
 
-                            <span>
-
-                                Cidade
-
-                            </span>
+                            <small>Cidade</small>
 
                             <strong>
-
                                 {projeto.cidade}
-
                             </strong>
 
                         </div>
 
-                        <div>
+                        <div className="info-card">
 
-                            <span>
-
-                                Escopo
-
-                            </span>
+                            <small>Escopo</small>
 
                             <strong>
-
                                 {projeto.escopo}
-
                             </strong>
 
                         </div>
@@ -232,37 +193,77 @@ export default function ProjetosPage() {
 
             </section>
 
-            {/* GALERIA */}
+            {/* ================= GALERIA ================= */}
 
             <section className="project-gallery">
 
+                <div className="gallery-header">
+
+                    
+
+                    <h2>
+                        Galeria do Projeto
+                    </h2>
+
+                    <p>
+                        Cada detalhe foi pensado para criar uma arquitetura
+                        atemporal, sofisticada e funcional.
+                    </p>
+
+                </div>
+
                 <div className="project-gallery__grid">
+                    {projeto.project_images?.map((imagem, index) => (
+                        <figure
+                            key={imagem.id}
+                            className={`gallery-item pattern-${index % 6}`}
+                        >
+                            <img
+                                src={imagem.imagem_url}
+                                alt={`${projeto.nome} - ${index + 1}`}
+                                loading="lazy"
+                            />
 
-                    {
+                            <figcaption>
 
-                        projeto.project_images?.map((imagem, index) => (
+                                <span>
+                                    {String(index + 1).padStart(2, "0")}
+                                </span>
 
-                            <div
+                                <div className="gallery-caption-line"></div>
 
-                                key={imagem.id}
+                                <p>
+                                    {projeto.nome}
+                                </p>
 
-                                className={`gallery-item pattern-${index % 6}`}
+                            </figcaption>
 
-                            >
+                        </figure>
+                    ))}
+                </div>
 
-                                <img
+            </section>
 
-                                    src={imagem.imagem_url}
+            {/* ================= CTA FINAL ================= */}
 
-                                    alt="Projeto"
+            <section className="project-end">
 
-                                />
+                <div className="project-end__content">
 
-                            </div>
+                    <span>ARQUITETURA • DESIGN • EXPERIÊNCIA</span>
 
-                        ))
+                    <h2>
+                        Cada projeto nasce para ser
+                        único, elegante e atemporal.
+                    </h2>
 
-                    }
+                    <p>
+                        Do conceito aos acabamentos,
+                        buscamos transformar espaços em
+                        experiências memoráveis,
+                        combinando estética,
+                        funcionalidade e exclusividade.
+                    </p>
 
                 </div>
 
@@ -271,7 +272,5 @@ export default function ProjetosPage() {
             <Footer />
 
         </main>
-
     );
-
 }
