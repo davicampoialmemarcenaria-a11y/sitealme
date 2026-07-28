@@ -5,7 +5,7 @@ function Heronewsu() {
     return (
         <section className="hero-duvidas">
 
-            <div className="hero-duvidas__bg"></div>
+            <div className="hero-news__bg"></div>
 
             <div className="hero-duvidas__overlay"></div>
 
@@ -14,15 +14,11 @@ function Heronewsu() {
             <div className="hero-duvidas__content">
 
                 <h1>
-                    Acompanhe as dúvidas
-                    <br />
-                    frequentes
+                    Acompanhe notícias e tendências 
                 </h1>
 
                 <p>
-                    Acompanhamos todas as etapas, do início ao fim,
-                    garantindo organização, alinhamento e uma execução
-                    fluida em cada detalhe feito.
+                  Fique por dentro de todas as tendências, novidades e curiosidades do mundo da marcenaria e entenda novos temas e dúvidas frequentes.
                 </p>
 
             </div>

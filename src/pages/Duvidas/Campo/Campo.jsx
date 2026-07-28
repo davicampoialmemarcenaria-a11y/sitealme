@@ -250,7 +250,7 @@ function Campo(){
 
 
                     <span>
-                        FOCO INTERNACIONAL
+                        ESCLARECENDO DÚVIDAS
                     </span>
 
 
@@ -263,10 +263,7 @@ function Campo(){
 
                     <p>
 
-                        Compromisso não é diferencial, é padrão. Na Alme,
-                        entregamos o que prometemos, com a qualidade que o seu
-                        projeto exige e o cuidado com quem vai viver naquele
-                        espaço merece.
+                     Tem alguma dúvida? Confira as perguntas recorrentes e encontre a resposta que procura.
 
                     </p>
 
@@ -444,9 +441,7 @@ function Campo(){
 
                             <p>
 
-                                Compromisso não é diferencial, é padrão.
-                                Na Alme entregamos o que prometemos.
-
+                                Cada projeto possui características próprias e teremos prazer em orientar a melhor solução para sua necessidade.
                             </p>
 
 

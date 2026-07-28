@@ -20,19 +20,11 @@ export default function Marceneiro() {
 
           <div className="texto">
             <h1>
-              Faça parte da
-              <br />
-              equipe, seja um
-              <br />
-              marceneiro
-              <br />
-              homologado
+              Cresça com quem valoriza a excelência. Seja um Homologado Alme. 
             </h1>
 
             <p>
-              Acompanhamos todas as etapas, do início ao fim,
-              garantindo organização, alinhamento e uma execução
-              fluida em cada detalhe.
+              Expandimos nossa atuação por meio de uma rede de marceneiros homologados que executam projetos seguindo os padrões da Alme. Se você busca novas oportunidades e acredita que excelência deve estar presente em cada detalhe, queremos conhecer o seu trabalho. 
             </p>
           </div>
         </div>
@@ -60,30 +52,16 @@ export default function Marceneiro() {
 
           <div className="sobre">
             <h2>
-              Gestão Completa do Projeto
+             Nossa abordagem
             </h2>
 
-            <p>
-              Compromisso não é diferencial, é padrão. Na Alme,
-              entregamos o que prometemos, com a qualidade que
-              seu projeto exige e o cuidado com quem vai viver
-              naquele espaço.
-            </p>
-
-            <br />
-
-            <p>
-              Desde a homologação do marceneiro até a instalação
-              final, acompanhamos cada etapa para garantir
-              alinhamento entre projeto, produção e execução.
-            </p>
-
-            <br />
-
-            <p>
-              Nosso objetivo é que cada ambiente seja entregue
-              exatamente como foi pensado, respeitando prazos,
-              acabamento e qualidade em todos os detalhes.
+            <p>Nosso processo reúne desenvolvimento técnico, organização e acompanhamento para que cada etapa aconteça de forma eficiente e alinhada às expectativas do cliente. Dessa forma, garantimos maior previsibilidade, padronização e segurança na execução, refletindo o compromisso da Alme. 
+<br />
+<br />
+A homologação representa mais do que fazer parte da nossa rede de parceiros: é o reconhecimento de profissionais que compartilham dos nossos valores, compromisso e responsabilidade. Trabalhamos ao lado de nossos homologado para fortalecer processos, gerar novas oportunidades e promover um crescimento consistente para todos os envolvidos. 
+<br />
+<br />
+Com uma gestão especializada, a Alme coordena os principais aspectos do projeto, promovendo mais previsibilidade, melhor aproveitamento de recursos e decisões que contribuem para reduzir desperdícios, otimizar custos e elevar a qualidade da entrega. Um modelo que fortalece nossos parceiros e assegura consistência em cada resultado.
             </p>
           </div>
 

@@ -20,9 +20,7 @@ function HeroDuvidas() {
                 </h1>
 
                 <p>
-                    Acompanhamos todas as etapas, do início ao fim,
-                    garantindo organização, alinhamento e uma execução
-                    fluida em cada detalhe feito.
+                    Reunimos as respostas para as perguntas mais frequentes sobre nossos serviços e processos.
                 </p>
 
             </div>

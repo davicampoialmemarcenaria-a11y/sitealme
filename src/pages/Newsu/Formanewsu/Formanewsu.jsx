@@ -7,19 +7,15 @@ export default function Formanewsu() {
       <div className="formanewsu__container">
         <div className="formanewsu__text">
           <h2>
-            Não projetamos
-            <br />
-            apenas espaços.
+            As principais  tendências, em um só lugar.
           </h2>
 
-          <h3>Projetamos experiências</h3>
+          <h3>O mercado evolui e nós acompanhamos</h3>
 
           <div className="linha"></div>
 
           <p>
-            Acompanhamos todas as etapas, do início ao fim, garantindo
-            organização, alinhamento e uma execução fluida em cada detalhe
-            feito.
+            Neste espaço compartilhamos tendências, notícias, processos e inovações que fazem parte do universo da marcenaria. 
           </p>
         </div>
 
