@@ -9,33 +9,25 @@ body{
     background:#fff;
 }
 
-
 /* ========================= */
 /* HERO */
 /* ========================= */
 
 .marceneiro-hero{
-
     position:relative;
-
     width:100%;
-
-    min-height:1050px;
+    min-height:1080px;
 
     background-size:cover;
     background-position:center;
-
+    background-repeat:no-repeat;
 }
 
 .overlay{
-
     position:absolute;
     inset:0;
-
     background:rgba(0,0,0,.45);
-
     z-index:1;
-
 }
 
 /* ========================= */
@@ -45,29 +37,23 @@ body{
 .marceneiro-hero-content{
 
     position:relative;
+    z-index:5;
 
-    z-index:10;
-
-    width:90%;
-    max-width:1500px;
-
+    width:min(1500px,90%);
     margin:auto;
 
     min-height:900px;
 
     display:grid;
-
-    grid-template-columns:650px 1fr;
-
+    grid-template-columns:560px 1fr;
     gap:90px;
 
     align-items:center;
-
 }
 
 .texto{
 
-    color:white;
+    color:#fff;
 
     h1{
 
@@ -79,19 +65,19 @@ body{
 
         line-height:1.05;
 
-        margin-bottom:35px;
+        margin-bottom:34px;
 
     }
 
     p{
+
+        max-width:620px;
 
         font-family:"Montserrat", sans-serif;
 
         font-size:23px;
 
         line-height:1.7;
-
-        max-width:620px;
 
     }
 
@@ -107,16 +93,15 @@ body{
 
     left:50%;
 
-    bottom:-795px;
+    transform:translateX(-50%);
 
-    transform:translateX(-45%);
+    bottom:-640px;
 
-    width:90%;
-    max-width:1500px;
+    width:min(1500px,90%);
 
     display:grid;
 
-    grid-template-columns:650px 1fr;
+    grid-template-columns:560px 1fr;
 
     gap:90px;
 
@@ -130,7 +115,7 @@ body{
 
     height:1550px;
 
-    background:white;
+    background:#fff;
 
     border-radius:20px;
 
@@ -143,8 +128,7 @@ body{
 .formulario iframe{
 
     width:100%;
-    height:100%;    
-    
+    height:100%;
 
     border:none;
 
@@ -153,218 +137,123 @@ body{
 }
 
 /* ========================= */
-/* SEGUNDA SECTION */
+/* RESPONSIVO HERO */
 /* ========================= */
 
-.marceneiro-conteudo{
+@media(max-width:1400px){
 
-    background:white;
+    .marceneiro-hero-content,
+    .formulario-wrapper-marceneiro{
 
-    padding-top:360px;
+        grid-template-columns:500px 1fr;
 
-    padding-bottom:140px;
+        gap:70px;
 
-}
-
-.conteudo{
-
-    width:90%;
-    max-width:1500px;
-
-    margin:auto;
-
-    display:grid;
-
-    grid-template-columns:650px 1fr;
-
-    gap:90px;
-    align-items:start;   
-
-}
-
-/* ========================= */
-/* TEXTO */
-/* ========================= */
-
-.sobre{
-
-    position:relative;
-
-    top:-180px;   // ajuste aqui
-
-    h2{
-        font-family:"Playfair Display", serif;
-        font-size:62px;
-        color:#55331c;
-        font-weight:500;
-        line-height:1.15;
-        margin-bottom:40px;
     }
 
-    p{
-        font-family:"Montserrat", sans-serif;
-        font-size:23px;
-        color:#5b5b5b;
-        line-height:1.8;
+    .formulario{
+
+        width:500px;
+
     }
 
+    .texto h1{
 
-    
-     
+        font-size:72px;
+
+    }
 
 }
 
-/* =====/* ========================= */
-/* RESPONSIVO */
-/* ========================= */
-
-@media (max-width: 1200px) {
+@media(max-width:1200px){
 
     .marceneiro-hero{
 
         min-height:auto;
-        padding:120px 0 60px;
+
+        padding-bottom:80px;
 
     }
 
-    .hero-content{
+    .marceneiro-hero-content{
 
         width:92%;
 
         min-height:auto;
 
-        grid-template-columns:1fr;
+        padding:160px 0 40px;
 
-        gap:40px;
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
 
         text-align:center;
 
     }
 
-    .hero-content > div:first-child{
+    .marceneiro-hero-content>div:first-child{
+
         display:none;
+
     }
 
     .texto{
 
-        margin:auto;
-        max-width:700px;
+        max-width:760px;
 
     }
 
     .texto h1{
 
         font-size:58px;
-        line-height:1.1;
 
     }
 
     .texto p{
 
         margin:auto;
+
         font-size:20px;
 
     }
 
-    /* FORMULÁRIO */
-
-    .formulario-wrapper{
+    .formulario-wrapper-marceneiro{
 
         position:relative;
 
         left:auto;
+
         bottom:auto;
 
         transform:none;
 
-        width:92%;
-
-        max-width:600px;
-
-        margin:60px auto 0;
-
         display:block;
+
+        width:min(700px,92%);
+
+        margin:55px auto 0;
 
     }
 
     .formulario{
 
         width:100%;
-        max-width:none;
 
-        height:1450px;
-
-    }
-
-    /* CONTEÚDO */
-
-    .marceneiro-conteudo{
-
-        padding-top:80px;
-        padding-bottom:100px;
-
-    }
-
-    .conteudo{
-
-        width:92%;
-
-        grid-template-columns:1fr;
-
-    }
-
-    .conteudo > div:first-child{
-
-        display:none;
-
-    }
-
-    .sobre{
-
-        position:static;
-
-        padding-top:0;
-
-        text-align:center;
-
-    }
-
-    .sobre h2{
-
-        font-size:52px;
-
-    }
-
-    .sobre p{
-
-        margin:auto;
-
-        max-width:700px;
-
-        font-size:21px;
+        height:1400px;
 
     }
 
 }
 
-@media (max-width:768px){
+@media(max-width:768px){
 
-    .marceneiro-hero{
+    .marceneiro-hero-content{
 
-        min-height:auto;
-        padding:0;
+        width:92%;
 
-    }
-
-    .hero-content{
-
-       
-        width:94%;
-
-        margin-top:90px; // só o texto desce
-
-        gap:25px;
-
+        padding:140px 0 20px;
 
     }
 
@@ -384,64 +273,31 @@ body{
 
     }
 
-    .formulario-wrapper{
+    .formulario-wrapper-marceneiro{
 
-        width:94%;
+        width:92%;
 
-        margin-top:40px;
+        margin-top:35px;
 
     }
 
     .formulario{
 
-        height:1300px;
+        height:1250px;
 
         border-radius:16px;
 
     }
 
-    .marceneiro-conteudo{
-
-        padding-top:60px;
-        padding-bottom:80px;
-
-    }
-
-    .sobre{
-
-        text-align:left;
-
-    }
-
-    .sobre h2{
-
-        font-size:34px;
-
-        margin-bottom:25px;
-
-    }
-
-    .sobre p{
-
-        font-size:17px;
-
-        line-height:1.8;
-
-    }
-
 }
 
-@media (max-width:480px){
+@media(max-width:480px){
 
-    .marceneiro-hero{
+    .marceneiro-hero-content{
 
-        padding:70px 0 30px;
+        width:90%;
 
-    }
-
-    .hero-content{
-
-        width:92%;
+        padding:120px 0 20px;
 
     }
 
@@ -453,23 +309,278 @@ body{
 
     .texto p{
 
-        font-size:16px;
+        font-size:15px;
+
+    }
+
+    .formulario-wrapper-marceneiro{
+
+        width:90%;
 
     }
 
     .formulario{
 
-        height:1200px;
+        height:1150px;
 
         border-radius:14px;
 
     }
+
+}
+/* ========================= */
+/* SEGUNDA SECTION */
+/* ========================= */
+
+.marceneiro-conteudo{
+
+    background:#fff;
+
+    /*
+      Espaço reservado para o formulário
+      que invade o hero.
+    */
+    padding-top:620px;
+
+    padding-bottom:140px;
+
+}
+
+
+.conteudo{
+
+    width:min(1500px,90%);
+
+    margin:auto;
+
+    display:grid;
+
+    grid-template-columns:560px 1fr;
+
+    gap:90px;
+
+    align-items:start;
+
+}
+
+
+/* ========================= */
+/* TEXTO */
+/* ========================= */
+
+
+.sobre{
+
+    position:relative;
+
+    top:-550px;
+
+}
+
+
+.sobre h2{
+
+    font-family:"Playfair Display", serif;
+
+    font-size:60px;
+
+    font-weight:500;
+
+    line-height:1.15;
+
+    color:#55331c;
+
+    margin-bottom:38px;
+
+}
+
+
+.sobre p{
+
+    font-family:"Montserrat", sans-serif;
+
+    font-size:22px;
+
+    line-height:1.8;
+
+    color:#5b5b5b;
+
+}
+
+
+/* ========================= */
+/* TABLET */
+/* ========================= */
+
+
+@media(max-width:1400px){
+
+
+    .marceneiro-conteudo{
+
+        padding-top:600px;
+
+    }
+
+
+    .conteudo{
+
+        grid-template-columns:500px 1fr;
+
+        gap:70px;
+
+    }
+
+
+    .sobre h2{
+
+        font-size:52px;
+
+    }
+
+
+    .sobre p{
+
+        font-size:20px;
+
+    }
+
+
+}
+
+
+
+
+
+@media(max-width:1200px){
+
+
+    .marceneiro-conteudo{
+
+        padding-top:90px;
+
+        padding-bottom:100px;
+
+    }
+
+
+    .conteudo{
+
+        width:92%;
+
+        display:block;
+
+    }
+
+
+    .sobre{
+
+        position:static;
+
+        text-align:center;
+
+    }
+
+
+    .sobre h2{
+
+        font-size:50px;
+
+    }
+
+
+    .sobre p{
+
+        max-width:760px;
+
+        margin:auto;
+
+    }
+
+
+}
+
+
+
+
+/* ========================= */
+/* MOBILE */
+/* ========================= */
+
+
+@media(max-width:768px){
+
+
+    .marceneiro-conteudo{
+
+        padding-top:70px;
+
+        padding-bottom:80px;
+
+    }
+
+
+    .conteudo{
+
+        width:92%;
+
+    }
+
+
+    .sobre{
+
+        text-align:left;
+
+    }
+
+
+    .sobre h2{
+
+        font-size:36px;
+
+        margin-bottom:25px;
+
+    }
+
+
+    .sobre p{
+
+        font-size:17px;
+
+        line-height:1.75;
+
+    }
+
+
+}
+
+
+
+
+
+@media(max-width:480px){
+
+
+    .marceneiro-conteudo{
+
+        padding-top:60px;
+
+    }
+
+
+    .conteudo{
+
+        width:90%;
+
+    }
+
 
     .sobre h2{
 
         font-size:28px;
 
     }
+
 
     .sobre p{
 
@@ -478,5 +589,6 @@ body{
         line-height:1.7;
 
     }
+
 
 }

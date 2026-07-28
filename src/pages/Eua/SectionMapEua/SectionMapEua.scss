@@ -502,113 +502,94 @@
 
 
 
-
-
-
 @media(max-width:650px){
 
+    .section-mapaeua{
 
-
-    .section-mapaeua {
-
-
-        padding:50px 25px;
-
+        padding:50px 20px;
+        overflow:hidden;
 
     }
 
 
+    .container-mapaeua{
 
-
-
-
-
-    .content-text-mapaeua {
-
-
-
-
-        h1 {
-
-
-            font-size:32px;
-
-
-        }
-
+        flex-direction:column;
+        width:100%;
+        gap:35px;
 
     }
 
 
+    .content-text-mapaeua{
+
+        width:100%;
+
+    }
 
 
+    .map-area-mapaeua{
+
+        width:100%;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+
+        transform:translateX(15px);
+
+    }
 
 
+    .mapa-mapaeua{
+
+        width:90%;
+
+        max-width:420px;
+
+        height:auto;
+
+    }
 
 
-
-    .map-info-mapaeua {
-
+    .map-info-mapaeua{
 
         position:relative;
 
+        width:100%;
 
-        top:auto;
-
+        max-width:240px;
 
         right:auto;
 
+        top:auto;
 
         margin-top:25px;
 
-
     }
 
 
+    .cards-container-mapaeua{
 
-
-
-
-
-
-
-    .cards-container-mapaeua {
-
+        width:100%;
 
         grid-template-columns:1fr;
 
-
-        padding:30px;
-
+        padding:25px;
 
     }
 
 
+    .card-mapaeua{
 
-
-
-
-
-
-
-    .card-mapaeua {
-
-
-        padding:25px 0;
-
+        padding:22px 0;
 
         border-right:none;
 
-
         border-bottom:1px solid #ddd;
 
-
-
-
-
     }
-
-
-
 
 }

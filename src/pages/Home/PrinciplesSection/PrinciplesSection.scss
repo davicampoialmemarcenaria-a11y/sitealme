@@ -344,19 +344,12 @@ TABLET
     }
 
     /* CONTEÚDO */
-
 .principles__content{
-
-    position:relative;
-
-    z-index:2;
-
-    width:100%;
-
-    padding:0 22px;
-
-    
-
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 0 22px;
+    margin-left: 0;
 }
 
     /* TÍTULO */
@@ -448,11 +441,10 @@ CELULARES PEQUENOS
 
 }
 
-    .principles__content{
-
-        padding:0 16px;
-
-    }
+   .principles__content{
+    padding: 0 16px;
+    margin-left: 0;
+}
 
     .principles__item{
 
