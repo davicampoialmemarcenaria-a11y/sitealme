@@ -46,9 +46,7 @@ export default function Contato() {
                         <div className="linha"></div>
 
                         <p>
-                            Acompanhamos todas as etapas do início ao fim,
-                            garantindo organização, alinhamento e uma execução
-                            fluida em cada detalhe do seu projeto.
+                            Durante nossos processos, sempre buscamos manter nossos clientes cientes do desenvolvimento do seu projeto, sempre atualizando fotos e enviando relatórios de andamento da obra.
                         </p>
 
                     </div>
@@ -60,17 +58,12 @@ export default function Contato() {
                         <div className="card__texto">
 
                             <h2>
-                                Seu próximo projeto
-                                <br />
-                                começa com uma conversa
+                                Faça seu orçamento conosco ou envie já seu projeto
+                                
                             </h2>
 
                             <p>
-                                Nossa equipe acompanha todas as etapas,
-                                desde o primeiro atendimento até a instalação
-                                final, oferecendo um processo transparente,
-                                organizado e pensado para entregar exatamente
-                                o resultado que você imaginou.
+                                Entre em contato e seja encaminhado para um atendimento pensado e feito para você com melhores opções e valores para o seu projeto. 
                             </p>
 
                         </div>
@@ -86,9 +79,7 @@ export default function Contato() {
                             />
 
                             <span>
-                                Fale com um de nossos especialistas
-                                e receba um atendimento totalmente
-                                personalizado.
+                                Fale com um de nossos profissionais e receba um atendimento personalizado. 
                                 
                             </span>
                             

@@ -19,14 +19,12 @@ export default function Ambiente() {
 
                 <div className="ambiente__content">
 
-                    <h2>Nossos princípios</h2>
+                    <h2>Como criamos nossos projetos?</h2>
 
                     <p>
-                        Compromisso não é diferencial, é padrão.
-                        Na Alme, entregamos o que prometemos,
-                        com a qualidade que o seu projeto exige
-                        e o cuidado com quem vai viver naquele
-                        espaço merece.
+                            Nossa equipe de projetistas utiliza o PROMOB, que é um software específico de marcenaria para o  
+desenvolvimento dos projetos e o PROMOB CUT, um software específico para quantificação de  
+materiais e planos de corte. 
                     </p>
 
                 </div>

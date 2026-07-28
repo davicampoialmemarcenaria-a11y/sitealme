@@ -72,11 +72,11 @@ return (
 <div className="text__top">
 
 <span>
-FOCO INTERNACIONAL
+NOSSOS PROJETOS
 </span>
 
 <h2>
-Perguntas frequentes
+Veja alguns de nossos projetos de diferentes modelos e localizações:
 </h2>
 
 </div>

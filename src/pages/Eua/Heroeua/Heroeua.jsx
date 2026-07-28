@@ -24,7 +24,7 @@ function Heroeua() {
                 <div className="hero-eua__line"></div>
 
                 <p>
-                   Padrão de processos,  <br /> construções e qualidade  <br />independente da distância.
+                   Marcenaria sem fronteiras, com o mesmo padrão e cuidado Alme.
                 </p>
 
             </div>

@@ -54,7 +54,7 @@ function Hero() {
                 </h1>
 
                 <p>
-                    Acompanhamos todas as etapas, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe feito
+                    Marcenaria focada em gestão que acompanha todas as etapas e processos, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe feito.
  
                 </p>
 

@@ -5,41 +5,53 @@
     overflow: hidden;
     background: rgb(250, 249, 248);
 }
-
 /* ========================= */
 /* BACKGROUND */
 /* ========================= */
 
-.hero-sobre__bg {
-    position: absolute;
-    inset: 0;
+.hero-sobre__bg{
 
-    background: url("../../../imgs/circulo.png") no-repeat center top;
-    background-size: contain;
+    position:absolute;
+    inset:0;
 
-    z-index: 0;
+    background-image:url("../../../imgs/circulo.png");
+    background-repeat:no-repeat;
+    background-size:cover;
+   
+    background-position:center top;
+
+    z-index:0;
+
+    
+
 }
 
-.hero-sobre__bg::after {
-    content: "";
-    position: absolute;
-    inset: 0;
+.hero-sobre__bg::after{
 
-    background: linear-gradient(
+    content:"";
+
+    position:absolute;
+    inset:0;
+
+    background:linear-gradient(
         180deg,
-        rgba(0, 0, 0, .15) 0%,
-        rgba(0, 0, 0, .55) 100%
+        rgba(0,0,0,.15) 0%,
+        rgba(0,0,0,.55) 100%
     );
 
-    -webkit-mask: url("../../../imgs/circulo.png") no-repeat center top;
-    -webkit-mask-size: contain;
+    -webkit-mask-image:url("../../../imgs/circulo.png");
+    -webkit-mask-repeat:no-repeat;
+    -webkit-mask-position:center top;
+    -webkit-mask-size:cover;
 
-    mask: url("../../../imgs/circulo.png") no-repeat center top;
-    mask-size: contain;
+    mask-image:url("../../../imgs/circulo.png");
+    mask-repeat:no-repeat;
+    mask-position:center top;
+    mask-size:cover;
 
-    pointer-events: none;
+    pointer-events:none;
+
 }
-
 /* ========================= */
 /* OVERLAY */
 /* ========================= */
@@ -54,32 +66,29 @@
 /* ========================= */
 /* CONTENT */
 /* ========================= */
+.hero__content{
+    position:relative;
+    z-index:2;
 
-.hero__content {
-    position: relative;
-    z-index: 2;
+    width:min(1200px,100%);
+    height:clamp(550px, 52vw, 100svh);
 
-    width: min(1200px,100%);
-    min-height: 100svh;
+    margin:0 auto;
 
-    margin: 0 auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    text-align:center;
+    color:#fff;
 
-    text-align: center;
-    color: #fff;
-
-    padding-inline: 24px;
-    padding-top: 70px;
-    padding-bottom: 80px;
+    padding-inline:24px;
 }
 
 .hero__content h1{
     max-width:950px;
-    font-size:clamp(3.6rem,6vw,6.2rem);
+    font-size:clamp(2.3rem,4.8vw,6rem);
     line-height:.95;
     font-weight:400;
     margin:0;
@@ -95,63 +104,63 @@
 /* ========================= */
 /* NOTEBOOK */
 /* ========================= */
-
 @media (max-width:1200px){
 
     .hero-sobre__bg{
-        background-size:contain;
+
+        background-size:cover;
         background-position:center top;
+
     }
 
     .hero-sobre__bg::after{
-        -webkit-mask-position:center top;
-        -webkit-mask-size:contain;
 
+        -webkit-mask-size:cover;
+        -webkit-mask-position:center top;
+
+        mask-size:cover;
         mask-position:center top;
-        mask-size:contain;
+
     }
 
     .hero__content{
+
         padding-top:90px;
         padding-inline:40px;
+
     }
 
 }
-
 /* ========================= */
 /* TABLET */
 /* ========================= */
+.hero-sobre__bg{
 
-@media (max-width:992px){
+    background-size:cover;
+    background-position:55% center;
 
-    .hero-sobre__bg{
-        background-size:cover;
-        background-position:center center;
-    }
+}
 
-    .hero-sobre__bg::after{
-        -webkit-mask-position:center center;
-        -webkit-mask-size:cover;
+.hero-sobre__bg::after{
 
-        mask-position:center center;
-        mask-size:cover;
-    }
+    -webkit-mask-size:cover;
+    -webkit-mask-position:55% center;
+
+    mask-size:cover;
+    mask-position:55% center;
+
+}
+@media only screen
+and (min-width: 1024px)
+and (max-width: 1366px)
+and (min-height: 1024px) {
 
     .hero__content{
-        padding-top:130px;
-        padding-inline:40px;
-    }
-
-    .hero__content h1{
-        max-width:720px;
-        font-size:clamp(3rem,6vw,4.7rem);
-    }
-
-    .hero__content p{
-        max-width:620px;
+        padding-bottom: 190px;
     }
 
 }
+
 
 /* ========================= */
 /* NOTEBOOKS BAIXOS */
@@ -182,44 +191,20 @@
 /* ========================= */
 /* MOBILE */
 /* ========================= */
+.hero-sobre__bg{
 
-@media (max-width:768px){
+    background-size:cover;
+    background-position:58% center;
 
-    .hero-sobre{
-        min-height:100svh;
-    }
+}
 
-    .hero-sobre__bg{
-        background-size:cover;
-        background-position:58% center;
-    }
+.hero-sobre__bg::after{
 
-    .hero-sobre__bg::after{
-        -webkit-mask-position:58% center;
-        -webkit-mask-size:cover;
+    -webkit-mask-size:cover;
+    -webkit-mask-position:58% center;
 
-        mask-position:58% center;
-        mask-size:cover;
-    }
-
-    .hero__content{
-        min-height:100svh;
-        justify-content:center;
-        padding:150px 28px 90px;
-    }
-
-    .hero__content h1{
-        max-width:100%;
-        font-size:clamp(2.5rem,10vw,3.8rem);
-        line-height:1;
-    }
-
-    .hero__content p{
-        margin-top:20px;
-        max-width:100%;
-        font-size:1rem;
-        line-height:1.6;
-    }
+    mask-size:cover;
+    mask-position:58% center;
 
 }
 
@@ -229,30 +214,20 @@
 
 @media (max-width:480px){
 
-    .hero-sobre__bg{
-        background-size:cover;
-        background-position:60% center;
-    }
+ .hero-sobre__bg{
 
-    .hero-sobre__bg::after{
-        -webkit-mask-position:60% center;
-        -webkit-mask-size:cover;
+    background-size:cover;
+    background-position:60% center;
 
-        mask-position:60% center;
-        mask-size:cover;
-    }
+}
 
-    .hero__content{
-        padding:140px 22px 70px;
-    }
+.hero-sobre__bg::after{
 
-    .hero__content h1{
-        font-size:2.2rem;
-    }
+    -webkit-mask-size:cover;
+    -webkit-mask-position:60% center;
 
-    .hero__content p{
-        font-size:.95rem;
-        line-height:1.6;
-    }
+    mask-size:cover;
+    mask-position:60% center;
 
+}
 }

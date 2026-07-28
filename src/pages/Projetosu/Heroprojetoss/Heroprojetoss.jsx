@@ -14,15 +14,13 @@ function Heroprojetoss() {
             <div className="hero-projetoss__content">
 
                 <h1>
-                    Acompanhe as dúvidas
+                    Da ideia ao projeto,
                     <br />
-                    frequentes
+                    do projeto a realidade
                 </h1>
 
                 <p>
-                    Acompanhamos todas as etapas, do início ao fim,
-                    garantindo organização, alinhamento e uma execução
-                    fluida em cada detalhe feito.
+                    O acompanhamento próximo e alinhamento de informações são fundamentais para transformar seu projeto em realidade.
                 </p>
 
             </div>

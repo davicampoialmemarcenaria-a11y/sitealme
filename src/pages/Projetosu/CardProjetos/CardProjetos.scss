@@ -1,8 +1,12 @@
 .cards-projetos{
+    width:100%;
     max-width:1300px;
     margin:100px auto;
     padding:0 40px;
     position:relative;
+
+    box-sizing:border-box;
+    overflow:hidden;
 }
 
 
@@ -62,22 +66,28 @@
 
 .carousel{
 
-    overflow:hidden;
+    position:relative;
 
     width:100%;
+
+    overflow:hidden;
+
+    box-sizing:border-box;
 
     padding:15px 0;
 
     margin:-15px 0;
-
 }
-
 
 .carousel-track{
 
     display:flex;
 
+    width:max-content;
+
     gap:35px;
+
+    will-change:transform;
 
     transition:
     transform .6s cubic-bezier(.19,1,.22,1);
@@ -153,16 +163,18 @@
 
 .carousel-btn.prev{
 
-    left:-26px;
+    left:12px;
 
 }
-
 
 .carousel-btn.next{
 
-    right:-26px;
+    right:12px;
 
 }
+
+
+
 
 
 
@@ -469,14 +481,24 @@
 @media(max-width:768px){
 
 
-.cards-projetos{
+.card-projeto{
 
-    margin:70px 0;
+    flex:0 0 280px;
 
-    padding:0 20px 35px;
+    min-width:280px;
+
+    width:280px;
 
 }
+.card-projeto{
 
+    flex:0 0 270px;
+
+    min-width:270px;
+
+    width:270px;
+
+}
 
 
 .carousel{

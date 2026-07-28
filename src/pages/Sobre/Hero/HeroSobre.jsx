@@ -16,11 +16,11 @@ function HeroSobre() {
                
 
                 <h1>
-                    Aplicando excelência e criando experiências
+                    Inovando projetos de marcenaria com nosso modelo de negócio
                 </h1>
 
                 <p>
-                    Acompanhamos todas as etapas, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe feito
+                    A Alme apresenta um grande diferencial quando se trata de processos e princípios. Nós valorizamos nossos processos como uma parte importante da nossa trajetória.
                 </p>
 
             </div>

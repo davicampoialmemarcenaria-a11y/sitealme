@@ -15,7 +15,7 @@ const items = [
         text: "Design essencial para momentos de tranquilidade."
     },
     {
-        title: "FORÇA",
+        title: "PRECISÃO",
         text: "Resistência e beleza em cada detalhe."
     }
 ];
@@ -28,13 +28,13 @@ function ExperienceSection() {
 
                 <div className="experience__left">
                     <h2>
-                        Não projetamos
+                        Sempre pensando
                         <br />
-                        apenas espaços.
+                        além de estética.
                     </h2>
 
                     <span>
-                        Projetamos experiências
+                        Contamos com sensações
                     </span>
                 </div>
 

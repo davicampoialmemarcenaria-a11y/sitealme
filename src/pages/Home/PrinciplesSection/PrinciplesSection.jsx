@@ -9,15 +9,15 @@ const principles = [
     },
     {
         title: "Compromisso com a palavra",
-        text: "Compromisso com a palavra é honrar o que falamos em qualquer situação. Mesmo quando algo foge do nosso controle, devemos reconhecer o impacto e buscar compensar, fazendo o possível para cumprir o que foi prometido utilizando materiais de alta qualidade, escolhidos para valorizar a estética, a durabilidade e o resultado final do projeto."
+        text: "Compromisso com a palavra é honrar o que falamos em qualquer situação. Mesmo quando algo foge do nosso controle."
     },
     {
         title: "Crescimento aos que nos acompanham",
-        text: "Acreditamos que uma empresa próspera e perene é aquela onde todos crescem juntos. Nosso desenvolvimento deve gerar valor para o time, clientes, fornecedores, parceiros e todos que fazem parte da nossa jornada."
+        text: "Acreditamos que uma empresa próspera e perene é aquela onde todos crescem juntos. Nosso desenvolvimento deve gerar valor para todos que fazem parte da nossa jornada."
     },
     {
         title: "Excelência na experiência",
-        text: "Devemos sempre manter o respeito, a cordialidade e entender que cada interação deve transmitir excelência. Agindo com prudência, comprometimento e empenho em cada projeto, transformamos a experiência de nossos clientes em um padrão de qualidade e confiança."},
+        text: "Devemos sempre manter o respeito, a cordialidade e entender que cada interação deve transmitir excelência. Agindo com prudência, comprometimento e empenho em cada projeto. "},
     {
         title: "Pensamento de longo prazo",
         text: "O pensamento de longo prazo guia nossas decisões, fazendo com que, o hoje, seja construído não apenas pensando no presente, mas no futuro que iremos alcançar."
