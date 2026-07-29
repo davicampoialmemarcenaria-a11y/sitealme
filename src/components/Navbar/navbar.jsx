@@ -4,163 +4,205 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiMenu } from "react-icons/hi";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 
 import logo from "../../imgs/logobranca.png";
 
 const links = [
-    { name: "HOME", path: "/" },
-    { name: "SOBRE", path: "/sobre" },
-    { name: "PROJETOS", path: "/projetos" },
-    { name: "CONTATO", path: "/Contato" }
+    { key: "menu.home", path: "/" },
+    { key: "menu.about", path: "/sobre" },
+    { key: "menu.projects", path: "/projetos" },
+    { key: "menu.contact", path: "/Contato" }
 ];
 
 const extraLinks = [
-    { name: "ÁREAS DE ATUAÇÃO", path: "/eua" },
-    { name: "DÚVIDAS FREQUENTES", path: "/duvidas" },
-    { name: "SEJA UM HOMOLOGADO", path: "/marceneiro" },
-    { name: "ALME NEWS", path: "/newsu" }
+    { key: "menu.areas", path: "/eua" },
+    { key: "menu.faq", path: "/duvidas" },
+    { key: "menu.partner", path: "/marceneiro" },
+    { key: "menu.news", path: "/newsu" }
+    
 ];
 
 function Navbar() {
 
     const [menuOpen, setMenuOpen] = useState(false);
 
-    return (
+   const { t } = useTranslation();
 
-        <header className="navbar">
 
-            {/* LOGO */}
-            <NavLink
-                to="/"
-                className="navbar__logo"
-                onClick={() => setMenuOpen(false)}
-            >
-                <img src={logo} alt="Logo" />
-            </NavLink>
+    
 
-            {/* MENU DESKTOP */}
-            <nav className="navbar__menu">
+   return (
 
-                {links.map((item) => (
+    <header className="navbar">
 
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            isActive ? "active" : ""
-                        }
-                    >
+        {/* LOGO */}
+        <NavLink
+            to="/"
+            className="navbar__logo"
+            onClick={() => setMenuOpen(false)}
+        >
+            <img src={logo} alt="Logo" />
+        </NavLink>
 
-                        {({ isActive }) => (
-                            <>
+        {/* MENU DESKTOP */}
+        <nav className="navbar__menu">
 
-                                {isActive && (
+            {links.map((item) => (
 
-                                   <motion.div
-    layoutId="navbar-indicator"
-    layout="position"
-    className="navbar__indicator"
-    transition={{
-        type: "spring",
-        stiffness: 650,
-        damping: 42,
-        mass: 0.35
-    }}
-/>
+                <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                        isActive ? "active" : ""
+                    }
+                >
 
-                                )}
+                    {({ isActive }) => (
+                        <>
 
-                                <span>{item.name}</span>
+                            {isActive && (
 
-                            </>
-                        )}
+                                <motion.div
+                                    layoutId="navbar-indicator"
+                                    layout="position"
+                                    className="navbar__indicator"
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 650,
+                                        damping: 42,
+                                        mass: 0.35
+                                    }}
+                                />
 
-                    </NavLink>
+                            )}
 
-                ))}
+                            <span>{t(item.key)}</span>
 
-            </nav>            {/* HAMBURGER */}
-            <button
-                className="navbar__hamburger"
-                onClick={() => setMenuOpen(!menuOpen)}
-            >
-                <HiMenu />
-            </button>
+                        </>
+                    )}
 
-            {/* DROPDOWN (DESKTOP + MOBILE) */}
-            <AnimatePresence>
-                {menuOpen && (
-                    <motion.div
-                        className="navbar__dropdown"
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
+                </NavLink>
 
-                        {/* MOBILE */}
-                        <div className="navbar__mobile-sections">
+            ))}
 
-                            <div className="navbar__dropdown-section">
-                                <p>Navegação</p>
+        </nav>
 
-                                {links.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        {item.name}
-                                    </NavLink>
-                                ))}
+        {/* HAMBURGER */}
+        <button
+            className="navbar__hamburger"
+            onClick={() => setMenuOpen(!menuOpen)}
+        >
+            <HiMenu />
+        </button>
 
-                            </div>
+        {/* DROPDOWN (DESKTOP + MOBILE) */}
+        <AnimatePresence>
 
-                            <div className="navbar__dropdown-section">
-                                <p>Mais páginas</p>
+            {menuOpen && (
 
-                                {extraLinks.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        {item.name}
-                                    </NavLink>
-                                ))}
+                <motion.div
+                    className="navbar__dropdown"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                >
 
-                            </div>
+                    {/* MOBILE */}
+
+                    <div className="navbar__mobile-sections">
+
+                        <div className="navbar__dropdown-section">
+
+                            <p>{t("menu.navigation")}</p>
+
+                            {links.map((item) => (
+
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setMenuOpen(false)}
+                                >
+
+                                    {t(item.key)}
+
+                                </NavLink>
+
+                            ))}
 
                         </div>
 
-                        {/* DESKTOP */}
-                        <div className="navbar__desktop-section">
+                        <div className="navbar__dropdown-section">
 
-                            <div className="navbar__dropdown-section">
+                            <p>{t("menu.morePages")}</p>
 
-                                <p>Mais páginas</p>
+                            {extraLinks.map((item) => (
 
-                                {extraLinks.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={() => setMenuOpen(false)}
-                                    >
-                                        {item.name}
-                                    </NavLink>
-                                ))}
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setMenuOpen(false)}
+                                >
 
-                            </div>
+                                    {t(item.key)}
+
+                                </NavLink>
+
+                            ))}
+
+                        </div>
+{/* IDIOMA */}
+
+<div className="navbar__dropdown-section">
+
+   
+
+    <LanguageSwitcher />
+
+</div>
+
+
+                    </div>
+                    {/* DESKTOP */}
+                    <div className="navbar__desktop-section">
+
+                        <div className="navbar__dropdown-section">
+
+                            <p>{t("menu.morePages")}</p>
+
+                            {extraLinks.map((item) => (
+                                <NavLink
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    {t(item.key)}
+                                </NavLink>
+                            ))}
 
                         </div>
 
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                       <div className="navbar__dropdown-section">
 
-        </header>
+   
 
-    );
+    <LanguageSwitcher />
+
+</div>
+
+                    </div>
+
+                </motion.div>
+
+            )}
+
+        </AnimatePresence>
+
+    </header>
+
+);
 
 }
 

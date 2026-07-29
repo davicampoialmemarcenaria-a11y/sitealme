@@ -1,0 +1,179 @@
+{
+  "menu.home": "HOME",
+  "menu.about": "ABOUT",
+  "menu.projects": "PROJECTS",
+  "menu.contact": "CONTACT",
+
+  "menu.areas": "AREAS OF EXPERTISE",
+  "menu.faq": "FREQUENTLY ASKED QUESTIONS",
+  "menu.partner": "BECOME A PARTNER",
+  "menu.news": "ALME NEWS",
+  "menu.morePages": "MORE PAGES",
+
+  "hero.tag": "QUALITY • SOPHISTICATION • EXCLUSIVITY",
+  "hero.title": "Applying excellence and creating experiences",
+  "hero.description": "A woodworking company focused on management that follows every stage and process from beginning to end, ensuring organization, alignment, and a smooth execution in every detail.",
+  "hero.button": "LEARN MORE",
+
+
+  "experience.title": "Always thinking",
+  "experience.title2": "beyond aesthetics.",
+  "experience.subtitle": "We create sensations",
+
+  "experience.item1.title": "COMFORT",
+  "experience.item1.text": "Spaces that embrace those who live in them.",
+
+  "experience.item2.title": "CALMNESS",
+  "experience.item2.text": "Projects that welcome, inspire, and bring serenity.",
+
+  "experience.item3.title": "TRANQUILITY",
+  "experience.item3.text": "Essential design for moments of peace.",
+
+  "experience.item4.title": "PRECISION",
+  "experience.item4.text": "Strength and beauty in every detail.",
+
+
+  "projectsHome.title": "Dreams accomplished",
+  "projectsHome.description": "Every detail is designed and executed especially for you.",
+  "projectsHome.tag": "WOODWORKING HIGHLIGHTS",
+  "projectsHome.button": "SEE OUR PROJECTS UP CLOSE",
+
+
+  "stats.projects": "Completed projects",
+  "stats.countries": "Countries reached",
+  "stats.years": "Years creating experiences",
+  "stats.phrase": "Every project begins a new story.",
+
+
+  "process.title": "Woodworking is not just about delivery.",
+  "process.subtitle": "We work with processes",
+
+  "process.step1.title": "1° CONTRACT SIGNING",
+  "process.step1.text": "After signing the contract, our production process begins.",
+
+  "process.step2.title": "2° ONBOARDING MEETING",
+  "process.step2.text": "At this stage, you will meet with our team to better understand the company's processes while presenting your project, your needs, and what you want to achieve.",
+
+  "process.step3.title": "3° PROJECT ALIGNMENT",
+  "process.step3.text": "The moment where we discuss details and aspects that will not impact the final project value.",
+
+  "process.step4.title": "4° PRODUCTION",
+  "process.step4.text": "The GC will be responsible for carrying out the necessary measurements so that, after receiving the materials, we can begin the project's pre-assembly.",
+
+  "process.step5.title": "5° INSTALLATION",
+  "process.step5.text": "We deliver the materials to the project location to begin the installation process. The GC will monitor the team during this stage and send weekly reports with progress photos and the updated schedule.",
+
+  "process.step6.title": "6° FINAL DELIVERY REPORT",
+  "process.step6.text": "This represents the conclusion of the delivery, but our team will remain available to provide technical assistance whenever necessary. If there are no requests, we will carry out an inspection visit within 30 days after the final delivery.",
+
+"principles.subtitle": "Our principles",
+
+"principles.item1.title": "Quality in everything we do",
+"principles.item1.text": "We understand that every action, no matter how simple it may seem, must receive the highest level of dedication and quality we can deliver.",
+
+"principles.item2.title": "Commitment to our word",
+"principles.item2.text": "Commitment to our word means honoring what we say in every situation, even when something goes beyond our control.",
+
+"principles.item3.title": "Growth for those who walk with us",
+"principles.item3.text": "We believe that a prosperous and lasting company is one where everyone grows together. Our development should create value for everyone who is part of our journey.",
+
+"principles.item4.title": "Excellence in the experience",
+"principles.item4.text": "We must always maintain respect, kindness, and understand that every interaction should reflect excellence. Acting with responsibility, commitment, and dedication in every project.",
+
+"principles.item5.title": "Long-term thinking", 
+
+"principles.item5.text": "Long-term thinking guides our decisions, ensuring that today is built not only for the present, but also for the future we want to achieve.",
+"footer.description": "We follow every stage, from beginning to end, ensuring organization, alignment, and a smooth execution in every detail.",
+
+"footer.aboutButton": "LEARN MORE ABOUT OUR STORY",
+
+"footer.navigation": "NAVIGATION",
+
+"footer.admin": "Administrative area",
+
+"footer.information": "INFORMATION",
+
+"footer.channels": "CHANNELS",
+
+"footer.links": "LINKS",
+
+"footer.hours1": "Mon - Thu: 07:00 AM - 06:00 PM",
+
+"footer.hours2": "Fri: 07:00 AM - 05:00 PM",
+
+"footer.hours3": "Sat - Sun: Closed",
+
+"footer.address": "Alameda Prof. Lucas Nogueira Garcez, 5220, Atibaia - SP, Brazil",
+
+"footer.copy": "© 2018 ALME Woodworking",
+
+"aboutHero.title": "Innovating woodworking projects through our business model",
+
+"aboutHero.description": "Alme presents a great difference when it comes to processes and principles. We value our processes as an important part of our journey.",
+
+"aboutSection.title": "Who are we?",
+
+"aboutSection.text1": "Alme Marcenaria was founded in 2020 by two childhood friends with the purpose of offering a safer, more organized and reliable solution for woodworking projects. From the beginning, our commitment has been to transform challenges into well-managed processes, providing peace of mind for clients and partners.",
+
+"aboutSection.text2": "We follow every stage of the project and work with a network of certified craftsmen, selected to ensure quality, efficiency and consistency in every delivery. With national and international operations, we mainly serve architects looking for a partner committed to excellence in every detail.",
+
+"aboutSection.text3": "Our way of working is guided by five fundamental values: excellence in experience, long-term thinking, commitment to our word, growth for those who accompany us and quality in everything we do. These principles guide our decisions and relationships every day.",
+
+"aboutSection.text4": "More than delivering woodworking projects, we seek to build trust. We want our clients to feel welcomed, safe and supported throughout the entire journey, knowing their project is in good hands.",
+
+"aboutSection.quote1": "Woodworking projects are not just technical deliveries. They are spaces where families will live, companies will grow and stories will be built. We do not believe excellence means the absence of failures. We believe excellence is how a company takes responsibility, faces challenges and continuously evolves. Each project challenges us to become better than we were before. This constant pursuit of improvement is part of our culture and explains why so many clients trust Alme again for new projects.",
+
+"aboutSection.quote2": "After all, our greatest achievement is not only delivering a completed project, but building relationships of trust that remain long after delivery.",
+
+"aboutSection.author": "Marcio Marques | Managing Partner",
+
+"aboutSection.button": "BECOME A CERTIFIED PARTNER",
+
+"principles.tag": "WHAT WE BELIEVE",
+
+"principles.title": "Foundations that guide our choices",
+
+"principles.excellence.title": "EXCELLENCE",
+"principles.excellence.text": "We seek to carry out each stage with attention, organization and care, ensuring that the result is as remarkable as the process behind it. We follow every step from beginning to end, providing support, attention to detail and an environment designed to offer peace of mind throughout the journey.",
+
+"principles.commitment.title": "COMMITMENT",
+"principles.commitment.text": "We take responsibility for every project, honoring what was agreed upon and building relationships based on trust, transparency and respect. Every decision is guided by care and responsibility. We remain present throughout every stage to make the process lighter and safer.",
+
+"principles.evolution.title": "EVOLUTION",
+"principles.evolution.text": "We grow together with those who walk alongside us. We invest in the development of partners, collaborators and processes because we believe extraordinary results are built collectively.",
+
+"principles.perennity.title": "LONGEVITY",
+"principles.perennity.text": "We do not seek only the next delivery, but the next decade. We make decisions focused on lasting relationships, business strength and the positive impact we want to leave for clients, partners and our team.",
+
+"timeline.tag": "TIMELINE",
+
+"timeline.title1": "A journey built",
+"timeline.title2": "with dedication, evolution",
+"timeline.title3": "and purpose.",
+
+"timeline.description1": "Every stage of our journey represents our decision to evolve. Completed projects reinforce the commitment we made from the beginning: transforming challenges into well-executed processes and delivering excellence from start to finish. This story continues to be written, one project at a time.",
+
+"timeline.description2": "More than producing custom furniture, we take responsibility for managing projects with planning, technical supervision and absolute commitment to what has been defined.",
+
+
+"timeline.years.2020": "Everything started before the first woodworking project. Even before opening the company, we began an intense period of research about the furniture market. We spoke with architects, clients, suppliers and craftsmen to understand the biggest challenges in the industry. Alme, originally created as Aura Marcenaria, was born from the belief that a great project depends not only on well-made furniture, but also on well-managed processes.",
+
+"timeline.years.2022": "The first project. The first delivery. The certainty that we were on the right path. With the beginning of operations, we completed our first contract and delivered our first project. More than manufacturing furniture, we started building a reputation based on organization, commitment and trust.",
+
+"timeline.years.2024": "We signed our first contract in the hospitality sector. 146 apartments and hundreds of environments executed under the same quality standards, changing the perspective and vision of the brand.",
+
+"timeline.years.2025": "Evolution also means knowing when to change. The market changed. So did we. We restructured our team, redefined our strategic positioning and entered a new market segment. At this moment, Aura Marcenaria officially became Alme Marcenaria. More than a new brand, a more mature company prepared for greater challenges.",
+
+"timeline.years.2026": "We began studying the North American market. Months of research, meetings and planning resulted in a trip to Florida to understand the sector's characteristics and build relationships. It was the beginning of our international expansion. We completed the sale and delivery of our first project executed in the United States, marking a new chapter in our history. An achievement that represents the same commitment that created the company: delivering excellence regardless of distance.",
+
+"together.title": "Shall we create something amazing together?",
+"together.description": "Get a quote with us and discover how we can transform your project into reality.",
+"together.button": "SEE OUR PROJECTS UP CLOSE"
+
+
+
+
+
+
+
+}

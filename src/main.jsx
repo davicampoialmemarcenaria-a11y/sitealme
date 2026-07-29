@@ -9,6 +9,7 @@ import { Toaster } from "react-hot-toast";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "./i18n";
 
 import "./styles/main.scss";
 

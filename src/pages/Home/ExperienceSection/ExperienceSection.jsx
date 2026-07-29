@@ -1,67 +1,112 @@
 import "./ExperienceSection.scss";
+
+import { useTranslation } from "react-i18next";
+
 import vaso from "../../../imgs/vaso.png";
+
 
 const items = [
     {
-        title: "CONFORTO",
-        text: "Ambientes que abraçam quem vive neles."
+        key: "experience.item1"
     },
     {
-        title: "CALMARIA",
-        text: "Projetos que acolhem, inspiram e trazem serenidade."
+        key: "experience.item2"
     },
     {
-        title: "SOSSEGO",
-        text: "Design essencial para momentos de tranquilidade."
+        key: "experience.item3"
     },
     {
-        title: "PRECISÃO",
-        text: "Resistência e beleza em cada detalhe."
+        key: "experience.item4"
     }
 ];
 
+
 function ExperienceSection() {
+
+    const { t } = useTranslation();
+
+
     return (
+
         <section className="experience">
 
             <div className="experience__content">
 
+
                 <div className="experience__left">
+
                     <h2>
-                        Sempre pensando
+
+                        {t("experience.title")}
+
                         <br />
-                        além de estética.
+
+                        {t("experience.title2")}
+
                     </h2>
 
+
                     <span>
-                        Contamos com sensações
+
+                        {t("experience.subtitle")}
+
                     </span>
+
                 </div>
+
+
 
                 <div className="experience__right">
 
+
                     {items.map((item) => (
+
                         <div
-                            key={item.title}
+                            key={item.key}
                             className="experience__item"
                         >
-                            <h3>{item.title}</h3>
-                            <p>{item.text}</p>
+
+                            <h3>
+
+                                {t(`${item.key}.title`)}
+
+                            </h3>
+
+
+                            <p>
+
+                                {t(`${item.key}.text`)}
+
+                            </p>
+
+
                         </div>
+
                     ))}
+
 
                 </div>
 
+
             </div>
 
+
             <img
+
                 src={vaso}
+
                 alt="Móvel decorativo"
+
                 className="experience__image"
+
             />
 
+
         </section>
+
     );
+
 }
+
 
 export default ExperienceSection;

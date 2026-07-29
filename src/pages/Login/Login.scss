@@ -1,507 +1,357 @@
 .login {
-
   position: relative;
-
-  width:100%;
-
-  min-height:100svh;
-
-  overflow:hidden;
-
-  font-family:"Inter","Arial",sans-serif;
-
+  width: 100%;
+  min-height: 100svh;
+  overflow: hidden;
+  font-family: "Inter", "Arial", sans-serif;
 }
 
-
-
+/* ========================= */
 /* BACKGROUND */
+/* ========================= */
 
 .login__background {
-
-  position:absolute;
-
-  inset:0;
-
+  position: absolute;
+  inset: 0;
 
   background:
+    linear-gradient(
+      90deg,
+      rgba(10, 10, 10, .65) 0%,
+      rgba(20, 20, 20, .30) 45%,
+      rgba(10, 10, 10, .70) 100%
+    ),
+    url("../../imgs/herologin.png");
 
-  linear-gradient(
-    90deg,
-    rgba(0,0,0,.65),
-    rgba(0,0,0,.18),
-    rgba(0,0,0,.55)
-  ),
-
-  url("../../imgs/herologin.png");
-
-
-  background-size:cover;
-
-  background-position:center;
-
-  z-index:0;
-
+  background-size: cover;
+  background-position: center;
 }
 
+.login__background::after {
+  content: "";
 
+  position: absolute;
+  inset: 0;
 
-.login__content {
-
-  position:relative;
-
-  width:100%;
-
-  min-height:100svh;
-
-  z-index:2;
-
+  background:
+    radial-gradient(circle at 25% 35%,
+      rgba(255,255,255,.12),
+      transparent 45%);
 }
 
-
-
-/* CARD */
-
+/* ========================= */
+/* CARD LOGIN */
+/* ========================= */
 
 .login__card {
+  position: absolute;
 
+  left: clamp(50px, 8vw, 120px);
 
-  position:absolute;
+  /* abaixado */
+  top: 56%;
 
+  transform: translateY(-50%);
 
-  left:clamp(40px,8vw,120px);
+  width: min(430px, 92%);
 
+  padding: 55px 48px;
 
-  top:56%;
+  border-radius: 18px;
 
+  background: rgba(255,255,255,.88);
 
-  transform:translateY(-50%);
+  backdrop-filter: blur(18px);
 
-
-
-  width:min(430px,90%);
-
-
-
-  padding:55px 48px;
-
-
-
-  background:
-
-  rgba(255,255,255,.90);
-
-
-
-  backdrop-filter:
-
-  blur(18px);
-
-
-
-  border-radius:18px;
-
-
-
-  border:1px solid rgba(255,255,255,.45);
-
-
+  border: 1px solid rgba(255,255,255,.45);
 
   box-shadow:
+    0 25px 80px rgba(0,0,0,.30),
+    0 8px 20px rgba(0,0,0,.12);
 
-  0 30px 80px rgba(0,0,0,.35);
+  z-index: 2;
 
-
-
-  animation:
-
-  cardShow .8s ease;
-
-
-
+  animation: fadeCard .8s ease;
 }
-
-
-
-
 
 .login__card h1 {
+  margin-bottom: 42px;
 
+  font-size: clamp(34px,4vw,42px);
 
-  margin:0 0 42px;
+  font-weight: 300;
 
+  letter-spacing: 5px;
 
-  font-size:42px;
-
-
-  font-weight:300;
-
-
-  letter-spacing:5px;
-
-
-  color:#552709;
-
-
+  color: #52260c;
 }
 
-
-
-
-
+/* ========================= */
 /* FORM */
-
+/* ========================= */
 
 .login__card form {
-
-
-  display:flex;
-
-  flex-direction:column;
-
-
+  display: flex;
+  flex-direction: column;
 }
-
-
-
-
 
 .login__card label {
+  margin-bottom: 10px;
 
+  color: #6a452f;
 
-  margin-bottom:10px;
+  font-size: 13px;
 
+  font-weight: 600;
 
-  color:#70452b;
+  letter-spacing: 1px;
 
-
-  font-size:12px;
-
-
-  font-weight:700;
-
-
-  letter-spacing:1px;
-
-
-  text-transform:uppercase;
-
-
+  text-transform: uppercase;
 }
-
-
-
-
 
 .login__card input {
+  width: 100%;
 
+  height: 56px;
 
-  height:55px;
+  padding: 0 18px;
 
+  margin-bottom: 26px;
 
-  margin-bottom:26px;
+  border-radius: 10px;
 
+  border: 1px solid #ddd;
 
-  padding:0 18px;
+  background: rgba(255,255,255,.75);
 
+  color: #43240f;
 
-  border-radius:10px;
+  font-size: 15px;
 
-
-  border:1px solid #ddd;
-
-
-  background:#faf9f7;
-
-
-  outline:none;
-
-
-  font-size:15px;
-
-
-  transition:.3s;
-
-
+  transition: .35s;
 }
 
+.login__card input::placeholder {
+  color: #999;
+}
 
-
-
+.login__card input:hover {
+  border-color: #b07d57;
+}
 
 .login__card input:focus {
+  background: white;
 
+  border-color: #6a3210;
 
-  background:white;
-
-
-  border-color:#71370e;
-
-
-  box-shadow:
-
-  0 0 0 4px rgba(113,55,14,.12);
-
-
+  box-shadow: 0 0 0 4px rgba(106,50,16,.12);
 }
 
-
-
-
-
-
-
-/* BUTTON */
-
+/* ========================= */
+/* BOTÃO */
+/* ========================= */
 
 .login__card button {
+  height: 56px;
 
+  margin-top: 8px;
 
-  height:56px;
+  border: none;
 
+  border-radius: 10px;
 
-  margin-top:10px;
-
-
-  border:none;
-
-
-  border-radius:10px;
-
-
-
-  background:
-
-  linear-gradient(
+  background: linear-gradient(
     135deg,
-    #4d2207,
-    #935522
+    #4f2308,
+    #8d5122
   );
 
+  color: white;
 
-  color:white;
+  font-size: 14px;
 
+  letter-spacing: 2px;
 
-  cursor:pointer;
+  font-weight: 600;
 
+  cursor: pointer;
 
-  letter-spacing:2px;
-
-
-  font-weight:600;
-
-
-  transition:.35s;
-
-
+  transition: .35s;
 }
-
-
-
 
 .login__card button:hover {
+  transform: translateY(-3px);
 
-
-  transform:translateY(-3px);
-
-
-  box-shadow:
-
-  0 20px 35px rgba(80,35,10,.35);
-
-
+  box-shadow: 0 18px 35px rgba(80,35,10,.35);
 }
 
-
-
-
+.login__card button:active {
+  transform: scale(.98);
+}
 
 .login__card button:disabled {
-
-
-  opacity:.6;
-
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
 }
 
-
-
-
-
-/* TEXTO DIREITA */
-
+/* ========================= */
+/* TITULO */
+/* ========================= */
 
 .login__title {
+  position: absolute;
 
+  right: clamp(40px,8vw,120px);
 
-  position:absolute;
+  top: 52%;
 
+  transform: translateY(-50%);
 
-  right:clamp(40px,8vw,120px);
+  text-align: right;
 
+  color: white;
 
-  top:50%;
+  z-index: 2;
 
-
-  transform:translateY(-50%);
-
-
-  color:white;
-
-
-  text-align:right;
-
-
+  animation: fadeTitle 1s ease;
 }
-
-
-
-
 
 .login__title h2 {
+  font-size: clamp(42px,5vw,76px);
 
+  font-weight: 250;
 
-  margin:0;
+  line-height: 1.05;
 
-
-  font-size:
-
-  clamp(45px,5vw,78px);
-
-
-  font-weight:300;
-
-
-  line-height:1.05;
-
-
-  letter-spacing:-2px;
-
+  letter-spacing: -2px;
 
   text-shadow:
-
-  0 15px 35px rgba(0,0,0,.5);
-
-
+    0 15px 35px rgba(0,0,0,.45);
 }
 
-
-
-
-
-
-/* ANIMATION */
-
-
-@keyframes cardShow {
-
-
-  from {
-
-    opacity:0;
-
-    transform:
-    translateY(-40%);
-
-  }
-
-
-  to {
-
-    opacity:1;
-
-    transform:
-    translateY(-50%);
-
-  }
-
-}
-
-
-
-
-
+/* ========================= */
 /* RESPONSIVO */
+/* ========================= */
 
+@media (max-width: 1100px) {
 
-@media(max-width:900px){
+  .login__title h2{
+    font-size: 58px;
+  }
 
+}
+
+@media (max-width: 900px) {
 
   .login__title{
-
     display:none;
-
   }
 
-
-
   .login__card{
-
 
     left:50%;
 
-    top:58%;
+    top:56%;
 
+    transform:translate(-50%,-50%);
 
-    transform:
-    translate(-50%,-50%);
-
-
-
-    width:
-
-    calc(100% - 40px);
-
+    width:min(500px,calc(100% - 40px));
 
   }
-
 
 }
 
+@media (max-width:768px){
 
-
-
-
-@media(max-width:500px){
-
+  .login{
+    min-height:100svh;
+  }
 
   .login__card{
 
-
-    padding:
-
-    38px 24px;
-
+    padding:40px 28px;
 
     border-radius:16px;
 
-
+    top:58%;
   }
-
-
 
   .login__card h1{
-
-
+    margin-bottom:32px;
+    font-size:32px;
     text-align:center;
-
-
-    font-size:30px;
-
-
   }
 
+  .login__card input{
+    height:52px;
+  }
 
+}
+
+@media (max-width:480px){
+
+  .login__card{
+
+    width:calc(100% - 28px);
+
+    padding:34px 22px;
+
+    top:60%;
+  }
+
+  .login__card h1{
+    font-size:28px;
+    letter-spacing:3px;
+  }
 
   .login__card input,
-
-
   .login__card button{
+    height:50px;
+  }
 
+}
 
-    height:52px;
+/* ========================= */
+/* ANIMAÇÕES */
+/* ========================= */
 
+@keyframes fadeCard{
+
+  from{
+
+    opacity:0;
+
+    transform:translateY(-42%) scale(.96);
 
   }
 
+  to{
 
+    opacity:1;
+
+    transform:translateY(-50%) scale(1);
+
+  }
+
+}
+
+@keyframes fadeTitle{
+
+  from{
+
+    opacity:0;
+
+    transform:translate(40px,-50%);
+
+  }
+
+  to{
+
+    opacity:1;
+
+    transform:translate(0,-50%);
+
+  }
 
 }

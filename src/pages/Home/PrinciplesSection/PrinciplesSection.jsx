@@ -1,34 +1,44 @@
 import "./PrinciplesSection.scss";
 
-import foto from "../../../imgs/fotohomecirculo.png"; 
+import foto from "../../../imgs/fotohomecirculo.png";
 
-const principles = [
-    {
-        title: "Qualidade no que desempenhamos",
-        text: "Entendemos que cada ação realizada, por mais básica que pareça, precisa receber o máximo de empenho e qualidade que podemos entregar"
-    },
-    {
-        title: "Compromisso com a palavra",
-        text: "Compromisso com a palavra é honrar o que falamos em qualquer situação. Mesmo quando algo foge do nosso controle."
-    },
-    {
-        title: "Crescimento aos que nos acompanham",
-        text: "Acreditamos que uma empresa próspera e perene é aquela onde todos crescem juntos. Nosso desenvolvimento deve gerar valor para todos que fazem parte da nossa jornada."
-    },
-    {
-        title: "Excelência na experiência",
-        text: "Devemos sempre manter o respeito, a cordialidade e entender que cada interação deve transmitir excelência. Agindo com prudência, comprometimento e empenho em cada projeto. "},
-    {
-        title: "Pensamento de longo prazo",
-        text: "O pensamento de longo prazo guia nossas decisões, fazendo com que, o hoje, seja construído não apenas pensando no presente, mas no futuro que iremos alcançar."
-    }
-];
+import { useTranslation } from "react-i18next";
+
 
 function PrinciplesSection() {
+
+    const { t } = useTranslation();
+
+
+    const principles = [
+        {
+            title: t("principles.item1.title"),
+            text: t("principles.item1.text")
+        },
+        {
+            title: t("principles.item2.title"),
+            text: t("principles.item2.text")
+        },
+        {
+            title: t("principles.item3.title"),
+            text: t("principles.item3.text")
+        },
+        {
+            title: t("principles.item4.title"),
+            text: t("principles.item4.text")
+        },
+        {
+            title: t("principles.item5.title"),
+            text: t("principles.item5.text")
+        }
+    ];
+
+
     return (
         <section className="principles">
 
             <div className="principles__container">
+
 
                 <div className="principles__image">
 
@@ -36,13 +46,21 @@ function PrinciplesSection() {
 
                 </div>
 
+
+
                 <div className="principles__content">
-                    
+
+
                     <span className="principles__subtitle">
-                        Nossos princípios
+
+                        {t("principles.subtitle")}
+
                     </span>
 
+
+
                     <div className="principles__list">
+
 
                         {principles.map((item, index) => (
 
@@ -51,22 +69,33 @@ function PrinciplesSection() {
                                 key={index}
                             >
 
-                                <h3>{item.title}</h3>
+                                <h3>
+                                    {item.title}
+                                </h3>
 
-                                <p>{item.text}</p>
+
+                                <p>
+                                    {item.text}
+                                </p>
+
 
                             </div>
 
                         ))}
 
+
                     </div>
+
 
                 </div>
 
+
             </div>
+
 
         </section>
     );
 }
+
 
 export default PrinciplesSection;

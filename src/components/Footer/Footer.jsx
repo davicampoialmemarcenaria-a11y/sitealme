@@ -1,98 +1,231 @@
 import "./Footer.scss";
 
-import logo from "../../imgs/logoamarela.png"; // sua logo
+import logo from "../../imgs/logoamarela.png";
+
+import { useTranslation } from "react-i18next";
+
 
 function Footer() {
+
+    const { t } = useTranslation();
+
+
     return (
         <footer className="footer">
 
+
             <div className="footer__container">
+
 
                 <div className="footer__brand">
 
-    <div className="footer__logo">
 
-        <img src={logo} alt="ALME Marcenaria" />
+                    <div className="footer__logo">
 
-        <div className="footer__logoText">
-            <h2>ALME</h2>
-            <span>MARCENARIA</span>
-        </div>
 
-    </div>
+                        <img 
+                            src={logo} 
+                            alt="ALME Marcenaria" 
+                        />
 
-    <p>
-        Acompanhamos todas as etapas, do início ao fim,
-        garantindo organização, alinhamento e uma execução
-        fluida em cada detalhe.
-    </p>
 
-    <a href="/Sobre">
-        SAIBA MAIS SOBRE NOSSA HISTÓRIA
-        <span>→</span>
-    </a>
+                        <div className="footer__logoText">
 
-</div>
+                            <h2>ALME</h2>
 
-                <div className="footer__column">
+                            <span>MARCENARIA</span>
 
-                    <h4>NAVEGAÇÃO</h4>
+                        </div>
 
-                    <a href="/">Home</a>
-                    <a href="/Sobre">Sobre</a>
-                    <a href="/projetos">Projetos</a>
-                    <a href="/contato">Contato</a>
-                    <a href="/login">Área administrativa</a>
-                </div>
 
-                <div className="footer__column">
+                    </div>
 
-                    <h4>INFORMAÇÕES</h4>
 
-                   
-                    <a href="/duvidas">Dúvidas frequentes</a>
-                    <a href="/eua">Regiões em que atendemos</a>
-                     <a href="/marceneiro">Seja um homologado</a>
-                      <a href="/newsu">ALME News</a>
-                </div>
-
-                <div className="footer__column">
-
-                    <h4>CANAIS</h4>
-
-                    <p>Seg - Qui: 07:00 - 18:00</p>
-
-                    <p>Sex: 07:00 - 17:00</p>
-
-                    <p>Sáb - Dom: Fechado</p>
 
                     <p>
-                        Alameda Prof. Lucas Nogueira Garcez,
-                        5220, Atibaia - SP, 12947-0
+                        {t("footer.description")}
                     </p>
 
+
+
+                    <a href="/Sobre">
+
+                        {t("footer.aboutButton")}
+
+                        <span>→</span>
+
+                    </a>
+
+
                 </div>
+
+
+
+
 
                 <div className="footer__column">
 
-                    <h4>LINKS</h4>
 
- <a href="https://wa.me/5511944956944">WhatsApp</a>   
-                    <a href="https://www.instagram.com/alme.marcenaria/">Instagram</a>
-                    <a href="mailto:marketing@almemarcenaria.com.br">E-mail</a>
-                    <a href="https://www.tiktok.com/@alme.marcenaria">TikTok</a>
-                    <a href="https://br.pinterest.com/Alme_Marcenaria/">Pinterest</a>
+                    <h4>
+                        {t("footer.navigation")}
+                    </h4>
+
+
+                    <a href="/">
+                        {t("menu.home")}
+                    </a>
+
+
+                    <a href="/Sobre">
+                        {t("menu.about")}
+                    </a>
+
+
+                    <a href="/projetos">
+                        {t("menu.projects")}
+                    </a>
+
+
+                    <a href="/contato">
+                        {t("menu.contact")}
+                    </a>
+
+
+                    <a href="/login">
+                        {t("footer.admin")}
+                    </a>
+
 
                 </div>
 
+
+
+
+
+                <div className="footer__column">
+
+
+                    <h4>
+                        {t("footer.information")}
+                    </h4>
+
+
+
+                    <a href="/duvidas">
+                        {t("menu.faq")}
+                    </a>
+
+
+                    <a href="/eua">
+                        {t("menu.areas")}
+                    </a>
+
+
+                    <a href="/marceneiro">
+                        {t("menu.partner")}
+                    </a>
+
+
+                    <a href="/newsu">
+                        {t("menu.news")}
+                    </a>
+
+
+                </div>
+
+
+
+
+
+                <div className="footer__column">
+
+
+                    <h4>
+                        {t("footer.channels")}
+                    </h4>
+
+
+
+                    <p>
+                        {t("footer.hours1")}
+                    </p>
+
+
+                    <p>
+                        {t("footer.hours2")}
+                    </p>
+
+
+                    <p>
+                        {t("footer.hours3")}
+                    </p>
+
+
+
+                    <p>
+                        {t("footer.address")}
+                    </p>
+
+
+                </div>
+
+
+
+
+
+                <div className="footer__column">
+
+
+                    <h4>
+                        {t("footer.links")}
+                    </h4>
+
+
+
+                    <a href="https://wa.me/5511944956944">
+                        WhatsApp
+                    </a>
+
+
+                    <a href="https://www.instagram.com/alme.marcenaria/">
+                        Instagram
+                    </a>
+
+
+                    <a href="mailto:marketing@almemarcenaria.com.br">
+                        E-mail
+                    </a>
+
+
+                    <a href="https://www.tiktok.com/@alme.marcenaria">
+                        TikTok
+                    </a>
+
+
+                    <a href="https://br.pinterest.com/Alme_Marcenaria/">
+                        Pinterest
+                    </a>
+
+
+                </div>
+
+
             </div>
 
+
+
+
+
             <div className="footer__copy">
-                © 2018 ALME Marcenaria
+
+                {t("footer.copy")}
+
             </div>
+
 
         </footer>
     );
 }
+
 
 export default Footer;

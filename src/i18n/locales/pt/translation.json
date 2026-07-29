@@ -1,0 +1,177 @@
+{
+  "menu.home": "HOME",
+  "menu.about": "SOBRE",
+  "menu.projects": "PROJETOS",
+  "menu.contact": "CONTATO",
+
+  "menu.areas": "ÁREAS DE ATUAÇÃO",
+  "menu.faq": "DÚVIDAS FREQUENTES",
+  "menu.partner": "SEJA UM HOMOLOGADO",
+  "menu.news": "ALME NEWS",
+  "menu.morePages":"MAIS PÁGINAS",
+
+  "hero.tag": "QUALIDADE • SOFISTICAÇÃO • EXCLUSIVIDADE",
+  "hero.title": "Aplicando excelência e criando experiências",
+  "hero.description": "Marcenaria focada em gestão que acompanha todas as etapas e processos, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe feito.",
+  "hero.button": "SAIBA MAIS",
+
+"experience.title": "Sempre pensando",
+"experience.title2": "além de estética.",
+"experience.subtitle": "Contamos com sensações",
+
+"experience.item1.title": "CONFORTO",
+"experience.item1.text": "Ambientes que abraçam quem vive neles.",
+
+"experience.item2.title": "CALMARIA",
+"experience.item2.text": "Projetos que acolhem, inspiram e trazem serenidade.",
+
+"experience.item3.title": "SOSSEGO",
+"experience.item3.text": "Design essencial para momentos de tranquilidade.",
+
+"experience.item4.title": "PRECISÃO",
+"experience.item4.text": "Resistência e beleza em cada detalhe.",
+
+
+"projectsHome.title": "Sonhos realizados",
+"projectsHome.description": "Cada detalhe é pensado e executado especialmente para você.",
+"projectsHome.tag": "DESTAQUES DA MARCENARIA",
+"projectsHome.button": "VEJA NOSSOS PROJETOS DE PERTO",
+
+"stats.projects": "Projetos concluídos",
+"stats.countries": "Países alcançados",
+"stats.years": "Anos criando experiências",
+"stats.phrase": "Cada projeto inicia uma nova história.",
+
+"process.title": "Marcenaria não é apenas entrega.",
+"process.subtitle": "Trabalhamos com processos",
+
+"process.step1.title": "1° ASSINATURA DE CONTRATO",
+"process.step1.text": "Após a assinatura do contrato nosso processo de produção se inicia.",
+
+"process.step2.title": "2° REUNIÃO DE ONBOARDING",
+"process.step2.text": "Nesta etapa, você realizará uma reunião com nossa equipe para conhecer melhor os processos da empresa e, ao mesmo tempo, nos apresentar seu projeto, suas necessidades e o que deseja alcançar.",
+
+"process.step3.title": "3° ALINHAMENTO DE PROJETO",
+"process.step3.text": "Período em que conversamos sobre detalhes e aspectos que não irão impactar o valor final do projeto.",
+
+"process.step4.title": "4° PRODUÇÃO",
+"process.step4.text": "O RDO será responsável por realizar as medições necessárias para que, após o recebimento dos materiais, possamos iniciar a pré-montagem do projeto.",
+
+"process.step5.title": "5° INSTALAÇÃO",
+"process.step5.text": "Realizamos a entrega dos materiais no endereço do projeto para dar início às instalações. O RDO acompanhará a equipe durante essa etapa e enviará relatórios semanais com fotos do andamento da obra e o cronograma atualizado.",
+
+"process.step6.title": "6° RELATÓRIO FINAL DE ENTREGA",
+"process.step6.text": "Ele representa a conclusão da entrega, mas nossa equipe continuará à disposição para oferecer assistência técnica quando necessário. Caso não haja solicitações, realizaremos uma visita de vistoria em até 30 dias após a entrega final.",
+
+"principles.subtitle": "Nossos princípios",
+
+"principles.item1.title": "Qualidade no que desempenhamos",
+"principles.item1.text": "Entendemos que cada ação realizada, por mais básica que pareça, precisa receber o máximo de empenho e qualidade que podemos entregar.",
+
+"principles.item2.title": "Compromisso com a palavra",
+"principles.item2.text": "Compromisso com a palavra é honrar o que falamos em qualquer situação. Mesmo quando algo foge do nosso controle.",
+
+"principles.item3.title": "Crescimento aos que nos acompanham",
+"principles.item3.text": "Acreditamos que uma empresa próspera e perene é aquela onde todos crescem juntos. Nosso desenvolvimento deve gerar valor para todos que fazem parte da nossa jornada.",
+
+"principles.item4.title": "Excelência na experiência",
+"principles.item4.text": "Devemos sempre manter o respeito, a cordialidade e entender que cada interação deve transmitir excelência. Agindo com prudência, comprometimento e empenho em cada projeto.",
+
+"principles.item5.title": "Pensamento de longo prazo",
+"principles.item5.text": "O pensamento de longo prazo guia nossas decisões, fazendo com que o hoje seja construído não apenas pensando no presente, mas no futuro que iremos alcançar.",
+
+"footer.description": "Acompanhamos todas as etapas, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe.",
+
+"footer.aboutButton": "SAIBA MAIS SOBRE NOSSA HISTÓRIA",
+
+"footer.navigation": "NAVEGAÇÃO",
+
+"footer.admin": "Área administrativa",
+
+"footer.information": "INFORMAÇÕES",
+
+"footer.channels": "CANAIS",
+
+"footer.links": "LINKS",
+
+"footer.hours1": "Seg - Qui: 07:00 - 18:00",
+
+"footer.hours2": "Sex: 07:00 - 17:00",
+
+"footer.hours3": "Sáb - Dom: Fechado",
+
+"footer.address": "Alameda Prof. Lucas Nogueira Garcez, 5220, Atibaia - SP, 12947-0",
+
+"footer.copy": "© 2018 ALME Marcenaria",
+
+"aboutHero.title": "Inovando projetos de marcenaria com nosso modelo de negócio",
+
+"aboutHero.description": "A Alme apresenta um grande diferencial quando se trata de processos e princípios. Nós valorizamos nossos processos como uma parte importante da nossa trajetória.",
+
+"aboutSection.title": "Quem somos?",
+
+"aboutSection.text1": "A Alme Marcenaria nasceu em 2020 da iniciativa de dois amigos de infância, com o propósito de oferecer uma solução mais segura, organizada e confiável para a execução de projetos de marcenaria. Desde o início, nosso compromisso foi transformar desafios em processos bem conduzidos, garantindo tranquilidade para clientes e parceiros.",
+
+"aboutSection.text2": "Acompanhamos todas as etapas do projeto e contamos com uma rede de marceneiros homologados, selecionados para assegurar qualidade, eficiência e consistência em todas as entregas. Com atuação nacional e internacional, atendemos principalmente arquitetos que buscam um parceiro comprometido com a excelência nos detalhes.",
+
+"aboutSection.text3": "Nossa forma de trabalhar é guiada por cinco valores fundamentais: excelência na experiência, pensamento de longo prazo, compromisso com a palavra, crescimento aos que nos acompanham e qualidade no que desempenhamos. São princípios que orientam nossas decisões e relações todos os dias.",
+
+"aboutSection.text4": "Mais do que entregar marcenaria, buscamos construir confiança. Queremos que nossos clientes se sintam acolhidos, seguros e amparados durante toda a jornada, sabendo que seu projeto está em boas mãos.",
+
+"aboutSection.quote1": "Projetos de marcenaria não são apenas entregas técnicas. São espaços onde famílias viverão, empresas crescerão e histórias serão construídas. Não acreditamos que excelência seja a ausência de falhas. Acreditamos que excelência é a forma como uma empresa assume suas responsabilidades, enfrenta os desafios e evolui continuamente. Cada projeto nos desafia a ser melhores do que fomos no anterior. Essa busca constante por evolução faz parte da nossa cultura e explica por que tantos clientes voltam a confiar na Alme para novos projetos.",
+
+"aboutSection.quote2": "Afinal, nossa maior conquista não é apenas entregar uma obra concluída, mas construir relações de confiança que permanecem muito depois da entrega.",
+
+"aboutSection.author": "Marcio Marques | Sócio-Diretor",
+
+"aboutSection.button": "SEJA UM HOMOLOGADO",
+
+"principles.tag": "O QUE ACREDITAMOS",
+
+"principles.title": "Fundamentos que guiam nossas escolhas",
+
+"principles.excellence.title": "EXCELÊNCIA",
+"principles.excellence.text": "Buscamos realizar cada etapa com atenção, organização e cuidado, para que o resultado seja tão bom quanto o processo que levou até ele. Acompanhamos todas as etapas, do início ao fim. Garantimos acolhimento, atenção aos detalhes e um ambiente pensado para oferecer tranquilidade durante toda a jornada.",
+
+"principles.commitment.title": "COMPROMISSO",
+"principles.commitment.text": "Assumimos cada projeto com responsabilidade, cumprindo o que foi acordado e mantendo relações baseadas em confiança, transparência e respeito. Cada decisão é guiada pelo respeito e pela serenidade. Estamos presentes em todos os momentos para tornar cada etapa mais leve e segura.",
+
+"principles.evolution.title": "EVOLUÇÃO",
+"principles.evolution.text": "Crescemos junto com quem caminha ao nosso lado. Investimos no desenvolvimento de parceiros, colaboradores e processos, porque acreditamos que resultados extraordinários são construídos coletivamente.",
+
+"principles.perennity.title": "PERENIDADE",
+"principles.perennity.text": "Não buscamos apenas a próxima entrega, mas a próxima década. Tomamos decisões pensando em relações duradouras, na solidez do negócio e no impacto positivo que queremos deixar para clientes, parceiros e equipe.", 
+"timeline.tag": "LINHA DO TEMPO",
+
+"timeline.title1": "Uma trajetória construída",
+"timeline.title2": "com dedicação, evolução",
+"timeline.title3": "e propósito.",
+
+"timeline.description1": "Todas as etapas da nossa trajetória representam a decisão de evoluir. Projetos entregues reforçam o compromisso que assumimos desde o primeiro dia: transformar desafios em processos bem executados e entregar excelência do início ao fim. Esta história continua sendo escrita, projeto após projeto.",
+
+"timeline.description2": "Mais do que produzir mobiliário sob medida, assumimos a responsabilidade de conduzir projetos com planejamento, acompanhamento técnico e compromisso absoluto com aquilo que foi definido.",
+
+
+"timeline.years.2020": "Tudo começou antes da primeira marcenaria. Antes mesmo da abertura da empresa, iniciamos um período intenso de estudos sobre o mercado moveleiro. Conversamos com arquitetos, clientes, fornecedores e marceneiros para entender onde estavam as maiores dificuldades do setor. A Alme, que nasceu como Aura Marcenaria, veio da convicção de que um bom projeto não depende apenas de móveis bem executados, mas de processos bem conduzidos.",
+
+"timeline.years.2022": "O primeiro projeto. A primeira entrega. A certeza de que estávamos no caminho certo. Com o início das operações, realizamos nosso primeiro contrato e entregamos a primeira obra. Mais do que fabricar mobiliário, começávamos a construir uma reputação baseada em organização, compromisso e confiança.",
+
+"timeline.years.2024": "Assinamos nosso primeiro contrato para o setor hoteleiro. 146 apartamentos e centenas de ambientes executados sob os mesmos padrões de qualidade, mudando a perspectiva e as visões da marca.",
+
+"timeline.years.2025": "Evoluir também significa saber mudar. O mercado havia mudado. Nós também. Reestruturamos a equipe, redefinimos nosso posicionamento estratégico e passamos a atuar em um novo segmento de mercado. Foi nesse momento que a Aura Marcenaria tornou-se oficialmente Alme Marcenaria. Mais do que uma nova marca, uma empresa mais madura, preparada para desafios ainda maiores.",
+
+"timeline.years.2026": "Começamos a estudar o mercado norte-americano. Meses de pesquisas, reuniões e planejamento culminaram em uma viagem à Flórida para entender de perto as particularidades do setor e consolidar relações. Era o início da nossa expansão internacional e todo o planejamento ganhou forma. Concluímos a venda e a entrega do primeiro projeto executado nos Estados Unidos, marcando o início de uma nova etapa da nossa história. Uma conquista que simboliza o mesmo compromisso que deu origem à empresa: entregar excelência, independentemente da distância.",
+
+"together.title": "Vamos criar algo incrível juntos?",
+"together.description": "Venha fazer um orçamento conosco e descubra como podemos transformar seu projeto em realidade.",
+"together.button": "VEJA NOSSOS PROJETOS DE PERTO"
+
+
+
+
+
+
+
+
+
+}

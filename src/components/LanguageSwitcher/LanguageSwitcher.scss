@@ -1,0 +1,35 @@
+.language-switcher {
+
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    background: transparent;
+
+    border: none;
+
+    cursor: pointer;
+
+    color: #4f4f4f;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    padding: 8px 0;
+
+    transition:
+        color .25s ease,
+        transform .25s ease;
+
+    text-align: left;
+
+    &:hover {
+
+        color: #D48821;
+
+        transform: translateX(6px);
+
+    }
+
+}

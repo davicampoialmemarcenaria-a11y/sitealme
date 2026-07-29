@@ -6,11 +6,12 @@ import video from "../../../imgs/videohome.mp4";
 
 import Navbar from "../../../components/Navbar/Navbar";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 function Hero() {
 
     const navigate = useNavigate();
-
+ const { t } = useTranslation();
     const videoRef = useRef(null);
 
     useEffect(() => {
@@ -45,21 +46,19 @@ function Hero() {
             <div className="hero__content">
 
                 <span>
-                    QUALIDADE • SOFISTICAÇÃO • EXCLUSIVIDADE
-                </span>
+    {t("hero.tag")}
+</span>
 
-                <h1>
-                    Aplicando excelência e criando experiências
-                    
-                </h1>
+<h1>
+    {t("hero.title")}
+</h1>
 
-                <p>
-                    Marcenaria focada em gestão que acompanha todas as etapas e processos, do início ao fim, garantindo organização, alinhamento e uma execução fluida em cada detalhe feito.
- 
-                </p>
+<p>
+    {t("hero.description")}
+</p>
 
-                <button onClick={() => navigate("/Sobre")}>
-    SAIBA MAIS
+<button onClick={() => navigate("/Sobre")}>
+    {t("hero.button")}
 </button>
 
             </div>

@@ -1,7 +1,11 @@
 import "./HeroSobre.scss";
 import Navbar from "../../../components/Navbar/Navbar";
+import { useTranslation } from "react-i18next";
 
 function HeroSobre() {
+
+    const { t } = useTranslation();
+
     return (
         <section className="hero-sobre">
 
@@ -13,14 +17,12 @@ function HeroSobre() {
 
             <div className="hero__content">
 
-               
-
                 <h1>
-                    Inovando projetos de marcenaria com nosso modelo de negócio
+                    {t("aboutHero.title")}
                 </h1>
 
                 <p>
-                    A Alme apresenta um grande diferencial quando se trata de processos e princípios. Nós valorizamos nossos processos como uma parte importante da nossa trajetória.
+                    {t("aboutHero.description")}
                 </p>
 
             </div>

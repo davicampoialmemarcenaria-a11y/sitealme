@@ -14,7 +14,6 @@ function Sobre() {
               <PrincipioSobre />
               <Temporal/>
               <BotaoJunto />
-              
               <Footer />
         </>
     );

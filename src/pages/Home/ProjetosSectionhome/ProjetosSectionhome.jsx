@@ -1,19 +1,25 @@
 import "./ProjetosSectionHome.scss";
 
 import fotoCasa from "../../../imgs/fotocasahome.png";
+
 import { HiArrowRight } from "react-icons/hi";
+
 import { useNavigate } from "react-router-dom";
 
+import { useTranslation } from "react-i18next";
+
+
 function ProjetosSectionHome() {
-  const navigate = useNavigate();  
-  
-  return (
+
+    const navigate = useNavigate();
+
+    const { t } = useTranslation();
 
 
-         
-
+    return (
 
         <section className="projetos-home">
+
 
             <img
                 src={fotoCasa}
@@ -21,28 +27,51 @@ function ProjetosSectionHome() {
                 className="projetos-home__image"
             />
 
+
             <div className="projetos-home__overlay"></div>
+
+
 
             <div className="projetos-home__content">
 
-               
 
-                <h2>Sonhos realizados</h2>
+                <h2>
+                    {t("projectsHome.title")}
+                </h2>
+
+
 
                 <p>
-                    Cada detalhe é pensado e executado especialmente para você.
+                    {t("projectsHome.description")}
                 </p>
-                 <span>DESTAQUES DA MARCENARIA</span>
-                
-                <button onClick={() => navigate("/Projetos")}>
-                    VEJA NOSSOS PROJETOS DE PERTO
+
+
+
+                <span>
+                    {t("projectsHome.tag")}
+                </span>
+
+
+
+                <button
+                    onClick={() => navigate("/Projetos")}
+                >
+
+                    {t("projectsHome.button")}
+
                     <HiArrowRight />
+
                 </button>
+
 
             </div>
 
+
         </section>
+
     );
+
 }
+
 
 export default ProjetosSectionHome;

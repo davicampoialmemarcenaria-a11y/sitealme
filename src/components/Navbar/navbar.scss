@@ -242,6 +242,11 @@ DROPDOWN
   display: none;
 }
 
+.navbar > .LanguageSwitcher {
+
+  margin-top: 80px;
+}
+
 /* =========================
 RESPONSIVO
 ========================= */
@@ -280,4 +285,61 @@ RESPONSIVO
   .navbar__hamburger {
     font-size: 38px;
   }
+
+  /* =========================
+IDIOMA
+========================= */
+
+.navbar__language {
+
+  margin-top: 24px;
+
+  button {
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 0;
+
+    background: transparent;
+
+    border: none;
+
+    color: #4f4f4f;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: .25s;
+
+    text-align: left;
+
+  }
+
+  button:hover {
+
+    color: #D48821;
+
+    transform: translateX(6px);
+
+  }
+
+  button.active {
+
+    color: #D48821;
+
+    font-weight: 700;
+
+  }
+
+}
+
 }
