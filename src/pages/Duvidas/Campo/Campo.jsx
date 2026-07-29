@@ -17,63 +17,127 @@ const PDF_URL =
 const perguntas = [
 
     {
-        titulo: "Como eu poderia cuidar melhor dos meus móveis?",
+        titulo: "Como funciona a garantia Alme?",
         resposta:
-            "Compromisso não é diferencial, é padrão. Na Alme, entregamos o que prometemos, com a qualidade que o seu projeto exige e o cuidado com quem vai viver naquele espaço merece."
+            "Na Alme, fornecemos garantia de 5 anos para a estrutura dos móveis, contados a partir da data de conclusão da instalação, e 1 ano para as ferragens, incluindo dobradiças, corrediças, pistões, sistemas deslizantes e demais componentes metálicos ou mecânicos. Todas essas informações estão descritas em nosso contrato, que é assinado após a aprovação do orçamento e formalização da contratação."
+    },
+
+    {
+        titulo: "Qual a diferença entre MDF e MDP?",
+        resposta:
+             (
+    <>
+      <p>
+        MDF (Medium Density Fiberboard) e MDP (Medium Density Particleboard)
+        são materiais derivados da madeira, com composições e aplicações
+        distintas dentro da fabricação de móveis.
+      </p>
+
+      <p>
+        O MDF é produzido a partir de fibras de madeira compactadas com
+        resinas, formando uma chapa mais uniforme, indicada para peças que
+        exigem usinagens, detalhes e acabamentos diferenciados.
+      </p>
+
+      <p>
+        O MDP é produzido a partir de partículas de madeira compactadas em
+        camadas com resinas, sendo aplicado principalmente em componentes
+        estruturais e de montagem dos móveis.
+      </p>
+
+      <p>
+        A escolha entre MDF e MDP não está relacionada à superioridade de um
+        material, mas sim à aplicação, ao processo de fabricação e às
+        necessidades específicas de cada projeto. A definição do material é
+        realizada conforme as características e necessidades de cada projeto.
+      </p>
+    </>
+  ),
     },
 
     {
         titulo: "Como funciona o processo da Alme?",
-        resposta:
-            "Nosso processo acompanha o projeto desde o orçamento até a instalação, garantindo acompanhamento em cada etapa e total transparência durante a execução."
+        resposta:    (
+    <>
+           <p> A Alme foi estruturada com uma base sólida de processos bem definidos e replicáveis, permitindo que nossas entregas mantenham os mesmos padrões de qualidade e excelência do início ao fim de cada etapa.
+Todas as informações são registradas em nossos sistemas, garantindo maior rastreabilidade dos processos e facilitando análises sempre que necessário. Dessa forma, o time possui acesso às informações de maneira ágil e organizada, contribuindo para uma execução mais eficiente em todas as etapas do projeto.</p>
+
+<p>Todas as informações são registradas em nossos sistemas, garantindo maior rastreabilidade dos processos e facilitando análises sempre que necessário. Dessa forma, o time possui acesso às informações de maneira ágil e organizada, contribuindo para uma execução mais eficiente em todas as etapas do projeto.</p>
+</>),
     },
 
     {
-        titulo: "Quanto tempo leva um projeto?",
+        titulo: "A Alme faz instalação?",
         resposta:
-            "O prazo varia conforme o tamanho do projeto, a complexidade dos ambientes e os acabamentos escolhidos. Nossa equipe informa um cronograma detalhado antes do início da produção."
+            "Sim, a Alme trabalha com instalação em todos os seus projetos nacionais. As instalações são acompanhadas pelo RDO alocado ao projeto, que realiza todo o acompanhamento da obra, formalizando documentos e assegurando o cumprimento dos padrões de qualidade do projeto."
     },
 
     {
-        titulo: "Vocês atendem arquitetos?",
+        titulo: "Como funcionam os cronogramas?",
         resposta:
-            "Sim. Grande parte dos nossos projetos é desenvolvida em parceria com arquitetos e designers de interiores, oferecendo suporte técnico durante toda a execução."
+            ( <>
+            
+            <p>Os cronogramas são formalizados por e-mail todas as sextas-feiras, com o objetivo de garantir transparência no processo e assegurar uma gestão de prazos clara e eficiente.</p>
+
+            <p>Encaminhados aos profissionais responsáveis pelo projeto e/ou aos clientes, os cronogramas contemplam todas as etapas da obra, incluindo as datas previstas para aquisição de materiais, produção, início e conclusão da instalação, bem como eventuais fatores que possam impactar o andamento do projeto. Dessa forma, todas as partes envolvidas permanecem informadas sobre o progresso da obra e sobre quaisquer atualizações relevantes ao longo de sua execução.</p>
+            
+            
+            
+            </>),
     },
 
     {
-        titulo: "Vocês fazem projetos completos?",
+        titulo: "Qual tipo de ferragem utilizamos?",
         resposta:
-            "Sim. Desenvolvemos ambientes completos de alto padrão, sempre respeitando o conceito do projeto e o nível de acabamento esperado."
+            "Como padrão para ferragens, utilizamos corrediças e dobradiças da Hafele, priorizando o uso de corrediças ocultas devido ao seu melhor desempenho, acabamento e funcionalidade. Para os demais componentes de ferragens, também adotamos produtos da Rometal, garantindo qualidade, durabilidade e confiabilidade em nossos projetos."
     },
 
     {
-        titulo: "Como solicitar um orçamento?",
+        titulo: "Como solicitar e qual o prazo para um orçamento?",
         resposta:
-            "Entre em contato conosco pelo WhatsApp, envie seu projeto ou briefing e nossa equipe comercial iniciará o processo de orçamento."
+            (<>
+            <p>Entre em contato com o time comercial pelo WhatsApp. Em até 48 horas úteis, seu orçamento será enviado.</p> <p>
+Além disso, quanto mais informações forem fornecidas ao time comercial no momento da solicitação, mais assertivo será o orçamento. Caso seja necessário, nosso time poderá solicitar informações complementares para aumentar a precisão do orçamento.
+</p>
+            
+            
+            
+            
+            </>),
     },
 
     {
-        titulo: "Onde vocês atendem?",
+        titulo: "Como funciona a aprovação do projeto antes da fabricação?",
         resposta:
-            "Atendemos diversas regiões do Brasil e também acompanhamos projetos internacionais, oferecendo gestão completa em todas as etapas."
+            "Após a assinatura do contrato, iniciamos a etapa de desenvolvimento e alinhamento do projeto. Durante esse processo, os projetos são apresentados ao cliente e ao profissional responsável para análise e aprovação. Além disso, realizamos visitas técnicas à obra para conferir e validar todas as medidas. Esses processos foram desenhados buscando cercar ao máximo as possíveis intercorrências para que possamos iniciar a produção de forma mais assertiva possível."
     },
 
     {
-        titulo: "Quais materiais a Alme utiliza nos móveis?",
+        titulo: "Como funciona o acompanhamento de projeto após a entrega?",
         resposta:
-            "Trabalhamos com materiais de alto padrão e acabamentos cuidadosamente selecionados para garantir durabilidade, sofisticação e excelente desempenho em cada projeto."
+            (<>
+            <p>A visita de vistoria é agendada no momento da finalização da instalação, uma vez que, após o início do uso e com a acomodação dos itens armazenados dentro dos armários, podem ser necessários alguns ajustes.</p><p>
+Mesmo após essa etapa, a Alme disponibiliza um canal de assistência técnica que permanece disponível. Assim, sempre que houver alguma necessidade, o cliente pode realizar a solicitação, enviando fotos e informações sobre o ocorrido. O chamado é direcionado diretamente ao nosso sistema, permitindo a análise e o direcionamento de uma equipe para solucionar a demanda.
+</p>
+            
+            
+            
+            </>),
     },
 
     {
-        titulo: "É possível personalizar completamente o projeto?",
+        titulo: "A Alme trabalha com laca e lâmina de madeira natural?",
         resposta:
-            "Sim. Todos os nossos projetos são desenvolvidos de forma personalizada, respeitando o estilo, as necessidades e os detalhes definidos pelo cliente e pelo arquiteto responsável."
-    },
-
-    {
-        titulo: "A Alme realiza a instalação dos móveis?",
-        resposta:
-            "Sim. Nossa equipe acompanha todas as etapas, incluindo a instalação, garantindo qualidade, organização e um acabamento impecável na entrega final."
+           (<>
+           <p>Sim. A Alme possui flexibilidade em relação aos materiais utilizados, incluindo acabamentos em laca e lâmina de madeira natural. Cada projeto é analisado individualmente, considerando os aspectos técnicos, a viabilidade de execução e a mão de obra especializada necessária para cada tipo de material, buscando sempre a melhor solução para cada cliente.</p><p>
+Além da marcenaria, quando previsto no projeto, também podemos incluir no orçamento e entregar outros elementos complementares, como vidraçaria, serralheria, tapeçaria e soluções de LED e iluminação. A inclusão desses itens é avaliada caso a caso, de acordo com a complexidade e as características de cada projeto.
+</p>
+           
+           
+           
+           
+           
+           </>),
     }
 
 ];

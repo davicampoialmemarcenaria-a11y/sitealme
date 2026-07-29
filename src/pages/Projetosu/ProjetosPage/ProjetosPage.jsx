@@ -250,7 +250,7 @@ export default function ProjetosPage() {
 
                 <div className="project-end__content">
 
-                    <span>ARQUITETURA • DESIGN • EXPERIÊNCIA</span>
+                    
 
                     <h2>
                         Cada projeto nasce para ser

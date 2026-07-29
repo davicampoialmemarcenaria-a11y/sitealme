@@ -110,7 +110,8 @@ export default function Projetos() {
 
             const extensao = file.name.split(".").pop();
 
-            const nome = `${Date.now()}-${Math.random()}.${extensao}`;
+            const nome = `${Date.now()}-${crypto.randomUUID()}.${extensao}`;
+
 
             const { error } = await supabase
 
@@ -518,7 +519,113 @@ texto: form.texto,
 
         }
 
-    }return (
+    }
+    
+    // ================================
+// ABRE O MODAL DE CONFIRMAÇÃO
+// ================================
+function confirmarExcluir(id) {
+    setIdExcluir(id);
+    setModalExcluir(true);
+}
+
+// ================================
+// EXCLUI O PROJETO
+// ================================
+async function excluirProjeto() {
+
+    if (!idExcluir) return;
+
+    try {
+
+        // Busca todas as imagens da galeria
+        const { data: imagens } = await supabase
+            .from("project_images")
+            .select("*")
+            .eq("project_id", idExcluir);
+
+        // Remove as imagens do Storage
+        if (imagens && imagens.length > 0) {
+
+            const arquivos = imagens
+                .map(img => {
+
+                    if (!img.imagem_url) return null;
+
+                    return img.imagem_url.split("/").pop();
+
+                })
+                .filter(Boolean);
+
+            if (arquivos.length > 0) {
+
+                await supabase
+                    .storage
+                    .from("projects")
+                    .remove(arquivos);
+
+            }
+
+        }
+
+        // Busca a imagem de capa
+        const { data: projeto } = await supabase
+            .from("projects")
+            .select("imagem_capa")
+            .eq("id", idExcluir)
+            .single();
+
+        // Remove a capa do Storage
+        if (projeto?.imagem_capa) {
+
+            const arquivoCapa =
+                projeto.imagem_capa.split("/").pop();
+
+            await supabase
+                .storage
+                .from("projects")
+                .remove([arquivoCapa]);
+
+        }
+
+        // Remove registros da galeria
+        const { error: erroGaleria } = await supabase
+            .from("project_images")
+            .delete()
+            .eq("project_id", idExcluir);
+
+        if (erroGaleria) throw erroGaleria;
+
+        // Remove o projeto
+        const { error } = await supabase
+            .from("projects")
+            .delete()
+            .eq("id", idExcluir);
+
+        if (error) throw error;
+
+        toast.success("Projeto excluído com sucesso!");
+
+        setModalExcluir(false);
+        setIdExcluir(null);
+
+        buscarProjetos();
+
+    }
+    catch (err) {
+
+        console.log(err);
+
+        toast.error("Erro ao excluir projeto.");
+
+    }
+
+}
+
+    
+    
+    
+    return (
 
 <section className="projects-admin">
 
@@ -643,6 +750,8 @@ texto: form.texto,
                                         Editar
 
                                     </button>
+
+                                    
 
                                     <button
 
@@ -1173,6 +1282,10 @@ Texto completo
 
 
     {
+
+
+
+
 
         modalExcluir && (
 
