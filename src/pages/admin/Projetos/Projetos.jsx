@@ -110,7 +110,7 @@ export default function Projetos() {
 
             const extensao = file.name.split(".").pop();
 
-            const nome = `${Date.now()}-${crypto.randomUUID()}.${extensao}`;
+            const nome = `${Date.now()}-${crypto.randomUUID()}.${extensao}`; 
 
 
             const { error } = await supabase
