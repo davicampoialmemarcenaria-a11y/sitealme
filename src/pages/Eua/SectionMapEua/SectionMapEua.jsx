@@ -1,6 +1,8 @@
 import React from "react";
 import "./SectionMapEua.scss";
 
+import { useTranslation } from "react-i18next";
+
 import mapaEua from "../../../imgs/mapaeua.png";
 
 import iconeMundo from "../../../imgs/mundo.png";
@@ -8,34 +10,40 @@ import iconeCursor from "../../../imgs/cursor.png";
 import iconeMala from "../../../imgs/mala.png";
 import iconeMarca from "../../../imgs/marca.png";
 
-import fly from "../../../imgs/fly.png";
-
 const SectionMapEua = () => {
 
+    const { t } = useTranslation();
+
     const cards = [
+
         {
-            titulo: "PARCEIROS",
-            texto: "Trabalhamos com uma rede selecionada de fabricantes e montadores, garantindo qualidade, confiabilidade, e padronização do início ao fim do processo.",
+            titulo: t("international.card1.title"),
+            texto: t("international.card1.text"),
             icone: iconeMundo
         },
+
         {
-            titulo: "COMPATIBILIZAÇÃO",
-            texto: "Todo projeto passa por uma analise detalhada de medidas, ferragens e métodos construtivos para assegurar precisão na instalação.",
+            titulo: t("international.card2.title"),
+            texto: t("international.card2.text"),
             icone: iconeCursor
         },
+
         {
-            titulo: "GESTÃO",
-            texto: "coordenamos as etapas do projeto, promovendo alinhamento constante entre todos envolvidos na operação através de comunicação contínua.",
+            titulo: t("international.card3.title"),
+            texto: t("international.card3.text"),
             icone: iconeMala
         },
+
         {
-            titulo: "QUALIDADE",
-            texto: "Nosso modelo de operação foi desenvolvido para preservar a mesma organização, qualidade e experiência em cada entrega.",
+            titulo: t("international.card4.title"),
+            texto: t("international.card4.text"),
             icone: iconeMarca
         }
+
     ];
 
     return (
+
         <section className="section-mapaeua">
 
             <div className="container-mapaeua">
@@ -43,16 +51,23 @@ const SectionMapEua = () => {
                 <div className="content-text-mapaeua">
 
                     <div className="subtitle-mapaeua">
-                        FOCO INTERNACIONAL
+
+                        {t("international.subtitle")}
+
                         <span></span>
+
                     </div>
 
                     <h1>
-                        Construindo conexões que ultrapassam fronteiras.
+
+                        {t("international.title")}
+
                     </h1>
 
                     <p>
-                        Desenvolvemos e acompanhamos projetos para o mercado internacional, conectando produção e montagem por meio de processos estruturados à risca, relacionamentos construídos com confiança, compromisso e visão de longo prazo.
+
+                        {t("international.description")}
+
                     </p>
 
                 </div>
@@ -65,8 +80,7 @@ const SectionMapEua = () => {
                         className="mapa-mapaeua"
                     />
 
-                    <div className="map-info-mapaeua">
-                    </div>
+                    <div className="map-info-mapaeua"></div>
 
                 </div>
 
@@ -105,7 +119,9 @@ const SectionMapEua = () => {
             </div>
 
         </section>
+
     );
+
 };
 
 export default SectionMapEua;

@@ -3,10 +3,15 @@ import "./Contato.scss";
 import fundo from "../../imgs/herocont.png";
 import logo from "../../imgs/passarobranco.png";
 import whats from "../../imgs/whats.png";
+
 import Navbar from "../../components/Navbar/navbar";
 import Footer from "../../components/Footer/Footer";
 
+import { useTranslation } from "react-i18next";
+
 export default function Contato() {
+
+    const { t } = useTranslation();
 
     const abrirWhatsapp = () => {
         window.open(
@@ -18,16 +23,14 @@ export default function Contato() {
     return (
         <>
 
-            
+            <section
+                className="contato"
+                style={{ backgroundImage: `url(${fundo})` }}
+            >
 
-               <section
-    className="contato"
-    style={{ backgroundImage: `url(${fundo})` }}
->
+                <Navbar />
 
-    <Navbar />
-
-    <div className="contato__overlay"></div>
+                <div className="contato__overlay"></div>
 
                 <div className="contato__container">
 
@@ -36,17 +39,17 @@ export default function Contato() {
                     <div className="contato__left">
 
                         <h1>
-                            Seu próximo
+                            {t("contact.title1")}
                             <br />
-                            projeto começa
+                            {t("contact.title2")}
                             <br />
-                            com uma conversa
+                            {t("contact.title3")}
                         </h1>
 
                         <div className="linha"></div>
 
                         <p>
-                            Durante nossos processos, sempre buscamos manter nossos clientes cientes do desenvolvimento do seu projeto, sempre atualizando fotos e enviando relatórios de andamento da obra.
+                            {t("contact.description")}
                         </p>
 
                     </div>
@@ -58,12 +61,11 @@ export default function Contato() {
                         <div className="card__texto">
 
                             <h2>
-                                Faça seu orçamento conosco ou envie já seu projeto
-                                
+                                {t("contact.cardTitle")}
                             </h2>
 
                             <p>
-                                Entre em contato e seja encaminhado para um atendimento pensado e feito para você com melhores opções e valores para o seu projeto. 
+                                {t("contact.cardDescription")}
                             </p>
 
                         </div>
@@ -79,10 +81,8 @@ export default function Contato() {
                             />
 
                             <span>
-                                Fale com um de nossos profissionais e receba um atendimento personalizado. 
-                                
+                                {t("contact.cardInfo")}
                             </span>
-                            
 
                             <button onClick={abrirWhatsapp}>
 
@@ -91,7 +91,7 @@ export default function Contato() {
                                     alt="WhatsApp"
                                 />
 
-                                INICIAR CONVERSA
+                                {t("contact.button")}
 
                             </button>
 
@@ -100,9 +100,11 @@ export default function Contato() {
                     </div>
 
                 </div>
-                
+
             </section>
-<Footer />  
+
+            <Footer />
+
         </>
     );
 

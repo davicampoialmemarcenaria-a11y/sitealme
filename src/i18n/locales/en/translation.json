@@ -168,7 +168,195 @@
 
 "together.title": "Shall we create something amazing together?",
 "together.description": "Get a quote with us and discover how we can transform your project into reality.",
-"together.button": "SEE OUR PROJECTS UP CLOSE"
+"together.button": "SEE OUR PROJECTS UP CLOSE",
+
+"contact.title1": "Your next",
+"contact.title2": "project starts",
+"contact.title3": "with a conversation",
+
+"contact.description": "Throughout our process, we keep our clients informed about every stage of their project by sharing progress photos and regular construction reports.",
+
+"contact.cardTitle": "Request a quote or send us your project today",
+
+"contact.cardDescription": "Get in touch and receive personalized assistance with the best options and pricing for your project.",
+
+"contact.cardInfo": "Talk to one of our professionals and receive personalized service.",
+
+"contact.button": "START CONVERSATION",
+
+"usaHero.title1": "Our excellence",
+"usaHero.title2": "goes beyond borders.",
+"usaHero.title3": "We are international",
+
+"usaHero.description": "Custom woodworking without borders, with the same ALME quality and care.",
+
+"national.subtitle": "NATIONWIDE FOCUS",
+
+"national.title": "Transforming projects into experiences across the country.",
+
+"national.description": "We operate in different regions of Brazil, connecting design, production, and installation through structured processes, close communication, and a trusted network of partners.",
+
+"national.card1.title": "SERVICE",
+"national.card1.text": "Every project is carried out transparently and aligned with each client's needs.",
+
+"national.card2.title": "PROJECT MANAGEMENT",
+"national.card2.text": "We coordinate every stage, connecting technical development, production, and installation.",
+
+"national.card3.title": "PARTNERS",
+"national.card3.text": "We work with trusted professionals who share our values of quality, responsibility, and commitment.",
+
+"national.card4.title": "CRAFTSMANSHIP",
+"national.card4.text": "We maintain high standards of execution, ensuring every project reflects the care invested in every stage of the process.",
+
+"international.subtitle": "INTERNATIONAL FOCUS",
+
+"international.title": "Building connections that go beyond borders.",
+
+"international.description": "We develop and manage projects for the international market, connecting production and installation through carefully structured processes, relationships built on trust, commitment, and a long-term vision.",
+
+"international.card1.title": "PARTNERS",
+"international.card1.text": "We work with a selected network of manufacturers and installers, ensuring quality, reliability, and consistency from start to finish.",
+
+"international.card2.title": "PROJECT COORDINATION",
+"international.card2.text": "Every project undergoes a detailed review of dimensions, hardware, and construction methods to ensure precision during installation.",
+
+"international.card3.title": "MANAGEMENT",
+"international.card3.text": "We coordinate every stage of the project, maintaining constant alignment among everyone involved through continuous communication.",
+
+"international.card4.title": "QUALITY",
+"international.card4.text": "Our operating model was designed to preserve the same organization, quality, and customer experience in every delivery.",
+
+"faqHero.title1": "Frequently Asked",
+"faqHero.title2": "Questions",
+
+"faqHero.description": "We've gathered answers to the most common questions about our services and processes.",
+
+
+"faq.tag": "FREQUENTLY ASKED QUESTIONS",
+
+"faq.title": "Everything you need to know",
+
+"faq.description": "Check out the main questions about our processes, materials, deadlines and how Alme works.",
+
+
+"faq.questions.0.title": "How does the Alme warranty work?",
+"faq.questions.0.answer": "At Alme, we provide a 5-year warranty for the structure of the furniture, starting from the installation completion date, and a 1-year warranty for hardware components, including hinges, drawer slides, pistons, sliding systems and other metallic or mechanical components. All this information is described in our contract, which is signed after budget approval and formalization of the project.",
+
+
+"faq.questions.1.title": "What is the difference between MDF and MDP?",
+"faq.questions.1.answer1": "MDF (Medium Density Fiberboard) and MDP (Medium Density Particleboard) are wood-based materials with different compositions and applications in furniture manufacturing.",
+"faq.questions.1.answer2": "MDF is produced from compressed wood fibers combined with resins, creating a more uniform panel suitable for machining, details and differentiated finishes.",
+"faq.questions.1.answer3": "MDP is produced from compressed wood particles arranged in layers with resins, mainly used for structural furniture components.",
+"faq.questions.1.answer4": "The choice between MDF and MDP is not related to one material being superior, but rather to the application, manufacturing process and specific requirements of each project.",
+
+
+"faq.questions.2.title": "How does Alme's process work?",
+"faq.questions.2.answer1": "Alme was structured with a solid foundation of well-defined and replicable processes, allowing our deliveries to maintain the same standards of quality and excellence from the beginning to the end of each stage.",
+"faq.questions.2.answer2": "All information is recorded in our systems, ensuring greater process traceability and allowing faster analysis whenever necessary.",
+
+
+"faq.questions.3.title": "Does Alme provide installation?",
+"faq.questions.3.answer": "Yes. Alme provides installation for all national projects. Installations are monitored by the RDO assigned to the project, who follows the construction process, manages documentation and ensures compliance with project quality standards.",
+
+
+"faq.questions.4.title": "How do schedules work?",
+"faq.questions.4.answer1": "Schedules are officially sent by email every Friday, ensuring transparency and clear deadline management throughout the process.",
+"faq.questions.4.answer2": "Schedules include all project stages, including material acquisition, production, installation start and completion dates, keeping everyone involved updated on the project's progress.",
+
+
+"faq.questions.5.title": "What type of hardware do we use?",
+"faq.questions.5.answer": "As our standard hardware, we use Hafele drawer slides and hinges, prioritizing concealed drawer slides due to their performance, finish and functionality. For other hardware components, we also use Rometal products, ensuring quality, durability and reliability.",
+
+
+"faq.questions.6.title": "How can I request a quote and what is the deadline?",
+"faq.questions.6.answer1": "Contact our commercial team through WhatsApp. Your quote will be sent within up to 48 business hours.",
+"faq.questions.6.answer2": "The more information provided to our commercial team during the request, the more accurate the quote will be.",
+
+
+"faq.questions.7.title": "How does project approval work before manufacturing?",
+"faq.questions.7.answer": "After signing the contract, we begin the project development and alignment stage. Projects are presented to the client and professionals involved for approval. We also perform technical visits to validate all measurements before production begins.",
+
+
+"faq.questions.8.title": "How does project follow-up work after delivery?",
+"faq.questions.8.answer1": "The inspection visit is scheduled at the end of the installation, as after the furniture starts being used, adjustments may be required.",
+"faq.questions.8.answer2": "Alme provides a technical support channel where clients can request assistance by sending photos and information about any issue. The request is analyzed and directed to the appropriate team.",
+
+
+"faq.questions.9.title": "Does Alme work with lacquer and natural wood veneer?",
+"faq.questions.9.answer1": "Yes. Alme offers flexibility regarding materials used, including lacquer finishes and natural wood veneer. Each project is analyzed individually considering technical aspects and execution feasibility.",
+"faq.questions.9.answer2": "When included in the project, we can also provide complementary elements such as glasswork, metalwork, upholstery and LED lighting solutions.",
+
+
+
+"faq.sidebar.title": "Another question?",
+
+"faq.sidebar.subtitle": "We can help you.",
+
+"faq.sidebar.description": "Each project has unique characteristics and we will be happy to guide you toward the best solution for your needs.",
+
+
+
+"faq.manual.title": "Still have questions about how to care for your furniture?",
+
+"faq.manual.description": "Register and get access to our furniture preservation manual.",
+
+"faq.manual.button": "DOWNLOAD NOW",
+
+
+
+"faq.modal.title": "Download your free manual",
+
+"faq.modal.description": "Fill in your information to receive the furniture preservation manual.",
+
+"faq.modal.name": "Full name",
+
+"faq.modal.whatsapp": "WhatsApp",
+
+"faq.modal.instagram": "Professional Instagram",
+
+"faq.modal.area": "Area of expertise",
+
+"faq.modal.designer": "Interior Designer",
+
+"faq.modal.architect": "Architect",
+
+"faq.modal.engineer": "Engineer",
+
+"faq.modal.builder": "Construction Professional",
+
+"faq.modal.other": "Other",
+
+"faq.modal.loading": "REGISTERING...",
+
+"faq.modal.submit": "REGISTER AND DOWNLOAD",
+
+
+
+"faq.alert.fill": "Please fill in all fields.",
+
+"faq.alert.error": "Registration error.",
+
+"marceneiroHero.title": "Grow with those who value excellence. Become an Alme Certified Partner.",
+
+"marceneiroHero.description": "We expand our operations through a network of certified carpenters who execute projects following Alme's standards. If you are looking for new opportunities and believe excellence should be present in every detail, we want to know your work.",
+
+
+"marceneiro.formTitle": "Certification form",
+
+
+
+"marceneiroSection.title": "Our approach",
+
+"marceneiroSection.text": "Our process combines technical development, organization and monitoring so that each stage happens efficiently and aligned with client expectations. This way, we ensure greater predictability, standardization and safety during execution, reflecting Alme's commitment.\n\nCertification represents more than becoming part of our partner network: it is the recognition of professionals who share our values, commitment and responsibility. We work alongside our certified partners to strengthen processes, create new opportunities and promote consistent growth for everyone involved.\n\nWith specialized management, Alme coordinates the main aspects of each project, providing greater predictability, better resource utilization and decisions that help reduce waste, optimize costs and improve delivery quality. A model that strengthens our partners and ensures consistency in every result."
+
+
+
+
+
+
+
+
+
 
 
 

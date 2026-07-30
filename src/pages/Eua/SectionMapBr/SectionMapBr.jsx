@@ -1,6 +1,8 @@
 import React from "react";
 import "./SectionMapBr.scss";
 
+import { useTranslation } from "react-i18next";
+
 import mapaBr from "../../../imgs/mapabr.png";
 
 import iconeGlobo from "../../../imgs/globog.png";
@@ -10,29 +12,31 @@ import iconeLupa from "../../../imgs/lupa.png";
 
 const SectionMapBr = () => {
 
+    const { t } = useTranslation();
+
     const cards = [
 
         {
-            titulo: "ATENDIMENTO",
-            texto: " Todos os projetos são conduzidos com transparência e alinhados às necessidades de cada cliente.",
+            titulo: t("national.card1.title"),
+            texto: t("national.card1.text"),
             icone: iconeGlobo
         },
 
         {
-            titulo: "GERENCIAMENTO",
-            texto: "Coordenamos todas as etapas, promovendo a conexão entre desenvolvimento técnico, produção e montagem.",
+            titulo: t("national.card2.title"),
+            texto: t("national.card2.text"),
             icone: iconeFly
         },
 
         {
-            titulo: "COLABORADORES",
-            texto: "Contamos com profissionais parceiros que compartilham dos mesmos valores de qualidade, responsabilidade e comprometimento.",
+            titulo: t("national.card3.title"),
+            texto: t("national.card3.text"),
             icone: iconeAlvo
         },
 
         {
-            titulo: "PRIMOR",
-            texto: " Mantemos altos padrões de execução, assegurando que cada projeto reflita o cuidado presente em todas as etapas do trabalho.",
+            titulo: t("national.card4.title"),
+            texto: t("national.card4.text"),
             icone: iconeLupa
         }
 
@@ -48,7 +52,7 @@ const SectionMapBr = () => {
 
                     <div className="subtitle-mapabr">
 
-                        FOCO NACIONAL
+                        {t("national.subtitle")}
 
                         <span></span>
 
@@ -56,13 +60,13 @@ const SectionMapBr = () => {
 
                     <h1>
 
-                        Transformando projetos em experiencias por todo o país.
+                        {t("national.title")}
 
                     </h1>
 
                     <p>
 
-                        Atuamos em diferentes regiões do Brasil, conectando projeto, produção e montagem por meio de processos estruturados, comunicação próxima e uma rede de parceiros construída com confiança e compromisso.
+                        {t("national.description")}
 
                     </p>
 
@@ -76,9 +80,7 @@ const SectionMapBr = () => {
                         className="mapa-mapabr"
                     />
 
-                    <div className="map-info-mapabr">
-
-                    </div>
+                    <div className="map-info-mapabr"></div>
 
                 </div>
 
@@ -101,17 +103,13 @@ const SectionMapBr = () => {
                             />
 
                             <h3>
-
                                 {card.titulo}
-
                             </h3>
 
                         </div>
 
                         <p>
-
                             {card.texto}
-
                         </p>
 
                     </div>

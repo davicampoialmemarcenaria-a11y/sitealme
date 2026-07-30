@@ -164,7 +164,192 @@
 
 "together.title": "Vamos criar algo incrível juntos?",
 "together.description": "Venha fazer um orçamento conosco e descubra como podemos transformar seu projeto em realidade.",
-"together.button": "VEJA NOSSOS PROJETOS DE PERTO"
+"together.button": "VEJA NOSSOS PROJETOS DE PERTO",
+
+"contact.title1": "Seu próximo",
+"contact.title2": "projeto começa",
+"contact.title3": "com uma conversa",
+
+"contact.description": "Durante nossos processos, sempre buscamos manter nossos clientes cientes do desenvolvimento do seu projeto, sempre atualizando fotos e enviando relatórios de andamento da obra.",
+
+"contact.cardTitle": "Faça seu orçamento conosco ou envie já seu projeto",
+
+"contact.cardDescription": "Entre em contato e seja encaminhado para um atendimento pensado e feito para você com melhores opções e valores para o seu projeto.",
+
+"contact.cardInfo": "Fale com um de nossos profissionais e receba um atendimento personalizado.",
+
+"contact.button": "INICIAR CONVERSA",
+
+"usaHero.title1": "Nossa excelência",
+"usaHero.title2": "ultrapassa fronteiras.",
+"usaHero.title3": "Somos internacionais",
+
+"usaHero.description": "Marcenaria sem fronteiras, com o mesmo padrão e cuidado Alme.", 
+
+"national.subtitle": "FOCO NACIONAL",
+
+"national.title": "Transformando projetos em experiências por todo o país.",
+
+"national.description": "Atuamos em diferentes regiões do Brasil, conectando projeto, produção e montagem por meio de processos estruturados, comunicação próxima e uma rede de parceiros construída com confiança e compromisso.",
+
+"national.card1.title": "ATENDIMENTO",
+"national.card1.text": "Todos os projetos são conduzidos com transparência e alinhados às necessidades de cada cliente.",
+
+"national.card2.title": "GERENCIAMENTO",
+"national.card2.text": "Coordenamos todas as etapas, promovendo a conexão entre desenvolvimento técnico, produção e montagem.",
+
+"national.card3.title": "COLABORADORES",
+"national.card3.text": "Contamos com profissionais parceiros que compartilham dos mesmos valores de qualidade, responsabilidade e comprometimento.",
+
+"national.card4.title": "PRIMOR",
+"national.card4.text": "Mantemos altos padrões de execução, assegurando que cada projeto reflita o cuidado presente em todas as etapas do trabalho.",
+
+"international.subtitle": "FOCO INTERNACIONAL",
+
+"international.title": "Construindo conexões que ultrapassam fronteiras.",
+
+"international.description": "Desenvolvemos e acompanhamos projetos para o mercado internacional, conectando produção e montagem por meio de processos estruturados à risca, relacionamentos construídos com confiança, compromisso e visão de longo prazo.",
+
+"international.card1.title": "PARCEIROS",
+"international.card1.text": "Trabalhamos com uma rede selecionada de fabricantes e montadores, garantindo qualidade, confiabilidade e padronização do início ao fim do processo.",
+
+"international.card2.title": "COMPATIBILIZAÇÃO",
+"international.card2.text": "Todo projeto passa por uma análise detalhada de medidas, ferragens e métodos construtivos para assegurar precisão na instalação.",
+
+"international.card3.title": "GESTÃO",
+"international.card3.text": "Coordenamos as etapas do projeto, promovendo alinhamento constante entre todos os envolvidos por meio de comunicação contínua.",
+
+"international.card4.title": "QUALIDADE",
+"international.card4.text": "Nosso modelo de operação foi desenvolvido para preservar a mesma organização, qualidade e experiência em cada entrega.",
+
+"faqHero.title1": "Acompanhe as dúvidas",
+"faqHero.title2": "frequentes",
+
+"faqHero.description": "Reunimos as respostas para as perguntas mais frequentes sobre nossos serviços e processos.",
+
+
+"faq.tag": "DÚVIDAS FREQUENTES",
+
+"faq.title": "Tudo o que você precisa saber",
+
+"faq.description": "Confira as principais dúvidas sobre nossos processos, materiais, prazos e funcionamento da Alme.",
+
+
+"faq.questions.0.title": "Como funciona a garantia Alme?",
+"faq.questions.0.answer": "Na Alme, fornecemos garantia de 5 anos para a estrutura dos móveis, contados a partir da data de conclusão da instalação, e 1 ano para as ferragens, incluindo dobradiças, corrediças, pistões, sistemas deslizantes e demais componentes metálicos ou mecânicos. Todas essas informações estão descritas em nosso contrato, que é assinado após a aprovação do orçamento e formalização da contratação.",
+
+
+"faq.questions.1.title": "Qual a diferença entre MDF e MDP?",
+"faq.questions.1.answer1": "MDF (Medium Density Fiberboard) e MDP (Medium Density Particleboard) são materiais derivados da madeira, com composições e aplicações distintas dentro da fabricação de móveis.",
+"faq.questions.1.answer2": "O MDF é produzido a partir de fibras de madeira compactadas com resinas, formando uma chapa mais uniforme, indicada para peças que exigem usinagens, detalhes e acabamentos diferenciados.",
+"faq.questions.1.answer3": "O MDP é produzido a partir de partículas de madeira compactadas em camadas com resinas, sendo aplicado principalmente em componentes estruturais e de montagem dos móveis.",
+"faq.questions.1.answer4": "A escolha entre MDF e MDP não está relacionada à superioridade de um material, mas sim à aplicação, ao processo de fabricação e às necessidades específicas de cada projeto.",
+
+
+"faq.questions.2.title": "Como funciona o processo da Alme?",
+"faq.questions.2.answer1": "A Alme foi estruturada com uma base sólida de processos bem definidos e replicáveis, permitindo que nossas entregas mantenham os mesmos padrões de qualidade e excelência do início ao fim de cada etapa.",
+"faq.questions.2.answer2": "Todas as informações são registradas em nossos sistemas, garantindo maior rastreabilidade dos processos e facilitando análises sempre que necessário.",
+
+
+"faq.questions.3.title": "A Alme faz instalação?",
+"faq.questions.3.answer": "Sim, a Alme trabalha com instalação em todos os seus projetos nacionais. As instalações são acompanhadas pelo RDO alocado ao projeto, que realiza todo o acompanhamento da obra, formalizando documentos e assegurando o cumprimento dos padrões de qualidade do projeto.",
+
+
+"faq.questions.4.title": "Como funcionam os cronogramas?",
+"faq.questions.4.answer1": "Os cronogramas são formalizados por e-mail todas as sextas-feiras, com o objetivo de garantir transparência no processo e assegurar uma gestão de prazos clara e eficiente.",
+"faq.questions.4.answer2": "Os cronogramas contemplam todas as etapas da obra, incluindo aquisição de materiais, produção, início e conclusão da instalação, mantendo todas as partes envolvidas informadas sobre o progresso do projeto.",
+
+
+"faq.questions.5.title": "Qual tipo de ferragem utilizamos?",
+"faq.questions.5.answer": "Como padrão para ferragens, utilizamos corrediças e dobradiças da Hafele, priorizando o uso de corrediças ocultas devido ao seu melhor desempenho, acabamento e funcionalidade. Para os demais componentes também adotamos produtos da Rometal.",
+
+
+"faq.questions.6.title": "Como solicitar e qual o prazo para um orçamento?",
+"faq.questions.6.answer1": "Entre em contato com o time comercial pelo WhatsApp. Em até 48 horas úteis, seu orçamento será enviado.",
+"faq.questions.6.answer2": "Quanto mais informações forem fornecidas no momento da solicitação, mais assertivo será o orçamento.",
+
+
+"faq.questions.7.title": "Como funciona a aprovação do projeto antes da fabricação?",
+"faq.questions.7.answer": "Após a assinatura do contrato, iniciamos o desenvolvimento e alinhamento do projeto. Realizamos apresentações, análises e visitas técnicas para validar todas as medidas antes do início da produção.",
+
+
+"faq.questions.8.title": "Como funciona o acompanhamento de projeto após a entrega?",
+"faq.questions.8.answer1": "A visita de vistoria é agendada no momento da finalização da instalação, pois após o início do uso podem ser necessários alguns ajustes.",
+"faq.questions.8.answer2": "A Alme mantém um canal de assistência técnica disponível para solicitações, análises e direcionamento de equipe quando necessário.",
+
+
+"faq.questions.9.title": "A Alme trabalha com laca e lâmina de madeira natural?",
+"faq.questions.9.answer1": "Sim. A Alme possui flexibilidade em relação aos materiais utilizados, incluindo acabamentos em laca e lâmina de madeira natural.",
+"faq.questions.9.answer2": "Também podemos incluir elementos complementares como vidraçaria, serralheria, tapeçaria e iluminação conforme a necessidade do projeto.",
+
+
+
+"faq.sidebar.title": "Outra dúvida?",
+
+"faq.sidebar.subtitle": "A gente te ajuda.",
+
+"faq.sidebar.description": "Cada projeto possui características próprias e teremos prazer em orientar a melhor solução para sua necessidade.",
+
+
+
+"faq.manual.title": "Ainda tem dúvidas em como cuidar do seu móvel?",
+
+"faq.manual.description": "Registre-se e tenha acesso ao nosso manual de preservação.",
+
+"faq.manual.button": "BAIXE AGORA",
+
+
+
+"faq.modal.title": "Baixe seu manual gratuito",
+
+"faq.modal.description": "Preencha seus dados para receber o manual de preservação dos seus móveis.",
+
+"faq.modal.name": "Nome completo",
+
+"faq.modal.whatsapp": "WhatsApp",
+
+"faq.modal.instagram": "Instagram profissional",
+
+"faq.modal.area": "Área de atuação",
+
+"faq.modal.designer": "Designer de interiores",
+
+"faq.modal.architect": "Arquiteto(a)",
+
+"faq.modal.engineer": "Engenheiro(a)",
+
+"faq.modal.builder": "Construtor civil",
+
+"faq.modal.other": "Outro",
+
+"faq.modal.loading": "CADASTRANDO...",
+
+"faq.modal.submit": "CADASTRAR E BAIXAR",
+
+
+
+"faq.alert.fill": "Preencha todos os campos.",
+
+"faq.alert.error": "Erro ao cadastrar.",
+
+"marceneiroHero.title": "Cresça com quem valoriza a excelência. Seja um Homologado Alme.",
+
+"marceneiroHero.description": "Expandimos nossa atuação por meio de uma rede de marceneiros homologados que executam projetos seguindo os padrões da Alme. Se você busca novas oportunidades e acredita que excelência deve estar presente em cada detalhe, queremos conhecer o seu trabalho.",
+
+
+"marceneiro.formTitle": "Formulário de homologação",
+
+
+
+"marceneiroSection.title": "Nossa abordagem",
+
+"marceneiroSection.text": "Nosso processo reúne desenvolvimento técnico, organização e acompanhamento para que cada etapa aconteça de forma eficiente e alinhada às expectativas do cliente. Dessa forma, garantimos maior previsibilidade, padronização e segurança na execução, refletindo o compromisso da Alme.\n\nA homologação representa mais do que fazer parte da nossa rede de parceiros: é o reconhecimento de profissionais que compartilham dos nossos valores, compromisso e responsabilidade. Trabalhamos ao lado de nossos homologados para fortalecer processos, gerar novas oportunidades e promover um crescimento consistente para todos os envolvidos.\n\nCom uma gestão especializada, a Alme coordena os principais aspectos do projeto, promovendo mais previsibilidade, melhor aproveitamento de recursos e decisões que contribuem para reduzir desperdícios, otimizar custos e elevar a qualidade da entrega. Um modelo que fortalece nossos parceiros e assegura consistência em cada resultado."
+
+
+
+
+
+
 
 
 

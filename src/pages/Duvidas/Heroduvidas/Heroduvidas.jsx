@@ -1,8 +1,15 @@
 import "./HeroDuvidas.scss";
+
 import Navbar from "../../../components/Navbar/Navbar";
 
+import { useTranslation } from "react-i18next";
+
 function HeroDuvidas() {
+
+    const { t } = useTranslation();
+
     return (
+
         <section className="hero-duvidas">
 
             <div className="hero-duvidas__bg"></div>
@@ -14,19 +21,27 @@ function HeroDuvidas() {
             <div className="hero-duvidas__content">
 
                 <h1>
-                    Acompanhe as dúvidas
+
+                    {t("faqHero.title1")}
+
                     <br />
-                    frequentes
+
+                    {t("faqHero.title2")}
+
                 </h1>
 
                 <p>
-                    Reunimos as respostas para as perguntas mais frequentes sobre nossos serviços e processos.
+
+                    {t("faqHero.description")}
+
                 </p>
 
             </div>
 
         </section>
+
     );
+
 }
 
 export default HeroDuvidas;
