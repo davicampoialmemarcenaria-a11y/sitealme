@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../services/supabase";
+import { useTranslation } from "react-i18next";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -17,6 +18,8 @@ export default function Noticias() {
 
 
     const navigate = useNavigate();
+
+    const { i18n } = useTranslation();
 
 
     const [news, setNews] = useState([]);
@@ -77,9 +80,13 @@ export default function Noticias() {
 
 
 
+
     function abrirNoticia(id) {
-    navigate(`/news/${id}`);
-}
+
+        navigate(`/news/${id}`);
+
+    }
+
 
 
 
@@ -341,17 +348,22 @@ export default function Noticias() {
 
                                         <h3>
 
-
                                             {
 
-                                                item.titulo ||
+                                                i18n.language === "en"
 
-                                                "Sem título"
+                                                ? item.titulo_en || item.titulo
+
+                                                : item.titulo || "Sem título"
 
                                             }
 
 
                                         </h3>
+
+
+
+             
 
 
 
@@ -362,9 +374,11 @@ export default function Noticias() {
 
                                             {
 
-                                                item.descricao ||
+                                                i18n.language === "en"
 
-                                                "Confira esta notícia."
+                                                ? item.descricao_en || item.descricao
+
+                                                : item.descricao || "Confira esta notícia."
 
                                             }
 

@@ -1,32 +1,61 @@
 import "./Heroprojetoss.scss";
 import Navbar from "../../../components/Navbar/Navbar";
+import { useTranslation } from "react-i18next";
+
 
 function Heroprojetoss() {
+
+
+    const { t } = useTranslation();
+
+
+
     return (
+
         <section className="hero-projetoss">
+
 
             <div className="hero-projetoss__bg"></div>
 
+
             <div className="hero-projetoss__overlay"></div>
+
 
             <Navbar />
 
+
+
             <div className="hero-projetoss__content">
 
+
                 <h1>
-                    Da ideia ao projeto,
+
+                    {t("projectsHero.title1")}
+
                     <br />
-                    do projeto a realidade
+
+                    {t("projectsHero.title2")}
+
                 </h1>
 
+
+
                 <p>
-                    O acompanhamento próximo e alinhamento de informações são fundamentais para transformar seu projeto em realidade.
+
+                    {t("projectsHero.description")}
+
                 </p>
+
+
 
             </div>
 
+
         </section>
+
     );
+
 }
+
 
 export default Heroprojetoss;

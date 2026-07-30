@@ -34,7 +34,11 @@ const blocoInicial = {
 
     titulo: "",
 
+    titulo_en: "",
+
     texto: "",
+
+    texto_en: "",
 
     autor: "",
 
@@ -46,13 +50,19 @@ const blocoInicial = {
 
 };
 
+
     const [form, setForm] = useState({
 
-        titulo: "",
+        
+    titulo: "",
 
-        descricao: "",
+    titulo_en: "",
 
-        capa_url: "",
+    descricao: "",
+
+    descricao_en: "",
+
+    capa_url: "",
 
         capa_file: null,
 
@@ -188,11 +198,15 @@ const blocoInicial = {
 
         setForm({
 
-            titulo: "",
+           titulo: "",
 
-            descricao: "",
+    titulo_en: "",
 
-            capa_url: "",
+    descricao: "",
+
+    descricao_en: "",
+
+    capa_url: "",
 
             capa_file: null,
 
@@ -219,12 +233,13 @@ const blocoInicial = {
         setEditando(item.id);
 
         setForm({
+titulo: item.titulo,
 
-            titulo: item.titulo,
+    titulo_en: item.titulo_en || "",
 
-            descricao: item.descricao || "",
+    descricao: item.descricao || "",
 
-            capa_url: item.capa_url || "",
+    descricao_en: item.descricao_en || "",
 
             capa_file: null,
 
@@ -240,17 +255,21 @@ const blocoInicial = {
 
                         ordem: bloco.ordem,
 
-                        titulo: bloco.titulo || "",
+    titulo: bloco.titulo || "",
 
-                        texto: bloco.texto || "",
+    titulo_en: bloco.titulo_en || "",
 
-                        autor: bloco.autor || "",
+    texto: bloco.texto || "",
 
-                        imagem_url: bloco.imagem_url || "",
+    texto_en: bloco.texto_en || "",
 
-                        imagem_preview: bloco.imagem_url || "",
+    autor: bloco.autor || "",
 
-                        imagem_file: null
+    imagem_url: bloco.imagem_url || "",
+
+    imagem_preview: bloco.imagem_url || "",
+
+    imagem_file: null
 
                     }))
 
@@ -428,11 +447,15 @@ const blocoInicial = {
 
                     .update({
 
-                        titulo: form.titulo,
+titulo: form.titulo,
 
-                        descricao: form.descricao,
+titulo_en: form.titulo_en,
 
-                        capa_url: capaFinal,
+descricao: form.descricao,
+
+descricao_en: form.descricao_en,
+
+capa_url: capaFinal,
 
                         status: form.status
 
@@ -474,11 +497,16 @@ const blocoInicial = {
 
                     .insert({
 
-                        titulo: form.titulo,
+titulo: form.titulo,
 
-                        descricao: form.descricao,
+titulo_en: form.titulo_en,
 
-                        capa_url: capaFinal,
+descricao: form.descricao,
+
+descricao_en: form.descricao_en,
+
+capa_url: capaFinal,
+
 
                         status: form.status,
 
@@ -522,21 +550,25 @@ const blocoInicial = {
 
                 blocos.push({
 
-                    news_id: noticiaId,
+    news_id: noticiaId,
 
-                    ordem: i + 1,
+    ordem: i + 1,
 
-                    tipo: "texto",
+    tipo: "texto",
 
-                    titulo: bloco.titulo,
+    titulo: bloco.titulo,
 
-                    texto: bloco.texto,
+    titulo_en: bloco.titulo_en,
 
-                    autor: bloco.autor,
+    texto: bloco.texto,
 
-                    imagem_url: imagemFinal
+    texto_en: bloco.texto_en,
 
-                });
+    autor: bloco.autor,
+
+    imagem_url: imagemFinal
+
+});
 
             }
 
@@ -853,6 +885,33 @@ const blocoInicial = {
                                     />
 
                                 </div>
+                                <div className="form-group">
+
+<label>
+Título do artigo (Inglês)
+</label>
+
+<input
+
+type="text"
+
+value={form.titulo_en || ""}
+
+onChange={e =>
+
+alterarCampo(
+"titulo_en",
+e.target.value
+)
+
+}
+
+placeholder="Article title"
+
+/>
+
+</div>
+
 
                                 <div className="form-group">
 
@@ -885,6 +944,36 @@ const blocoInicial = {
                                     />
 
                                 </div>
+<div className="form-group">
+
+<label>
+Descrição (Inglês)
+</label>
+
+
+<textarea
+
+rows={3}
+
+value={form.descricao_en || ""}
+
+onChange={e =>
+
+alterarCampo(
+
+"descricao_en",
+
+e.target.value
+
+)
+
+}
+
+placeholder="Short description"
+
+/>
+
+</div>
 
                                 <div className="form-group">
 
@@ -1029,6 +1118,39 @@ const blocoInicial = {
                                                 <div className="form-group">
 
     <label>
+        Título da seção (Inglês)
+    </label>
+
+
+    <input
+
+        type="text"
+
+        value={bloco.titulo_en || ""}
+
+        onChange={e =>
+
+            alterarBloco(
+
+                index,
+
+                "titulo_en",
+
+                e.target.value
+
+            )
+
+        }
+
+        placeholder="Section title"
+
+    />
+
+</div>
+
+                                                <div className="form-group">
+
+    <label>
         Autor da seção
     </label>
 
@@ -1089,6 +1211,39 @@ const blocoInicial = {
                                                     />
 
                                                 </div>
+                                                <div className="form-group">
+
+<label>
+Texto da seção (Inglês)
+</label>
+
+
+<textarea
+
+rows={7}
+
+value={bloco.texto_en || ""}
+
+onChange={e =>
+
+alterarBloco(
+
+index,
+
+"texto_en",
+
+e.target.value
+
+)
+
+}
+
+placeholder="Section text in English"
+
+/>
+
+</div>
+
 
                                                 <div className="form-group">
 

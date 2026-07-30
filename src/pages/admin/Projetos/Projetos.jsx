@@ -28,35 +28,41 @@ export default function Projetos() {
 
     const [uploading, setUploading] = useState(false);
 
-    const formularioInicial = {
+   const formularioInicial = {
 
-        nome: "",
+    nome: "",
 
-        titulo: "",
+    titulo: "",
 
-        descricao: "",
+    descricao: "",
+    descricao_en: "",
 
-        texto: "",
+    texto: "",
+    texto_en: "",
 
-        imagem_capa: "",
+    imagem_capa: "",
 
-        imagem_file: null,
+    imagem_file: null,
 
-        area: "",
+    area: "",
+    area_en: "",
 
-        tempo_producao: "",
+    tempo_producao: "",
+    tempo_producao_en: "",
 
-        cidade: "",
+    cidade: "",
 
-        escopo: "",
+    escopo: "",
+    escopo_en: "",
 
-        galeria: [],
+    galeria: [],
 
-        galeria_preview: [],
+    galeria_preview: [],
 
-        imagens_existentes: []
+    imagens_existentes: []
 
-    };
+};
+
 
     const [form, setForm] = useState(formularioInicial);
 
@@ -245,35 +251,54 @@ export default function Projetos() {
 
         setEditando(item.id);
 
-        setForm({
+       setForm({
 
-            nome: item.nome || "",
+    nome: item.nome || "",
 
-            titulo: item.titulo || "",
+    titulo: item.titulo || "",
 
-            descricao: item.descricao || "",
 
-            texto: item.texto || "",
+    descricao: item.descricao || "",
 
-            imagem_capa: item.imagem_capa || "",
+    descricao_en: item.descricao_en || "",
 
-            imagem_file: null,
 
-            area: item.area || "",
+    texto: item.texto || "",
 
-            tempo_producao: item.tempo_producao || "",
+    texto_en: item.texto_en || "",
 
-            cidade: item.cidade || "",
 
-            escopo: item.escopo || "",
+    imagem_capa: item.imagem_capa || "",
 
-            galeria: [],
+    imagem_file:null,
 
-            galeria_preview: [],
 
-            imagens_existentes: imagens || []
+    area:item.area || "",
 
-        });
+    area_en:item.area_en || "",
+
+
+    tempo_producao:item.tempo_producao || "",
+
+    tempo_producao_en:item.tempo_producao_en || "",
+
+
+    cidade:item.cidade || "",
+
+
+    escopo:item.escopo || "",
+
+    escopo_en:item.escopo_en || "",
+
+
+    galeria:[],
+
+    galeria_preview:[],
+
+    imagens_existentes: imagens || []
+
+});
+
 
         setModal(true);
 
@@ -420,26 +445,45 @@ export default function Projetos() {
                 );
 
             }
+const dados = {
 
-            const dados = {
+    nome: form.nome,
 
-                nome: form.nome,
+    titulo: form.titulo,
 
-                titulo: form.titulo,
 
-                descricao: form.descricao,
-texto: form.texto,
-                imagem_capa: capaFinal,
+    descricao: form.descricao,
 
-                area: form.area,
+    descricao_en: form.descricao_en,
 
-                tempo_producao: form.tempo_producao,
 
-                cidade: form.cidade,
+    texto: form.texto,
 
-                escopo: form.escopo
+    texto_en: form.texto_en,
 
-            };
+
+    imagem_capa:capaFinal,
+
+
+    area:form.area,
+
+    area_en:form.area_en,
+
+
+    tempo_producao:form.tempo_producao,
+
+    tempo_producao_en:form.tempo_producao_en,
+
+
+    cidade:form.cidade,
+
+
+    escopo:form.escopo,
+
+    escopo_en:form.escopo_en
+
+};
+
 
             let projetoId;
 
@@ -905,9 +949,32 @@ async function excluirProjeto() {
 
                         />
 
+<label>
+Descrição (Inglês)
+</label>
+
+<textarea
+
+rows={4}
+
+value={form.descricao_en}
+
+onChange={e=>
+
+alterarCampo(
+"descricao_en",
+e.target.value
+)
+
+}
+
+/>
+
+
                         <label>
 Texto completo
 </label>
+
 
 <textarea
     rows={10}
@@ -915,6 +982,28 @@ Texto completo
     onChange={(e) =>
         alterarCampo("texto", e.target.value)
     }
+/>
+
+
+<label>
+Texto completo (Inglês)
+</label>
+
+<textarea
+
+rows={10}
+
+value={form.texto_en}
+
+onChange={e=>
+
+alterarCampo(
+"texto_en",
+e.target.value
+)
+
+}
+
 />
 
                         <label className="upload">
@@ -985,6 +1074,9 @@ Texto completo
 
                         </label>
 
+                       
+
+
                         <input
 
                             value={form.area}
@@ -1003,11 +1095,31 @@ Texto completo
 
                         />
 
+                         <label>
+Área (Inglês)
+</label>
+
+<input
+
+value={form.area_en}
+
+onChange={e=>
+
+alterarCampo(
+"area_en",
+e.target.value
+)
+
+}
+
+/>
+
                         <label>
 
                             Tempo de produção
 
                         </label>
+
 
                         <input
 
@@ -1025,7 +1137,24 @@ Texto completo
 
                             }
 
-                        />
+                        /><label>
+Tempo de produção (Inglês)
+</label>
+
+<input
+
+value={form.tempo_producao_en}
+
+onChange={e=>
+
+alterarCampo(
+"tempo_producao_en",
+e.target.value
+)
+
+}
+
+/>
 
                         <label>
 
@@ -1076,6 +1205,26 @@ Texto completo
                             }
 
                         />
+<label>
+Escopo (Inglês)
+</label>
+
+<textarea
+
+rows={6}
+
+value={form.escopo_en}
+
+onChange={e=>
+
+alterarCampo(
+"escopo_en",
+e.target.value
+)
+
+}
+
+/>
 
 
 

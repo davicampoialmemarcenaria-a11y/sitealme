@@ -343,20 +343,90 @@
 
 "marceneiroSection.title": "Nossa abordagem",
 
-"marceneiroSection.text": "Nosso processo reúne desenvolvimento técnico, organização e acompanhamento para que cada etapa aconteça de forma eficiente e alinhada às expectativas do cliente. Dessa forma, garantimos maior previsibilidade, padronização e segurança na execução, refletindo o compromisso da Alme.\n\nA homologação representa mais do que fazer parte da nossa rede de parceiros: é o reconhecimento de profissionais que compartilham dos nossos valores, compromisso e responsabilidade. Trabalhamos ao lado de nossos homologados para fortalecer processos, gerar novas oportunidades e promover um crescimento consistente para todos os envolvidos.\n\nCom uma gestão especializada, a Alme coordena os principais aspectos do projeto, promovendo mais previsibilidade, melhor aproveitamento de recursos e decisões que contribuem para reduzir desperdícios, otimizar custos e elevar a qualidade da entrega. Um modelo que fortalece nossos parceiros e assegura consistência em cada resultado."
+"marceneiroSection.text": "Nosso processo reúne desenvolvimento técnico, organização e acompanhamento para que cada etapa aconteça de forma eficiente e alinhada às expectativas do cliente. Dessa forma, garantimos maior previsibilidade, padronização e segurança na execução, refletindo o compromisso da Alme.\n\nA homologação representa mais do que fazer parte da nossa rede de parceiros: é o reconhecimento de profissionais que compartilham dos nossos valores, compromisso e responsabilidade. Trabalhamos ao lado de nossos homologados para fortalecer processos, gerar novas oportunidades e promover um crescimento consistente para todos os envolvidos.\n\nCom uma gestão especializada, a Alme coordena os principais aspectos do projeto, promovendo mais previsibilidade, melhor aproveitamento de recursos e decisões que contribuem para reduzir desperdícios, otimizar custos e elevar a qualidade da entrega. Um modelo que fortalece nossos parceiros e assegura consistência em cada resultado.",
 
+"projects.tag": "NOSSOS PROJETOS",
 
+"projects.title": "Veja alguns de nossos projetos de diferentes modelos e localizações:",
 
+"projectsHero.title1": "Da ideia ao projeto,",
+"projectsHero.title2": "do projeto a realidade",
 
+"projectsHero.description": "O acompanhamento próximo e alinhamento de informações são fundamentais para transformar seu projeto em realidade.",
 
+"projectLaw.title": "Leis de projeto",
 
+"projectLaw.text": "O setor de projetos aqui na Alme realiza três tipos de projeto:",
 
+"projectLaw.item1": "I. Pré projeto - São imagens para definições visuais que passam pela aprovação do cliente.",
 
+"projectLaw.item2": "II. Projeto de medição - Por meio dele realizamos a coleta de medidas in loco, é um projeto interno que não passa por validação do cliente.",
 
+"projectLaw.item3": "III. Projeto executivo - Projeto com medidas finas, definições e detalhamentos mais específicos, ele passa pela aprovação do cliente para iniciarmos a fabricação do móvel.",
 
+"projectLaw.final": "Com o projeto executivo definido, o marceneiro inicia a fabricação do móvel e sempre certificamos que ele tenha todas as informações alinhadas às expectativas do cliente.",
 
+"environment.title": "Como criamos nossos projetos?",
 
+"environment.text": "Nossa equipe de projetistas utiliza o PROMOB, que é um software específico de marcenaria para o desenvolvimento dos projetos e o PROMOB CUT, um software específico para quantificação de materiais e planos de corte.",
+
+  "project.loading": "Carregando projeto...",
+
+  "project.about": "SOBRE O PROJETO",
+
+  "project.information": "Informações do Projeto",
+
+  "project.area": "Área",
+
+  "project.time": "Tempo",
+
+  "project.city": "Cidade",
+
+  "project.scope": "Escopo",
+
+  "project.gallery": "Galeria do Projeto",
+
+  "project.galleryDescription": "Cada detalhe foi pensado para criar uma arquitetura atemporal, sofisticada e funcional.",
+
+  "project.endTitle": "Cada projeto nasce para ser único, elegante e atemporal.",
+
+  "project.endDescription": "Do conceito aos acabamentos, buscamos transformar espaços em experiências memoráveis, combinando estética, funcionalidade e exclusividade.",
+
+  "news.loading": "Carregando notícia...",
+"news.author": "Por",
+"news.notFound": "Notícia não encontrada",
+"newsHero.title": "Acompanhe notícias e tendências",
+
+"newsHero.description": "Fique por dentro de todas as tendências, novidades e curiosidades do mundo da marcenaria e entenda novos temas e dúvidas frequentes.",
+"newsSection.title": "As principais tendências, em um só lugar.",
+
+"newsSection.subtitle": "O mercado evolui e nós acompanhamos",
+
+"newsSection.description": "Neste espaço compartilhamos tendências, notícias, processos e inovações que fazem parte do universo da marcenaria.",
+
+"newsSection.imageAlt": "Projetamos experiências"
 
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

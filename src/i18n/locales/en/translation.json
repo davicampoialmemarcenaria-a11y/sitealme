@@ -347,7 +347,78 @@
 
 "marceneiroSection.title": "Our approach",
 
-"marceneiroSection.text": "Our process combines technical development, organization and monitoring so that each stage happens efficiently and aligned with client expectations. This way, we ensure greater predictability, standardization and safety during execution, reflecting Alme's commitment.\n\nCertification represents more than becoming part of our partner network: it is the recognition of professionals who share our values, commitment and responsibility. We work alongside our certified partners to strengthen processes, create new opportunities and promote consistent growth for everyone involved.\n\nWith specialized management, Alme coordinates the main aspects of each project, providing greater predictability, better resource utilization and decisions that help reduce waste, optimize costs and improve delivery quality. A model that strengthens our partners and ensures consistency in every result."
+"marceneiroSection.text": "Our process combines technical development, organization and monitoring so that each stage happens efficiently and aligned with client expectations. This way, we ensure greater predictability, standardization and safety during execution, reflecting Alme's commitment.\n\nCertification represents more than becoming part of our partner network: it is the recognition of professionals who share our values, commitment and responsibility. We work alongside our certified partners to strengthen processes, create new opportunities and promote consistent growth for everyone involved.\n\nWith specialized management, Alme coordinates the main aspects of each project, providing greater predictability, better resource utilization and decisions that help reduce waste, optimize costs and improve delivery quality. A model that strengthens our partners and ensures consistency in every result.",
+
+"projects.tag": "OUR PROJECTS",
+
+"projects.title": "See some of our projects with different styles and locations:",
+
+"projectsHero.title1": "From an idea to a project,",
+"projectsHero.title2": "from a project to reality",
+
+"projectsHero.description": "Close monitoring and information alignment are essential to transform your project into reality.",
+
+"projectLaw.title": "Project guidelines",
+
+"projectLaw.text": "The project department at Alme works with three types of projects:",
+
+"projectLaw.item1": "I. Preliminary project - Images created for visual definitions and client approval.",
+
+"projectLaw.item2": "II. Measurement project - Through this project, we collect measurements on site. It is an internal project that does not require client validation.",
+
+"projectLaw.item3": "III. Executive project - A project with precise measurements, definitions and more specific details. It goes through client approval before we begin furniture manufacturing.",
+
+"projectLaw.final": "Once the executive project is defined, the carpenter begins the furniture production, and we always ensure that all information is aligned with the client's expectations.",
+
+"environment.title": "How do we create our projects?",
+
+"environment.text": "Our design team uses PROMOB, a software specifically developed for furniture design projects, and PROMOB CUT, a specialized software for material quantification and cutting plans.",
+
+
+  "project.loading": "Loading project...",
+
+  "project.about": "ABOUT THE PROJECT",
+
+  "project.information": "Project Information",
+
+  "project.area": "Area",
+
+  "project.time": "Time",
+
+  "project.city": "City",
+
+  "project.scope": "Scope",
+
+  "project.gallery": "Project Gallery",
+
+  "project.galleryDescription": "Every detail was designed to create a timeless, sophisticated and functional architecture.",
+
+  "project.endTitle": "Each project is born to be unique, elegant and timeless.",
+
+  "project.endDescription": "From concept to finishes, we seek to transform spaces into memorable experiences, combining aesthetics, functionality and exclusivity.",
+
+  "news.loading": "Loading news...",
+"news.author": "By",
+"news.notFound": "News not found",
+"newsHero.title": "Follow news and trends",
+
+"newsHero.description": "Stay updated on all trends, innovations and curiosities in the woodworking world, exploring new topics and frequently asked questions.",
+
+"newsSection.title": "The main trends, all in one place.",
+
+"newsSection.subtitle": "The market evolves and we keep up",
+
+"newsSection.description": "In this space, we share trends, news, processes and innovations that are part of the woodworking world.",
+
+"newsSection.imageAlt": "We design experiences"
+
+
+
+
+
+
+
+
 
 
 
