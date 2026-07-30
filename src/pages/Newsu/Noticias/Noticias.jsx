@@ -19,7 +19,7 @@ export default function Noticias() {
 
     const navigate = useNavigate();
 
-    const { i18n } = useTranslation();
+    const {t,i18n } = useTranslation();
 
 
     const [news, setNews] = useState([]);
@@ -151,11 +151,7 @@ export default function Noticias() {
                     <div className="noticias__titulo">
 
 
-                        <span>
-
-                            FOCO INTERNACIONAL
-
-                        </span>
+                       <span>{t("noticiasfocointernacional")}</span>
 
 
                         <div className="linha"></div>

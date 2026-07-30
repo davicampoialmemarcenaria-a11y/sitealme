@@ -356,7 +356,7 @@
 
 "projectLaw.title": "Leis de projeto",
 
-"projectLaw.text": "O setor de projetos aqui na Alme realiza três tipos de projeto:",
+"projectLaw.text": "O setor de projetos na Alme realiza três tipos de projeto:",
 
 "projectLaw.item1": "I. Pré projeto - São imagens para definições visuais que passam pela aprovação do cliente.",
 
@@ -368,7 +368,7 @@
 
 "environment.title": "Como criamos nossos projetos?",
 
-"environment.text": "Nossa equipe de projetistas utiliza o PROMOB, que é um software específico de marcenaria para o desenvolvimento dos projetos e o PROMOB CUT, um software específico para quantificação de materiais e planos de corte.",
+"environment.text": "A partir de um projeto executivo e medição in loco executamos um projeto a ser pré aprovado, a fim de minimizar divergências e realizar uma produção fluida e alinhada as expectativas.",
 
   "project.loading": "Carregando projeto...",
 
@@ -404,7 +404,9 @@
 
 "newsSection.description": "Neste espaço compartilhamos tendências, notícias, processos e inovações que fazem parte do universo da marcenaria.",
 
-"newsSection.imageAlt": "Projetamos experiências"
+"newsSection.imageAlt": "Projetamos experiências",
+
+"noticiasfocointernacional": "Foco internacional"
 
 
 

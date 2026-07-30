@@ -372,7 +372,7 @@
 
 "environment.title": "How do we create our projects?",
 
-"environment.text": "Our design team uses PROMOB, a software specifically developed for furniture design projects, and PROMOB CUT, a specialized software for material quantification and cutting plans.",
+"environment.text": "Based on the detailed design and on-site measurements, we prepare a project for preliminary approval in order to minimize discrepancies and ensure a smooth production process that aligns with expectations.",
 
 
   "project.loading": "Loading project...",
@@ -410,7 +410,9 @@
 
 "newsSection.description": "In this space, we share trends, news, processes and innovations that are part of the woodworking world.",
 
-"newsSection.imageAlt": "We design experiences"
+"newsSection.imageAlt": "We design experiences",
+
+"noticiasfocointernacional": "International Focus"
 
 
 
