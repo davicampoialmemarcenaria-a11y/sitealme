@@ -3,31 +3,26 @@ import "./Footer.scss";
 import logo from "../../imgs/logoamarela.png";
 
 import { useTranslation } from "react-i18next";
-
+import { Link } from "react-router-dom";
 
 function Footer() {
 
     const { t } = useTranslation();
 
-
     return (
-        <footer className="footer">
 
+        <footer className="footer">
 
             <div className="footer__container">
 
-
                 <div className="footer__brand">
-
 
                     <div className="footer__logo">
 
-
-                        <img 
-                            src={logo} 
-                            alt="ALME Marcenaria" 
+                        <img
+                            src={logo}
+                            alt="ALME Marcenaria"
                         />
-
 
                         <div className="footer__logoText">
 
@@ -37,184 +32,143 @@ function Footer() {
 
                         </div>
 
-
                     </div>
-
-
 
                     <p>
                         {t("footer.description")}
                     </p>
 
-
-
-                    <a href="/Sobre">
+                    <Link to="/Sobre">
 
                         {t("footer.aboutButton")}
 
                         <span>→</span>
 
-                    </a>
-
+                    </Link>
 
                 </div>
 
-
-
-
-
                 <div className="footer__column">
-
 
                     <h4>
                         {t("footer.navigation")}
                     </h4>
 
-
-                    <a href="/">
+                    <Link to="/">
                         {t("menu.home")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/Sobre">
+                    <Link to="/Sobre">
                         {t("menu.about")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/projetos">
+                    <Link to="/projetos">
                         {t("menu.projects")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/contato">
+                    <Link to="/contato">
                         {t("menu.contact")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/login">
+                    <Link to="/login">
                         {t("footer.admin")}
-                    </a>
-
+                    </Link>
 
                 </div>
 
-
-
-
-
                 <div className="footer__column">
-
 
                     <h4>
                         {t("footer.information")}
                     </h4>
 
-
-
-                    <a href="/duvidas">
+                    <Link to="/duvidas">
                         {t("menu.faq")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/eua">
+                    <Link to="/eua">
                         {t("menu.areas")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/marceneiro">
+                    <Link to="/marceneiro">
                         {t("menu.partner")}
-                    </a>
+                    </Link>
 
-
-                    <a href="/newsu">
+                    <Link to="/newsu">
                         {t("menu.news")}
-                    </a>
-
+                    </Link>
 
                 </div>
 
-
-
-
-
                 <div className="footer__column">
-
 
                     <h4>
                         {t("footer.channels")}
                     </h4>
 
-
-
                     <p>
                         {t("footer.hours1")}
                     </p>
-
 
                     <p>
                         {t("footer.hours2")}
                     </p>
 
-
                     <p>
                         {t("footer.hours3")}
                     </p>
-
-
 
                     <p>
                         {t("footer.address")}
                     </p>
 
-
                 </div>
 
-
-
-
-
                 <div className="footer__column">
-
 
                     <h4>
                         {t("footer.links")}
                     </h4>
 
-
-
-                    <a href="https://wa.me/5511944956944">
+                    <a
+                        href="https://wa.me/5511944956944"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         WhatsApp
                     </a>
 
-
-                    <a href="https://www.instagram.com/alme.marcenaria/">
+                    <a
+                        href="https://www.instagram.com/alme.marcenaria/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         Instagram
                     </a>
-
 
                     <a href="mailto:marketing@almemarcenaria.com.br">
                         E-mail
                     </a>
 
-
-                    <a href="https://www.tiktok.com/@alme.marcenaria">
+                    <a
+                        href="https://www.tiktok.com/@alme.marcenaria"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         TikTok
                     </a>
 
-
-                    <a href="https://br.pinterest.com/Alme_Marcenaria/">
+                    <a
+                        href="https://br.pinterest.com/Alme_Marcenaria/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
                         Pinterest
                     </a>
 
-
                 </div>
 
-
             </div>
-
-
-
-
 
             <div className="footer__copy">
 
@@ -222,10 +176,10 @@ function Footer() {
 
             </div>
 
-
         </footer>
-    );
-}
 
+    );
+
+}
 
 export default Footer;
