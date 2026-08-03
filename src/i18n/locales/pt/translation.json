@@ -100,7 +100,7 @@
 
 "footer.hours3": "Sáb - Dom: Fechado",
 
-"footer.address": "Alameda Prof. Lucas Nogueira Garcez, 5220, Atibaia - SP, 12947-0",
+"footer.address": "Alameda Prof. Lucas Nogueira Garcez, 5220, Atibaia - SP, 12947-000",
 
 "footer.copy": "© 2018 ALME Marcenaria",
 
@@ -152,9 +152,9 @@
 "timeline.description2": "Mais do que produzir mobiliário sob medida, assumimos a responsabilidade de conduzir projetos com planejamento, acompanhamento técnico e compromisso absoluto com aquilo que foi definido.",
 
 
-"timeline.years.2020": "Tudo começou antes da primeira marcenaria. Antes mesmo da abertura da empresa, iniciamos um período intenso de estudos sobre o mercado moveleiro. Conversamos com arquitetos, clientes, fornecedores e marceneiros para entender onde estavam as maiores dificuldades do setor. A Alme, que nasceu como Aura Marcenaria, veio da convicção de que um bom projeto não depende apenas de móveis bem executados, mas de processos bem conduzidos.",
+"timeline.years.2020": "Tudo começou antes da primeira marcenaria. Antes mesmo da abertura da empresa, iniciamos um período intenso de estudos sobre o mercado moveleiro. Conversamos com arquitetos, clientes, fornecedores e marceneiros para entender onde estavam as maiores dificuldades do setor. A Alme, que nasceu como Aura Marcenaria, veio da convicção de que um bom projeto não depende apenas de móveis bem executados, mas de processos bem conduzidos. Em 6 meses, haviamos fechado nosso primeiro contrato e entregamos a primeira obra, era a certeza de que estávamos no caminho certo.",
 
-"timeline.years.2022": "O primeiro projeto. A primeira entrega. A certeza de que estávamos no caminho certo. Com o início das operações, realizamos nosso primeiro contrato e entregamos a primeira obra. Mais do que fabricar mobiliário, começávamos a construir uma reputação baseada em organização, compromisso e confiança.",
+"timeline.years.2022": "Em 2022, consolidamos nossa profissionalização e maturidade, adquirimos sistemas e softwares necessários, pesquisamos e adaptamos estruturas, além de iniciar nossa trajetória em eventos relacionados, finalmente deixamos de ser apenas um negócio e viramos uma empresa.",
 
 "timeline.years.2024": "Assinamos nosso primeiro contrato para o setor hoteleiro. 146 apartamentos e centenas de ambientes executados sob os mesmos padrões de qualidade, mudando a perspectiva e as visões da marca.",
 
@@ -355,6 +355,8 @@
 "projectsHero.description": "O acompanhamento próximo e alinhamento de informações são fundamentais para transformar seu projeto em realidade.",
 
 "projectLaw.title": "Leis de projeto",
+
+"menu.navigation":"MENU DE NAVEGAÇÃO",
 
 "projectLaw.text": "O setor de projetos na Alme realiza três tipos de projeto:",
 

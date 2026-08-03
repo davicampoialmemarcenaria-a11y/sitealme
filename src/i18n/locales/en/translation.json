@@ -15,6 +15,7 @@
   "hero.description": "A woodworking company focused on management that follows every stage and process from beginning to end, ensuring organization, alignment, and a smooth execution in every detail.",
   "hero.button": "LEARN MORE",
 
+  "menu.navigation":"NAVEGATION MENU",
 
   "experience.title": "Always thinking",
   "experience.title2": "beyond aesthetics.",
@@ -158,7 +159,7 @@
 
 "timeline.years.2020": "Everything started before the first woodworking project. Even before opening the company, we began an intense period of research about the furniture market. We spoke with architects, clients, suppliers and craftsmen to understand the biggest challenges in the industry. Alme, originally created as Aura Marcenaria, was born from the belief that a great project depends not only on well-made furniture, but also on well-managed processes.",
 
-"timeline.years.2022": "The first project. The first delivery. The certainty that we were on the right path. With the beginning of operations, we completed our first contract and delivered our first project. More than manufacturing furniture, we started building a reputation based on organization, commitment and trust.",
+"timeline.years.2022": "In 2022, we consolidated our professionalization and organizational maturity. We acquired the necessary systems and software, researched and adapted our organizational structure, and began participating in industry-related events. This marked a major milestone, as we evolved from being just a business into a fully established company.",
 
 "timeline.years.2024": "We signed our first contract in the hospitality sector. 146 apartments and hundreds of environments executed under the same quality standards, changing the perspective and vision of the brand.",
 
@@ -256,7 +257,7 @@
 
 
 "faq.questions.3.title": "Does Alme provide installation?",
-"faq.questions.3.answer": "Yes. Alme provides installation for all national projects. Installations are monitored by the RDO assigned to the project, who follows the construction process, manages documentation and ensures compliance with project quality standards.",
+"faq.questions.3.answer": "Yes. Alme provides installation for all national projects. Installations are monitored by the GC assigned to the project, who follows the construction process, manages documentation and ensures compliance with project quality standards.",
 
 
 "faq.questions.4.title": "How do schedules work?",
