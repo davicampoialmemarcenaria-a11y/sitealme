@@ -24,7 +24,7 @@ import Projetosu from "../pages/Projetosu/Projetosu";
 import ProjetosPage from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 
 
-
+import Estoque from "../pages/admin/Estoque/Estoque";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -165,6 +165,7 @@ export default function Router() {
 
                                 "financeiro"
 
+
                             ]}
 
                         >
@@ -212,7 +213,7 @@ export default function Router() {
                 </Route>
 
 
-
+<Route path="/admin/estoque" element={<Estoque />} />
 
 
             </Routes>
