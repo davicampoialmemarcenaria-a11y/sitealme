@@ -99,6 +99,101 @@ export default function Estoque() {
   });
 
   // =====================================================
+  // MODAL DE CONFIRMAÇÃO
+  // =====================================================
+
+  const [modalConfirmacao, setModalConfirmacao] = useState(false);
+  const [confirmacao, setConfirmacao] = useState({
+    titulo: "",
+    mensagem: "",
+    textoConfirmar: "Excluir",
+    tipo: "danger",
+    acao: null,
+  });
+  const [confirmando, setConfirmando] = useState(false);
+
+  // =====================================================
+  // ABRIR CONFIRMAÇÃO
+  // =====================================================
+
+  function abrirConfirmacao({
+    titulo,
+    mensagem,
+    textoConfirmar = "Excluir",
+    tipo = "danger",
+    acao,
+  }) {
+    setConfirmacao({
+      titulo,
+      mensagem,
+      textoConfirmar,
+      tipo,
+      acao,
+    });
+
+    setModalConfirmacao(true);
+  }
+
+  // =====================================================
+  // FECHAR CONFIRMAÇÃO
+  // =====================================================
+
+  function fecharConfirmacao() {
+    if (confirmando) return;
+
+    setModalConfirmacao(false);
+
+    setConfirmacao({
+      titulo: "",
+      mensagem: "",
+      textoConfirmar: "Excluir",
+      tipo: "danger",
+      acao: null,
+    });
+  }
+
+  // =====================================================
+  // EXECUTAR CONFIRMAÇÃO
+  // =====================================================
+
+  async function executarConfirmacao() {
+    if (!confirmacao.acao) {
+      fecharConfirmacao();
+      return;
+    }
+
+    try {
+      setConfirmando(true);
+
+      await confirmacao.acao();
+
+      setModalConfirmacao(false);
+
+      setConfirmacao({
+        titulo: "",
+        mensagem: "",
+        textoConfirmar: "Excluir",
+        tipo: "danger",
+        acao: null,
+      });
+    } catch (error) {
+      console.error(
+        "Erro na confirmação:",
+        error
+      );
+
+      setErro(
+        error?.message ||
+          "Não foi possível concluir a operação."
+      );
+
+      setModalConfirmacao(false);
+    } finally {
+      setConfirmando(false);
+    }
+  }
+
+  // =====================================================
   // CARREGAR DADOS
   // =====================================================
 
@@ -124,7 +219,10 @@ export default function Estoque() {
       setSaidas(saidasData || []);
       setUltimasSaidas(ultimasData || []);
     } catch (error) {
-      console.error("Erro ao carregar estoque:", error);
+      console.error(
+        "Erro ao carregar estoque:",
+        error
+      );
 
       setErro(
         error?.message ||
@@ -149,7 +247,8 @@ export default function Estoque() {
     return (
       produtos.find(
         (produto) =>
-          String(produto.id) === String(filtroProduto)
+          String(produto.id) ===
+          String(filtroProduto)
       ) || null
     );
   }, [filtroProduto, produtos]);
@@ -163,7 +262,8 @@ export default function Estoque() {
 
     return produtos.filter(
       (produto) =>
-        String(produto.id) === String(filtroProduto)
+        String(produto.id) ===
+        String(filtroProduto)
     );
   }, [produtos, filtroProduto]);
 
@@ -189,7 +289,8 @@ export default function Estoque() {
     if (!filtroProduto) return saidas;
 
     return saidas.filter((saida) => {
-      const itens = saida?.estoque_saida_itens || [];
+      const itens =
+        saida?.estoque_saida_itens || [];
 
       return itens.some(
         (item) =>
@@ -239,7 +340,8 @@ export default function Estoque() {
       nome: produto?.nome || "",
       sku: produto?.sku || "",
       codigoAlme: produto?.codigo_alme || "",
-      valorUnitario: produto?.valor_unitario ?? "",
+      valorUnitario:
+        produto?.valor_unitario ?? "",
       preco: produto?.preco ?? "",
     });
 
@@ -278,7 +380,9 @@ export default function Estoque() {
       setErroProduto("");
 
       if (!formProduto.nome.trim()) {
-        throw new Error("Informe o nome do produto.");
+        throw new Error(
+          "Informe o nome do produto."
+        );
       }
 
       const valorUnitario =
@@ -305,9 +409,11 @@ export default function Estoque() {
 
       const dadosProduto = {
         nome: formProduto.nome.trim(),
-        sku: formProduto.sku.trim() || null,
+        sku:
+          formProduto.sku.trim() || null,
         codigoAlme:
-          formProduto.codigoAlme.trim() || null,
+          formProduto.codigoAlme.trim() ||
+          null,
         valorUnitario,
         preco,
       };
@@ -324,7 +430,10 @@ export default function Estoque() {
       await carregarDados();
       fecharModalProduto();
     } catch (error) {
-      console.error("Erro ao salvar produto:", error);
+      console.error(
+        "Erro ao salvar produto:",
+        error
+      );
 
       setErroProduto(
         error?.message ||
@@ -336,32 +445,24 @@ export default function Estoque() {
   }
 
   async function removerProduto(produto) {
-    const confirmar = window.confirm(
-      `Deseja realmente excluir o produto "${produto.nome}"?`
-    );
+    abrirConfirmacao({
+      titulo: "Excluir produto",
+      mensagem: `Deseja realmente excluir o produto "${produto.nome}"?`,
+      textoConfirmar: "Excluir produto",
+      tipo: "danger",
 
-    if (!confirmar) return;
+      acao: async () => {
+        await excluirProduto(produto.id);
+        await carregarDados();
 
-    try {
-      setErro("");
-
-      await excluirProduto(produto.id);
-      await carregarDados();
-
-      if (
-        String(filtroProduto) ===
-        String(produto.id)
-      ) {
-        setFiltroProduto("");
-      }
-    } catch (error) {
-      console.error("Erro ao excluir produto:", error);
-
-      setErro(
-        error?.message ||
-          "Não foi possível excluir o produto."
-      );
-    }
+        if (
+          String(filtroProduto) ===
+          String(produto.id)
+        ) {
+          setFiltroProduto("");
+        }
+      },
+    });
   }
 
   // =====================================================
@@ -395,14 +496,21 @@ export default function Estoque() {
     setEntradaEditando(entrada);
 
     setFormEntrada({
-      produtoId: entrada?.produto_id ?? "",
-      nfEntrada: entrada?.nf_entrada ?? "",
-      nomeItem: entrada?.nome_item ?? "",
+      produtoId:
+        entrada?.produto_id ?? "",
+      nfEntrada:
+        entrada?.nf_entrada ?? "",
+      nomeItem:
+        entrada?.nome_item ?? "",
       sku: entrada?.sku ?? "",
-      codigoAlme: entrada?.codigo_alme ?? "",
-      quantidade: entrada?.quantidade ?? "",
-      valorUnitario: entrada?.valor_unitario ?? "",
-      valorTotal: entrada?.valor_total ?? "",
+      codigoAlme:
+        entrada?.codigo_alme ?? "",
+      quantidade:
+        entrada?.quantidade ?? "",
+      valorUnitario:
+        entrada?.valor_unitario ?? "",
+      valorTotal:
+        entrada?.valor_total ?? "",
       valorUnitarioFinal:
         entrada?.valor_unitario_final ?? "",
       preco: entrada?.preco ?? "",
@@ -432,10 +540,13 @@ export default function Estoque() {
   // SELECIONAR PRODUTO NA ENTRADA
   // =====================================================
 
-  function selecionarProdutoEntrada(produtoId) {
+  function selecionarProdutoEntrada(
+    produtoId
+  ) {
     const produto = produtos.find(
       (item) =>
-        String(item.id) === String(produtoId)
+        String(item.id) ===
+        String(produtoId)
     );
 
     if (!produto) {
@@ -474,7 +585,9 @@ export default function Estoque() {
     valorUnitario,
   }) {
     const qtd = Number(quantidade || 0);
-    const valor = Number(valorUnitario || 0);
+    const valor = Number(
+      valorUnitario || 0
+    );
 
     const total = qtd * valor;
 
@@ -488,7 +601,9 @@ export default function Estoque() {
     }));
   }
 
-  function alterarQuantidadeEntrada(valor) {
+  function alterarQuantidadeEntrada(
+    valor
+  ) {
     recalcularEntrada({
       quantidade: valor,
       valorUnitario:
@@ -496,7 +611,9 @@ export default function Estoque() {
     });
   }
 
-  function alterarValorUnitarioEntrada(valor) {
+  function alterarValorUnitarioEntrada(
+    valor
+  ) {
     recalcularEntrada({
       quantidade:
         formEntrada.quantidade,
@@ -516,7 +633,24 @@ export default function Estoque() {
       setErroEntrada("");
 
       if (!formEntrada.produtoId) {
-        throw new Error("Selecione um produto.");
+        throw new Error(
+          "Selecione um produto."
+        );
+      }
+
+      // =================================================
+      // NF OBRIGATÓRIA
+      // =================================================
+
+      const nfEntrada =
+        String(
+          formEntrada.nfEntrada || ""
+        ).trim();
+
+      if (!nfEntrada) {
+        throw new Error(
+          "Informe o número da nota fiscal."
+        );
       }
 
       const quantidade = Number(
@@ -554,20 +688,33 @@ export default function Estoque() {
           : 0;
 
       const dadosEntrada = {
-        produtoId: Number(formEntrada.produtoId),
-        nfEntrada:
-          formEntrada.nfEntrada.trim() || null,
+        produtoId: Number(
+          formEntrada.produtoId
+        ),
+
+        // NF agora sempre será enviada
+        nfEntrada,
+
         nomeItem:
-          formEntrada.nomeItem.trim() || null,
+          formEntrada.nomeItem.trim() ||
+          null,
+
         sku:
-          formEntrada.sku.trim() || null,
+          formEntrada.sku.trim() ||
+          null,
+
         codigoAlme:
-          formEntrada.codigoAlme.trim() || null,
+          formEntrada.codigoAlme.trim() ||
+          null,
+
         quantidade,
         valorUnitario,
         valorTotal,
         valorUnitarioFinal,
-        preco: Number(formEntrada.preco || 0),
+
+        preco: Number(
+          formEntrada.preco || 0
+        ),
       };
 
       if (entradaEditando) {
@@ -602,30 +749,26 @@ export default function Estoque() {
   // =====================================================
 
   async function removerEntrada(entrada) {
-    const confirmar = window.confirm(
-      `Deseja realmente excluir a entrada "${
-        entrada.nome_item || entrada.id
-      }"?`
-    );
+    abrirConfirmacao({
+      titulo: "Excluir entrada",
 
-    if (!confirmar) return;
+      mensagem: `Deseja realmente excluir a entrada "${
+        entrada.nome_item ||
+        `#${entrada.id}`
+      }"?`,
 
-    try {
-      setErro("");
+      textoConfirmar: "Excluir entrada",
 
-      await excluirEntrada(entrada.id);
-      await carregarDados();
-    } catch (error) {
-      console.error(
-        "Erro ao excluir entrada:",
-        error
-      );
+      tipo: "danger",
 
-      setErro(
-        error?.message ||
-          "Não foi possível excluir a entrada."
-      );
-    }
+      acao: async () => {
+        await excluirEntrada(
+          entrada.id
+        );
+
+        await carregarDados();
+      },
+    });
   }
 
   // =====================================================
@@ -668,7 +811,10 @@ export default function Estoque() {
   // EDITAR SAÍDA
   // =====================================================
 
-  function abrirEditarSaida(saida, item = null) {
+  function abrirEditarSaida(
+    saida,
+    item = null
+  ) {
     const itens =
       saida?.estoque_saida_itens || [];
 
@@ -691,9 +837,11 @@ export default function Estoque() {
 
     setFormSaida({
       produtoId:
-        itemSelecionado.produto_id ?? "",
+        itemSelecionado.produto_id ??
+        "",
       quantidade:
-        itemSelecionado.quantidade ?? "",
+        itemSelecionado.quantidade ??
+        "",
       solicitante:
         saida?.solicitante ?? "",
     });
@@ -714,7 +862,9 @@ export default function Estoque() {
       setErroSaida("");
 
       if (!formSaida.produtoId) {
-        throw new Error("Selecione um produto.");
+        throw new Error(
+          "Selecione um produto."
+        );
       }
 
       const quantidade = Number(
@@ -768,24 +918,7 @@ export default function Estoque() {
         }
 
         // =================================================
-        // CRIAR SAÍDA
-        // =================================================
-
-        const saidaId = await criarSaida({
-          produtoId: Number(
-            formSaida.produtoId
-          ),
-          quantidade,
-          solicitante,
-        });
-
-        // =================================================
-        // IMPORTANTE:
-        //
-        // O preço usado na saída é o preço do produto
-        // no momento em que a saída foi registrada.
-        //
-        // A quantidade é multiplicada pelo preço unitário.
+        // PREÇO HISTÓRICO
         // =================================================
 
         const precoUnitario = Number(
@@ -793,7 +926,23 @@ export default function Estoque() {
         );
 
         const valorTotal =
-          quantidade * precoUnitario;
+          quantidade *
+          precoUnitario;
+
+        // =================================================
+        // CRIAR SAÍDA
+        // =================================================
+
+        const saidaId =
+          await criarSaida({
+            produtoId: Number(
+              formSaida.produtoId
+            ),
+            quantidade,
+            solicitante,
+            precoUnitario,
+            valorTotal,
+          });
 
         // =================================================
         // DATA
@@ -801,7 +950,8 @@ export default function Estoque() {
 
         const hoje = new Date();
 
-        const ano = hoje.getFullYear();
+        const ano =
+          hoje.getFullYear();
 
         const mes = String(
           hoje.getMonth() + 1
@@ -815,13 +965,13 @@ export default function Estoque() {
           `${ano}-${mes}-${dia}`;
 
         // =================================================
-        // ATUALIZAR DADOS
+        // ATUALIZAR
         // =================================================
 
         await carregarDados();
 
         // =================================================
-        // GERAR PDF
+        // PDF
         // =================================================
 
         gerarPdfSaida({
@@ -841,19 +991,15 @@ export default function Estoque() {
 
       else {
         await editarSaidaItem({
-          itemId: saidaEditando.itemId,
+          itemId:
+            saidaEditando.itemId,
           quantidade,
         });
 
         await carregarDados();
       }
 
-      // =================================================
-      // FECHAR MODAL
-      // =================================================
-
       fecharModalSaida();
-
     } catch (error) {
       console.error(
         "Erro ao salvar saída:",
@@ -874,30 +1020,25 @@ export default function Estoque() {
   // =====================================================
 
   async function removerSaida(saida) {
-    const confirmar = window.confirm(
-      `Deseja realmente excluir a saída #${String(
+    abrirConfirmacao({
+      titulo: "Excluir saída",
+
+      mensagem: `Deseja realmente excluir a saída #${String(
         saida.id
-      ).padStart(6, "0")}?`
-    );
+      ).padStart(6, "0")}?`,
 
-    if (!confirmar) return;
+      textoConfirmar: "Excluir saída",
 
-    try {
-      setErro("");
+      tipo: "danger",
 
-      await excluirSaida(saida.id);
-      await carregarDados();
-    } catch (error) {
-      console.error(
-        "Erro ao excluir saída:",
-        error
-      );
+      acao: async () => {
+        await excluirSaida(
+          saida.id
+        );
 
-      setErro(
-        error?.message ||
-          "Não foi possível excluir a saída."
-      );
-    }
+        await carregarDados();
+      },
+    });
   }
 
   // =====================================================
@@ -908,13 +1049,14 @@ export default function Estoque() {
     produtos.length;
 
   // =====================================================
-  // CÁLCULOS DO PRODUTO SELECIONADO
+  // PRODUTO SELECIONADO
   // =====================================================
 
   const quantidadeSelecionada =
     produtoSelecionado
       ? Number(
-          produtoSelecionado.quantidade_atual || 0
+          produtoSelecionado.quantidade_atual ||
+            0
         )
       : 0;
 
@@ -922,7 +1064,8 @@ export default function Estoque() {
     produtoSelecionado
       ? quantidadeSelecionada *
         Number(
-          produtoSelecionado.preco || 0
+          produtoSelecionado.preco ||
+            0
         )
       : 0;
 
@@ -931,13 +1074,12 @@ export default function Estoque() {
   // =====================================================
 
   function formatarMoeda(valor) {
-    return Number(valor || 0).toLocaleString(
-      "pt-BR",
-      {
-        style: "currency",
-        currency: "BRL",
-      }
-    );
+    return Number(
+      valor || 0
+    ).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
   }
 
   function formatarData(data) {
@@ -945,11 +1087,13 @@ export default function Estoque() {
 
     return new Date(
       `${data}T00:00:00`
-    ).toLocaleDateString("pt-BR");
+    ).toLocaleDateString(
+      "pt-BR"
+    );
   }
 
   // =====================================================
-  // GERAR PDF DA SAÍDA
+  // GERAR PDF
   // =====================================================
 
   function gerarPdfSaida({
@@ -976,10 +1120,9 @@ export default function Estoque() {
       produto?.codigo_alme || "-";
 
     const numeroSaida =
-      `#${String(saidaId).padStart(
-        6,
-        "0"
-      )}`;
+      `#${String(
+        saidaId
+      ).padStart(6, "0")}`;
 
     const dataFormatada =
       formatarData(dataSaida);
@@ -988,7 +1131,11 @@ export default function Estoque() {
     // CABEÇALHO
     // =====================================================
 
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
     doc.setFontSize(20);
 
     doc.text(
@@ -998,7 +1145,11 @@ export default function Estoque() {
     );
 
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
 
     doc.text(
       "Controle de movimentação de estoque",
@@ -1019,7 +1170,11 @@ export default function Estoque() {
     // TÍTULO
     // =====================================================
 
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
     doc.setFontSize(16);
 
     doc.text(
@@ -1029,11 +1184,15 @@ export default function Estoque() {
     );
 
     // =====================================================
-    // INFORMAÇÕES DA SAÍDA
+    // INFORMAÇÕES
     // =====================================================
 
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
 
     doc.text(
       `Número da saída: ${numeroSaida}`,
@@ -1057,7 +1216,11 @@ export default function Estoque() {
     // PRODUTO
     // =====================================================
 
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
     doc.setFontSize(11);
 
     doc.text(
@@ -1066,7 +1229,11 @@ export default function Estoque() {
       95
     );
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(10);
 
     doc.text(
@@ -1091,7 +1258,11 @@ export default function Estoque() {
     // MOVIMENTAÇÃO
     // =====================================================
 
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
     doc.setFontSize(11);
 
     doc.text(
@@ -1100,7 +1271,11 @@ export default function Estoque() {
       135
     );
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(10);
 
     doc.text(
@@ -1119,7 +1294,10 @@ export default function Estoque() {
       152
     );
 
-    doc.setFont("helvetica", "bold");
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
 
     doc.text(
       `Valor total da saída: ${formatarMoeda(
@@ -1133,7 +1311,11 @@ export default function Estoque() {
     // OBSERVAÇÃO
     // =====================================================
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
     doc.setFontSize(9);
 
     doc.text(
@@ -1200,6 +1382,7 @@ export default function Estoque() {
       <header className="estoque-header">
 
         <div>
+
           <span className="estoque-kicker">
             ADMINISTRAÇÃO
           </span>
@@ -1209,6 +1392,7 @@ export default function Estoque() {
           <p>
             Controle de produtos e movimentações.
           </p>
+
         </div>
 
         <div className="estoque-header-actions">
@@ -1256,11 +1440,13 @@ export default function Estoque() {
         <div className="estoque-filtro-header">
 
           <div>
+
             <span>FILTRO</span>
 
             <strong>
               Consultar estoque
             </strong>
+
           </div>
 
           {filtroProduto && (
@@ -1285,22 +1471,26 @@ export default function Estoque() {
             )
           }
         >
+
           <option value="">
             Todos os produtos
           </option>
 
-          {produtos.map((produto) => (
-            <option
-              key={produto.id}
-              value={produto.id}
-            >
-              {produto.nome}
+          {produtos.map(
+            (produto) => (
+              <option
+                key={produto.id}
+                value={produto.id}
+              >
+                {produto.nome}
 
-              {produto.sku
-                ? ` — ${produto.sku}`
-                : ""}
-            </option>
-          ))}
+                {produto.sku
+                  ? ` — ${produto.sku}`
+                  : ""}
+              </option>
+            )
+          )}
+
         </select>
 
         {produtoSelecionado && (
@@ -1474,810 +1664,857 @@ export default function Estoque() {
           CONTEÚDO
       ===================================================== */}
 
-      {!loading && !erro && (
-        <>
+      {!loading &&
+        !erro && (
+          <>
 
-          {/* =================================================
-              RESUMO
-          ================================================= */}
+            {/* =================================================
+                RESUMO
+            ================================================= */}
 
-          {aba === "resumo" && (
-            <section className="estoque-content">
+            {aba === "resumo" && (
+              <section className="estoque-content">
 
-              <div className="estoque-section-title">
+                <div className="estoque-section-title">
 
-                <div>
+                  <div>
 
-                  <span>
-                    INVENTÁRIO
-                  </span>
+                    <span>
+                      INVENTÁRIO
+                    </span>
 
-                  <h2>
-                    {produtoSelecionado
-                      ? `Estoque de ${produtoSelecionado.nome}`
-                      : "Produtos em estoque"}
-                  </h2>
+                    <h2>
+                      {produtoSelecionado
+                        ? `Estoque de ${produtoSelecionado.nome}`
+                        : "Produtos em estoque"}
+                    </h2>
+
+                  </div>
 
                 </div>
 
-              </div>
+                <div className="estoque-table-wrapper">
 
-              <div className="estoque-table-wrapper">
+                  <table className="estoque-table">
 
-                <table className="estoque-table">
-
-                  <thead>
-
-                    <tr>
-                      <th>Produto</th>
-                      <th>SKU</th>
-                      <th>Código ALME</th>
-                      <th>Estoque</th>
-                      <th>Valor unitário</th>
-                      <th>Preço</th>
-                    </tr>
-
-                  </thead>
-
-                  <tbody>
-
-                    {produtosFiltrados.length === 0 ? (
+                    <thead>
 
                       <tr>
-
-                        <td
-                          colSpan="6"
-                          className="table-empty"
-                        >
-                          Nenhum produto encontrado.
-                        </td>
-
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Código ALME</th>
+                        <th>Estoque</th>
+                        <th>Valor unitário</th>
+                        <th>Preço</th>
                       </tr>
 
-                    ) : (
+                    </thead>
 
-                      produtosFiltrados.map(
-                        (produto) => (
+                    <tbody>
 
-                          <tr
-                            key={produto.id}
+                      {produtosFiltrados.length ===
+                      0 ? (
+
+                        <tr>
+
+                          <td
+                            colSpan="6"
+                            className="table-empty"
                           >
+                            Nenhum produto encontrado.
+                          </td>
 
-                            <td>
-                              <strong>
-                                {produto.nome}
-                              </strong>
-                            </td>
+                        </tr>
 
-                            <td>
-                              {produto.sku || "-"}
-                            </td>
+                      ) : (
 
-                            <td>
-                              {produto.codigo_alme || "-"}
-                            </td>
+                        produtosFiltrados.map(
+                          (produto) => (
 
-                            <td>
+                            <tr
+                              key={
+                                produto.id
+                              }
+                            >
 
-                              <span
-                                className={
-                                  Number(
-                                    produto.quantidade_atual || 0
-                                  ) <= 0
-                                    ? "estoque-zero"
-                                    : "estoque-ok"
+                              <td>
+
+                                <strong>
+                                  {
+                                    produto.nome
+                                  }
+                                </strong>
+
+                              </td>
+
+                              <td>
+                                {
+                                  produto.sku ||
+                                  "-"
                                 }
-                              >
-                                {produto.quantidade_atual || 0}
-                              </span>
-
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                produto.valor_unitario
-                              )}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                produto.preco
-                              )}
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-              <div className="estoque-section-title ultimas">
-
-                <div>
-
-                  <span>
-                    MOVIMENTAÇÕES
-                  </span>
-
-                  <h2>
-                    {produtoSelecionado
-                      ? `Últimas saídas de ${produtoSelecionado.nome}`
-                      : "Últimas saídas"}
-                  </h2>
-
-                </div>
-
-              </div>
-
-              <div className="estoque-table-wrapper">
-
-                <table className="estoque-table">
-
-                  <thead>
-
-                    <tr>
-                      <th>Data</th>
-                      <th>Produto</th>
-                      <th>SKU</th>
-                      <th>Quantidade</th>
-                      <th>Preço</th>
-                      <th>Total</th>
-                    </tr>
-
-                  </thead>
-
-                  <tbody>
-
-                    {ultimasSaidasFiltradas.length === 0 ? (
-
-                      <tr>
-
-                        <td
-                          colSpan="6"
-                          className="table-empty"
-                        >
-                          Nenhuma saída registrada.
-                        </td>
-
-                      </tr>
-
-                    ) : (
-
-                      ultimasSaidasFiltradas.map(
-                        (saida) => (
-
-                          <tr
-                            key={saida.id}
-                          >
-
-                            <td>
-                              {formatarData(
-                                saida.data_saida
-                              )}
-                            </td>
-
-                            <td>
-                              {saida.nome || "-"}
-                            </td>
-
-                            <td>
-                              {saida.sku || "-"}
-                            </td>
-
-                            <td>
-                              {saida.quantidade || 0}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                saida.preco_unitario
-                              )}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                saida.valor_total
-                              )}
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </section>
-          )}
-
-          {/* =================================================
-              PRODUTOS
-          ================================================= */}
-
-          {aba === "produtos" && (
-            <section className="estoque-content">
-
-              <div className="estoque-section-title">
-
-                <div>
-
-                  <span>
-                    CADASTRO
-                  </span>
-
-                  <h2>
-                    Produtos
-                  </h2>
-
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={abrirNovoProduto}
-                >
-                  + Novo produto
-                </button>
-
-              </div>
-
-              <div className="estoque-table-wrapper">
-
-                <table className="estoque-table">
-
-                  <thead>
-
-                    <tr>
-                      <th>Produto</th>
-                      <th>SKU</th>
-                      <th>Código ALME</th>
-                      <th>Estoque</th>
-                      <th>Valor unitário</th>
-                      <th>Preço</th>
-                      <th>Ações</th>
-                    </tr>
-
-                  </thead>
-
-                  <tbody>
-
-                    {produtosFiltrados.length === 0 ? (
-
-                      <tr>
-
-                        <td
-                          colSpan="7"
-                          className="table-empty"
-                        >
-                          Nenhum produto encontrado.
-                        </td>
-
-                      </tr>
-
-                    ) : (
-
-                      produtosFiltrados.map(
-                        (produto) => (
-
-                          <tr
-                            key={produto.id}
-                          >
-
-                            <td>
-                              <strong>
-                                {produto.nome}
-                              </strong>
-                            </td>
-
-                            <td>
-                              {produto.sku || "-"}
-                            </td>
-
-                            <td>
-                              {produto.codigo_alme || "-"}
-                            </td>
-
-                            <td>
-                              {produto.quantidade_atual || 0}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                produto.valor_unitario
-                              )}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                produto.preco
-                              )}
-                            </td>
-
-                            <td>
-
-                              <div className="table-actions">
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    abrirEditarProduto(
-                                      produto
-                                    )
+                              </td>
+
+                              <td>
+                                {
+                                  produto.codigo_alme ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+
+                                <span
+                                  className={
+                                    Number(
+                                      produto.quantidade_atual ||
+                                        0
+                                    ) <= 0
+                                      ? "estoque-zero"
+                                      : "estoque-ok"
                                   }
                                 >
-                                  Editar
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="danger"
-                                  onClick={() =>
-                                    removerProduto(
-                                      produto
-                                    )
-                                  }
-                                >
-                                  Excluir
-                                </button>
-
-                              </div>
-
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </section>
-          )}
-
-          {/* =================================================
-              ENTRADAS
-          ================================================= */}
-
-          {aba === "entradas" && (
-            <section className="estoque-content">
-
-              <div className="estoque-section-title">
-
-                <div>
-
-                  <span>
-                    MOVIMENTAÇÃO
-                  </span>
-
-                  <h2>
-                    Entradas
-                  </h2>
-
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={abrirNovaEntrada}
-                >
-                  + Nova entrada
-                </button>
-
-              </div>
-
-              <div className="estoque-table-wrapper">
-
-                <table className="estoque-table">
-
-                  <thead>
-
-                    <tr>
-                      <th>NF</th>
-                      <th>Data</th>
-                      <th>Produto</th>
-                      <th>SKU</th>
-                      <th>Quantidade</th>
-                      <th>Valor total</th>
-                      <th>Ações</th>
-                    </tr>
-
-                  </thead>
-
-                  <tbody>
-
-                    {entradasFiltradas.length === 0 ? (
-
-                      <tr>
-
-                        <td
-                          colSpan="7"
-                          className="table-empty"
-                        >
-                          Nenhuma entrada encontrada.
-                        </td>
-
-                      </tr>
-
-                    ) : (
-
-                      entradasFiltradas.map(
-                        (entrada) => (
-
-                          <tr
-                            key={entrada.id}
-                          >
-
-                            <td>
-                              {entrada.nf_entrada || "-"}
-                            </td>
-
-                            <td>
-                              {formatarData(
-                                entrada.data_entrada
-                              )}
-                            </td>
-
-                            <td>
-
-                              <strong>
-                                {entrada.nome_item || "-"}
-                              </strong>
-
-                            </td>
-
-                            <td>
-                              {entrada.sku || "-"}
-                            </td>
-
-                            <td>
-                              {entrada.quantidade || 0}
-                            </td>
-
-                            <td>
-                              {formatarMoeda(
-                                entrada.valor_total
-                              )}
-                            </td>
-
-                            <td>
-
-                              <div className="table-actions">
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    abrirEditarEntrada(
-                                      entrada
-                                    )
-                                  }
-                                >
-                                  Editar
-                                </button>
-
-                                <button
-                                  type="button"
-                                  className="danger"
-                                  onClick={() =>
-                                    removerEntrada(
-                                      entrada
-                                    )
-                                  }
-                                >
-                                  Excluir
-                                </button>
-
-                              </div>
-
-                            </td>
-
-                          </tr>
-
-                        )
-                      )
-
-                    )}
-
-                  </tbody>
-
-                </table>
-
-              </div>
-
-            </section>
-          )}
-
-          {/* =================================================
-              SAÍDAS
-          ================================================= */}
-
-          {aba === "saidas" && (
-            <section className="estoque-content">
-
-              <div className="estoque-section-title">
-
-                <div>
-
-                  <span>
-                    MOVIMENTAÇÃO
-                  </span>
-
-                  <h2>
-                    Saídas
-                  </h2>
-
-                </div>
-
-                <button
-                  type="button"
-                  className="btn-dark"
-                  onClick={abrirNovaSaida}
-                >
-                  + Nova saída
-                </button>
-
-              </div>
-
-              <div className="estoque-table-wrapper">
-
-                <table className="estoque-table">
-
-                  <thead>
-
-                    <tr>
-                      <th>Nº</th>
-                      <th>Data</th>
-                      <th>Produto</th>
-                      <th>SKU</th>
-                      <th>Solicitante</th>
-                      <th>Quantidade</th>
-                      <th>Preço unitário</th>
-                      <th>Total</th>
-                      <th>Ações</th>
-                    </tr>
-
-                  </thead>
-
-                  <tbody>
-
-                    {saidasFiltradas.length === 0 ? (
-
-                      <tr>
-
-                        <td
-                          colSpan="9"
-                          className="table-empty"
-                        >
-                          Nenhuma saída encontrada.
-                        </td>
-
-                      </tr>
-
-                    ) : (
-
-                      saidasFiltradas.flatMap(
-                        (saida) => {
-
-                          const itens =
-                            saida?.estoque_saida_itens ||
-                            [];
-
-                          const itensExibidos =
-                            filtroProduto
-                              ? itens.filter(
-                                  (item) =>
-                                    String(
-                                      item.produto_id
-                                    ) ===
-                                    String(
-                                      filtroProduto
-                                    )
-                                )
-                              : itens;
-
-                          return itensExibidos.map(
-                            (item, index) => {
-
-                              // =================================================
-                              // PRODUTO DO ITEM
-                              // =================================================
-
-                              const produto =
-                                produtos.find(
-                                  (p) =>
-                                    String(p.id) ===
-                                    String(
-                                      item.produto_id
-                                    )
-                                );
-
-                              // =================================================
-                              // PREÇO HISTÓRICO
-                              //
-                              // Primeiro usamos o preço salvo no item.
-                              // Só usamos o produto como fallback.
-                              // =================================================
-
-                              const precoUnitario =
-                                Number(
-                                  item.preco_unitario ??
-                                    item.preco ??
-                                    produto?.preco ??
+                                  {
+                                    produto.quantidade_atual ||
                                     0
-                                );
+                                  }
+                                </span>
 
-                              // =================================================
-                              // QUANTIDADE
-                              // =================================================
+                              </td>
 
-                              const quantidade =
-                                Number(
-                                  item.quantidade || 0
-                                );
+                              <td>
+                                {formatarMoeda(
+                                  produto.valor_unitario
+                                )}
+                              </td>
 
-                              // =================================================
-                              // TOTAL
-                              //
-                              // O valor da saída é:
-                              //
-                              // PREÇO DA ÉPOCA × QUANTIDADE
-                              // =================================================
+                              <td>
+                                {formatarMoeda(
+                                  produto.preco
+                                )}
+                              </td>
 
-                              const valorTotal =
-                                Number(
-                                  item.valor_total ??
-                                    quantidade *
-                                      precoUnitario
-                                );
+                            </tr>
 
-                              return (
-                                <tr
-                                  key={`${saida.id}-${item.id || index}`}
-                                >
+                          )
+                        )
 
-                                  {/* Nº DA SAÍDA */}
+                      )}
 
-                                  <td>
-                                    #
-                                    {String(
-                                      saida.id
-                                    ).padStart(
-                                      6,
-                                      "0"
-                                    )}
-                                  </td>
+                    </tbody>
 
-                                  {/* DATA */}
+                  </table>
 
-                                  <td>
-                                    {formatarData(
-                                      saida.data_saida
-                                    )}
-                                  </td>
+                </div>
 
-                                  {/* PRODUTO */}
+                <div className="estoque-section-title ultimas">
 
-                                  <td>
+                  <div>
 
-                                    <strong>
-                                      {produto?.nome ||
-                                        item.nome ||
-                                        "-"}
-                                    </strong>
+                    <span>
+                      MOVIMENTAÇÕES
+                    </span>
 
-                                  </td>
+                    <h2>
+                      {produtoSelecionado
+                        ? `Últimas saídas de ${produtoSelecionado.nome}`
+                        : "Últimas saídas"}
+                    </h2>
 
-                                  {/* SKU */}
+                  </div>
 
-                                  <td>
-                                    {produto?.sku ||
-                                      item.sku ||
-                                      "-"}
-                                  </td>
+                </div>
 
-                                  {/* SOLICITANTE */}
+                <div className="estoque-table-wrapper">
 
-                                  <td>
-                                    {saida.solicitante ||
-                                      "-"}
-                                  </td>
+                  <table className="estoque-table">
 
-                                  {/* QUANTIDADE */}
+                    <thead>
 
-                                  <td>
-                                    {quantidade.toLocaleString(
-                                      "pt-BR"
-                                    )}
-                                  </td>
+                      <tr>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Quantidade</th>
+                        <th>Preço</th>
+                        <th>Total</th>
+                      </tr>
 
-                                  {/* PREÇO UNITÁRIO */}
+                    </thead>
 
-                                  <td>
-                                    {formatarMoeda(
-                                      precoUnitario
-                                    )}
-                                  </td>
+                    <tbody>
 
-                                  {/* TOTAL */}
+                      {ultimasSaidasFiltradas.length ===
+                      0 ? (
 
-                                  <td>
-                                    {formatarMoeda(
-                                      valorTotal
-                                    )}
-                                  </td>
+                        <tr>
 
-                                  {/* AÇÕES */}
+                          <td
+                            colSpan="6"
+                            className="table-empty"
+                          >
+                            Nenhuma saída registrada.
+                          </td>
 
-                                  <td>
+                        </tr>
 
-                                    <div className="table-actions">
+                      ) : (
 
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          abrirEditarSaida(
-                                            saida,
-                                            item
-                                          )
+                        ultimasSaidasFiltradas.map(
+                          (saida) => (
+
+                            <tr
+                              key={
+                                saida.id
+                              }
+                            >
+
+                              <td>
+                                {formatarData(
+                                  saida.data_saida
+                                )}
+                              </td>
+
+                              <td>
+                                {
+                                  saida.nome ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  saida.sku ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  saida.quantidade ||
+                                  0
+                                }
+                              </td>
+
+                              <td>
+                                {formatarMoeda(
+                                  saida.preco_unitario
+                                )}
+                              </td>
+
+                              <td>
+                                {formatarMoeda(
+                                  saida.valor_total
+                                )}
+                              </td>
+
+                            </tr>
+
+                          )
+                        )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              </section>
+            )}
+
+            {/* =================================================
+                PRODUTOS
+            ================================================= */}
+
+            {aba === "produtos" && (
+              <section className="estoque-content">
+
+                <div className="estoque-section-title">
+
+                  <div>
+
+                    <span>
+                      CADASTRO
+                    </span>
+
+                    <h2>
+                      Produtos
+                    </h2>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={
+                      abrirNovoProduto
+                    }
+                  >
+                    + Novo produto
+                  </button>
+
+                </div>
+
+                <div className="estoque-table-wrapper">
+
+                  <table className="estoque-table">
+
+                    <thead>
+
+                      <tr>
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Código ALME</th>
+                        <th>Estoque</th>
+                        <th>Valor unitário</th>
+                        <th>Preço</th>
+                        <th>Ações</th>
+                      </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                      {produtosFiltrados.length ===
+                      0 ? (
+
+                        <tr>
+
+                          <td
+                            colSpan="7"
+                            className="table-empty"
+                          >
+                            Nenhum produto encontrado.
+                          </td>
+
+                        </tr>
+
+                      ) : (
+
+                        produtosFiltrados.map(
+                          (produto) => (
+
+                            <tr
+                              key={
+                                produto.id
+                              }
+                            >
+
+                              <td>
+
+                                <strong>
+                                  {
+                                    produto.nome
+                                  }
+                                </strong>
+
+                              </td>
+
+                              <td>
+                                {
+                                  produto.sku ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  produto.codigo_alme ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  produto.quantidade_atual ||
+                                  0
+                                }
+                              </td>
+
+                              <td>
+                                {formatarMoeda(
+                                  produto.valor_unitario
+                                )}
+                              </td>
+
+                              <td>
+                                {formatarMoeda(
+                                  produto.preco
+                                )}
+                              </td>
+
+                              <td>
+
+                                <div className="table-actions">
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      abrirEditarProduto(
+                                        produto
+                                      )
+                                    }
+                                  >
+                                    Editar
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="danger"
+                                    onClick={() =>
+                                      removerProduto(
+                                        produto
+                                      )
+                                    }
+                                  >
+                                    Excluir
+                                  </button>
+
+                                </div>
+
+                              </td>
+
+                            </tr>
+
+                          )
+                        )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              </section>
+            )}
+
+            {/* =================================================
+                ENTRADAS
+            ================================================= */}
+
+            {aba === "entradas" && (
+              <section className="estoque-content">
+
+                <div className="estoque-section-title">
+
+                  <div>
+
+                    <span>
+                      MOVIMENTAÇÃO
+                    </span>
+
+                    <h2>
+                      Entradas
+                    </h2>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={
+                      abrirNovaEntrada
+                    }
+                  >
+                    + Nova entrada
+                  </button>
+
+                </div>
+
+                <div className="estoque-table-wrapper">
+
+                  <table className="estoque-table">
+
+                    <thead>
+
+                      <tr>
+                        <th>NF</th>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Quantidade</th>
+                        <th>Valor total</th>
+                        <th>Ações</th>
+                      </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                      {entradasFiltradas.length ===
+                      0 ? (
+
+                        <tr>
+
+                          <td
+                            colSpan="7"
+                            className="table-empty"
+                          >
+                            Nenhuma entrada encontrada.
+                          </td>
+
+                        </tr>
+
+                      ) : (
+
+                        entradasFiltradas.map(
+                          (entrada) => (
+
+                            <tr
+                              key={
+                                entrada.id
+                              }
+                            >
+
+                              <td>
+                                {
+                                  entrada.nf_entrada ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {formatarData(
+                                  entrada.data_entrada
+                                )}
+                              </td>
+
+                              <td>
+
+                                <strong>
+                                  {
+                                    entrada.nome_item ||
+                                    "-"
+                                  }
+                                </strong>
+
+                              </td>
+
+                              <td>
+                                {
+                                  entrada.sku ||
+                                  "-"
+                                }
+                              </td>
+
+                              <td>
+                                {
+                                  entrada.quantidade ||
+                                  0
+                                }
+                              </td>
+
+                              <td>
+                                {formatarMoeda(
+                                  entrada.valor_total
+                                )}
+                              </td>
+
+                              <td>
+
+                                <div className="table-actions">
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      abrirEditarEntrada(
+                                        entrada
+                                      )
+                                    }
+                                  >
+                                    Editar
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="danger"
+                                    onClick={() =>
+                                      removerEntrada(
+                                        entrada
+                                      )
+                                    }
+                                  >
+                                    Excluir
+                                  </button>
+
+                                </div>
+
+                              </td>
+
+                            </tr>
+
+                          )
+                        )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              </section>
+            )}
+
+            {/* =================================================
+                SAÍDAS
+            ================================================= */}
+
+            {aba === "saidas" && (
+              <section className="estoque-content">
+
+                <div className="estoque-section-title">
+
+                  <div>
+
+                    <span>
+                      MOVIMENTAÇÃO
+                    </span>
+
+                    <h2>
+                      Saídas
+                    </h2>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-dark"
+                    onClick={
+                      abrirNovaSaida
+                    }
+                  >
+                    + Nova saída
+                  </button>
+
+                </div>
+
+                <div className="estoque-table-wrapper">
+
+                  <table className="estoque-table">
+
+                    <thead>
+
+                      <tr>
+                        <th>Nº</th>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>SKU</th>
+                        <th>Solicitante</th>
+                        <th>Quantidade</th>
+                        <th>Preço unitário</th>
+                        <th>Total</th>
+                        <th>Ações</th>
+                      </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                      {saidasFiltradas.length ===
+                      0 ? (
+
+                        <tr>
+
+                          <td
+                            colSpan="9"
+                            className="table-empty"
+                          >
+                            Nenhuma saída encontrada.
+                          </td>
+
+                        </tr>
+
+                      ) : (
+
+                        saidasFiltradas.flatMap(
+                          (saida) => {
+
+                            const itens =
+                              saida?.estoque_saida_itens ||
+                              [];
+
+                            const itensExibidos =
+                              filtroProduto
+                                ? itens.filter(
+                                    (item) =>
+                                      String(
+                                        item.produto_id
+                                      ) ===
+                                      String(
+                                        filtroProduto
+                                      )
+                                  )
+                                : itens;
+
+                            return itensExibidos.map(
+                              (
+                                item,
+                                index
+                              ) => {
+
+                                const produto =
+                                  produtos.find(
+                                    (p) =>
+                                      String(
+                                        p.id
+                                      ) ===
+                                      String(
+                                        item.produto_id
+                                      )
+                                  );
+
+                                // =========================================
+                                // PREÇO HISTÓRICO
+                                // =========================================
+
+                                const precoUnitario =
+                                  Number(
+                                    item.preco_unitario ??
+                                      item.preco ??
+                                      produto?.preco ??
+                                      0
+                                  );
+
+                                const quantidade =
+                                  Number(
+                                    item.quantidade ||
+                                      0
+                                  );
+
+                                // =========================================
+                                // TOTAL
+                                // =========================================
+
+                                const valorTotal =
+                                  Number(
+                                    item.valor_total ??
+                                      quantidade *
+                                        precoUnitario
+                                  );
+
+                                return (
+                                  <tr
+                                    key={`${saida.id}-${item.id || index}`}
+                                  >
+
+                                    <td>
+                                      #
+                                      {String(
+                                        saida.id
+                                      ).padStart(
+                                        6,
+                                        "0"
+                                      )}
+                                    </td>
+
+                                    <td>
+                                      {formatarData(
+                                        saida.data_saida
+                                      )}
+                                    </td>
+
+                                    <td>
+
+                                      <strong>
+                                        {
+                                          produto?.nome ||
+                                          item.nome ||
+                                          "-"
                                         }
-                                      >
-                                        Editar
-                                      </button>
+                                      </strong>
 
-                                      <button
-                                        type="button"
-                                        className="danger"
-                                        onClick={() =>
-                                          removerSaida(
-                                            saida
-                                          )
-                                        }
-                                      >
-                                        Excluir
-                                      </button>
+                                    </td>
 
-                                    </div>
+                                    <td>
+                                      {
+                                        produto?.sku ||
+                                        item.sku ||
+                                        "-"
+                                      }
+                                    </td>
 
-                                  </td>
+                                    <td>
+                                      {
+                                        saida.solicitante ||
+                                        "-"
+                                      }
+                                    </td>
 
-                                </tr>
-                              );
-                            }
-                          );
-                        }
-                      )
+                                    <td>
+                                      {quantidade.toLocaleString(
+                                        "pt-BR"
+                                      )}
+                                    </td>
 
-                    )}
+                                    <td>
+                                      {formatarMoeda(
+                                        precoUnitario
+                                      )}
+                                    </td>
 
-                  </tbody>
+                                    <td>
+                                      {formatarMoeda(
+                                        valorTotal
+                                      )}
+                                    </td>
 
-                </table>
+                                    <td>
 
-              </div>
+                                      <div className="table-actions">
 
-            </section>
-          )}
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            abrirEditarSaida(
+                                              saida,
+                                              item
+                                            )
+                                          }
+                                        >
+                                          Editar
+                                        </button>
 
-        </>
-      )}
+                                        <button
+                                          type="button"
+                                          className="danger"
+                                          onClick={() =>
+                                            removerSaida(
+                                              saida
+                                            )
+                                          }
+                                        >
+                                          Excluir
+                                        </button>
+
+                                      </div>
+
+                                    </td>
+
+                                  </tr>
+                                );
+                              }
+                            );
+                          }
+                        )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              </section>
+            )}
+
+          </>
+        )}
 
       {/* =====================================================
           MODAL PRODUTO
@@ -2330,9 +2567,12 @@ export default function Estoque() {
               <button
                 type="button"
                 className="estoque-modal-close"
-                onClick={fecharModalProduto}
-                disabled={salvandoProduto}
-                aria-label="Fechar"
+                onClick={
+                  fecharModalProduto
+                }
+                disabled={
+                  salvandoProduto
+                }
               >
                 ×
               </button>
@@ -2341,7 +2581,9 @@ export default function Estoque() {
 
             <form
               className="estoque-modal-form"
-              onSubmit={salvarProduto}
+              onSubmit={
+                salvarProduto
+              }
             >
 
               <div className="estoque-form-group full">
@@ -2353,7 +2595,9 @@ export default function Estoque() {
                 <input
                   id="produto-nome"
                   type="text"
-                  value={formProduto.nome}
+                  value={
+                    formProduto.nome
+                  }
                   onChange={(event) =>
                     alterarProduto(
                       "nome",
@@ -2362,7 +2606,9 @@ export default function Estoque() {
                   }
                   placeholder="Ex.: MDF Carvalho Natural 18mm"
                   autoFocus
-                  disabled={salvandoProduto}
+                  disabled={
+                    salvandoProduto
+                  }
                 />
 
               </div>
@@ -2378,7 +2624,9 @@ export default function Estoque() {
                   <input
                     id="produto-sku"
                     type="text"
-                    value={formProduto.sku}
+                    value={
+                      formProduto.sku
+                    }
                     onChange={(event) =>
                       alterarProduto(
                         "sku",
@@ -2386,7 +2634,9 @@ export default function Estoque() {
                       )
                     }
                     placeholder="Ex.: MDF-CAR-18"
-                    disabled={salvandoProduto}
+                    disabled={
+                      salvandoProduto
+                    }
                   />
 
                 </div>
@@ -2410,7 +2660,9 @@ export default function Estoque() {
                       )
                     }
                     placeholder="Ex.: MAT-001"
-                    disabled={salvandoProduto}
+                    disabled={
+                      salvandoProduto
+                    }
                   />
 
                 </div>
@@ -2427,7 +2679,9 @@ export default function Estoque() {
 
                   <div className="estoque-input-money">
 
-                    <span>R$</span>
+                    <span>
+                      R$
+                    </span>
 
                     <input
                       id="produto-valor"
@@ -2444,7 +2698,9 @@ export default function Estoque() {
                         )
                       }
                       placeholder="0,00"
-                      disabled={salvandoProduto}
+                      disabled={
+                        salvandoProduto
+                      }
                     />
 
                   </div>
@@ -2459,7 +2715,9 @@ export default function Estoque() {
 
                   <div className="estoque-input-money">
 
-                    <span>R$</span>
+                    <span>
+                      R$
+                    </span>
 
                     <input
                       id="produto-preco"
@@ -2476,7 +2734,9 @@ export default function Estoque() {
                         )
                       }
                       placeholder="0,00"
-                      disabled={salvandoProduto}
+                      disabled={
+                        salvandoProduto
+                      }
                     />
 
                   </div>
@@ -2496,8 +2756,12 @@ export default function Estoque() {
                 <button
                   type="button"
                   className="estoque-modal-cancel"
-                  onClick={fecharModalProduto}
-                  disabled={salvandoProduto}
+                  onClick={
+                    fecharModalProduto
+                  }
+                  disabled={
+                    salvandoProduto
+                  }
                 >
                   Cancelar
                 </button>
@@ -2505,7 +2769,9 @@ export default function Estoque() {
                 <button
                   type="submit"
                   className="estoque-modal-save"
-                  disabled={salvandoProduto}
+                  disabled={
+                    salvandoProduto
+                  }
                 >
                   {salvandoProduto
                     ? "Salvando..."
@@ -2572,8 +2838,12 @@ export default function Estoque() {
               <button
                 type="button"
                 className="estoque-modal-close"
-                onClick={fecharModalEntrada}
-                disabled={salvandoEntrada}
+                onClick={
+                  fecharModalEntrada
+                }
+                disabled={
+                  salvandoEntrada
+                }
               >
                 ×
               </button>
@@ -2582,7 +2852,9 @@ export default function Estoque() {
 
             <form
               className="estoque-modal-form"
-              onSubmit={salvarEntrada}
+              onSubmit={
+                salvarEntrada
+              }
             >
 
               <div className="estoque-form-group full">
@@ -2592,13 +2864,17 @@ export default function Estoque() {
                 </label>
 
                 <select
-                  value={formEntrada.produtoId}
+                  value={
+                    formEntrada.produtoId
+                  }
                   onChange={(event) =>
                     selecionarProdutoEntrada(
                       event.target.value
                     )
                   }
-                  disabled={salvandoEntrada}
+                  disabled={
+                    salvandoEntrada
+                  }
                 >
 
                   <option value="">
@@ -2609,14 +2885,21 @@ export default function Estoque() {
                     (produto) => (
 
                       <option
-                        key={produto.id}
-                        value={produto.id}
+                        key={
+                          produto.id
+                        }
+                        value={
+                          produto.id
+                        }
                       >
-                        {produto.nome}
+                        {
+                          produto.nome
+                        }
 
                         {produto.sku
                           ? ` — ${produto.sku}`
                           : ""}
+
                       </option>
 
                     )
@@ -2632,11 +2915,16 @@ export default function Estoque() {
 
                   <label>
                     Nota fiscal
+                    <span className="campo-obrigatorio">
+                      *
+                    </span>
                   </label>
 
                   <input
                     type="text"
-                    value={formEntrada.nfEntrada}
+                    value={
+                      formEntrada.nfEntrada
+                    }
                     onChange={(event) =>
                       alterarEntrada(
                         "nfEntrada",
@@ -2644,8 +2932,14 @@ export default function Estoque() {
                       )
                     }
                     placeholder="Ex.: 000123"
-                    disabled={salvandoEntrada}
+                    disabled={
+                      salvandoEntrada
+                    }
                   />
+
+                  <small className="estoque-campo-ajuda">
+                    Obrigatório
+                  </small>
 
                 </div>
 
@@ -2668,7 +2962,9 @@ export default function Estoque() {
                       )
                     }
                     placeholder="0"
-                    disabled={salvandoEntrada}
+                    disabled={
+                      salvandoEntrada
+                    }
                   />
 
                 </div>
@@ -2685,7 +2981,9 @@ export default function Estoque() {
 
                   <div className="estoque-input-money">
 
-                    <span>R$</span>
+                    <span>
+                      R$
+                    </span>
 
                     <input
                       type="number"
@@ -2700,7 +2998,9 @@ export default function Estoque() {
                         )
                       }
                       placeholder="0,00"
-                      disabled={salvandoEntrada}
+                      disabled={
+                        salvandoEntrada
+                      }
                     />
 
                   </div>
@@ -2715,7 +3015,9 @@ export default function Estoque() {
 
                   <div className="estoque-input-money">
 
-                    <span>R$</span>
+                    <span>
+                      R$
+                    </span>
 
                     <input
                       type="number"
@@ -2741,7 +3043,9 @@ export default function Estoque() {
 
                   <div className="estoque-input-money">
 
-                    <span>R$</span>
+                    <span>
+                      R$
+                    </span>
 
                     <input
                       type="number"
@@ -2757,7 +3061,9 @@ export default function Estoque() {
                         )
                       }
                       placeholder="0,00"
-                      disabled={salvandoEntrada}
+                      disabled={
+                        salvandoEntrada
+                      }
                     />
 
                   </div>
@@ -2777,8 +3083,12 @@ export default function Estoque() {
                 <button
                   type="button"
                   className="estoque-modal-cancel"
-                  onClick={fecharModalEntrada}
-                  disabled={salvandoEntrada}
+                  onClick={
+                    fecharModalEntrada
+                  }
+                  disabled={
+                    salvandoEntrada
+                  }
                 >
                   Cancelar
                 </button>
@@ -2786,7 +3096,9 @@ export default function Estoque() {
                 <button
                   type="submit"
                   className="estoque-modal-save"
-                  disabled={salvandoEntrada}
+                  disabled={
+                    salvandoEntrada
+                  }
                 >
                   {salvandoEntrada
                     ? "Salvando..."
@@ -2851,8 +3163,12 @@ export default function Estoque() {
               <button
                 type="button"
                 className="estoque-modal-close"
-                onClick={fecharModalSaida}
-                disabled={salvandoSaida}
+                onClick={
+                  fecharModalSaida
+                }
+                disabled={
+                  salvandoSaida
+                }
               >
                 ×
               </button>
@@ -2861,12 +3177,10 @@ export default function Estoque() {
 
             <form
               className="estoque-modal-form"
-              onSubmit={salvarSaida}
+              onSubmit={
+                salvarSaida
+              }
             >
-
-              {/* =================================================
-                  PRODUTO
-              ================================================= */}
 
               <div className="estoque-form-group full">
 
@@ -2876,7 +3190,9 @@ export default function Estoque() {
 
                 <select
                   id="saida-produto"
-                  value={formSaida.produtoId}
+                  value={
+                    formSaida.produtoId
+                  }
                   onChange={(event) =>
                     alterarSaida(
                       "produtoId",
@@ -2903,25 +3219,32 @@ export default function Estoque() {
                         );
 
                       return (
-
                         <option
-                          key={produto.id}
-                          value={produto.id}
+                          key={
+                            produto.id
+                          }
+                          value={
+                            produto.id
+                          }
                           disabled={
-                            estoqueAtual <= 0
+                            estoqueAtual <=
+                            0
                           }
                         >
 
-                          {produto.nome}
+                          {
+                            produto.nome
+                          }
 
                           {" — "}
 
                           Estoque:{" "}
 
-                          {estoqueAtual}
+                          {
+                            estoqueAtual
+                          }
 
                         </option>
-
                       );
                     }
                   )}
@@ -2930,13 +3253,8 @@ export default function Estoque() {
 
               </div>
 
-              {/* =================================================
-                  ESTOQUE DISPONÍVEL
-              ================================================= */}
-
               {formSaida.produtoId &&
                 !saidaEditando && (
-
                   <div className="estoque-form-help">
 
                     Estoque disponível:{" "}
@@ -2959,17 +3277,15 @@ export default function Estoque() {
                     </strong>
 
                   </div>
-
                 )}
-
-              {/* =================================================
-                  SOLICITANTE
-              ================================================= */}
 
               <div className="estoque-form-group full">
 
                 <label htmlFor="saida-solicitante">
                   Nome do solicitante
+                  <span className="campo-obrigatorio">
+                    *
+                  </span>
                 </label>
 
                 <input
@@ -2985,15 +3301,13 @@ export default function Estoque() {
                     )
                   }
                   placeholder="Ex.: João da Silva"
-                  disabled={salvandoSaida}
+                  disabled={
+                    salvandoSaida
+                  }
                   autoComplete="off"
                 />
 
               </div>
-
-              {/* =================================================
-                  QUANTIDADE
-              ================================================= */}
 
               <div className="estoque-form-group full">
 
@@ -3016,17 +3330,14 @@ export default function Estoque() {
                     )
                   }
                   placeholder="0"
-                  disabled={salvandoSaida}
+                  disabled={
+                    salvandoSaida
+                  }
                 />
 
               </div>
 
-              {/* =================================================
-                  AVISO DE EDIÇÃO
-              ================================================= */}
-
               {saidaEditando && (
-
                 <div className="estoque-form-help">
 
                   O produto não pode ser alterado
@@ -3034,32 +3345,25 @@ export default function Estoque() {
                   a quantidade.
 
                 </div>
-
               )}
 
-              {/* =================================================
-                  ERRO
-              ================================================= */}
-
               {erroSaida && (
-
                 <div className="estoque-modal-error">
                   {erroSaida}
                 </div>
-
               )}
-
-              {/* =================================================
-                  FOOTER
-              ================================================= */}
 
               <div className="estoque-modal-footer">
 
                 <button
                   type="button"
                   className="estoque-modal-cancel"
-                  onClick={fecharModalSaida}
-                  disabled={salvandoSaida}
+                  onClick={
+                    fecharModalSaida
+                  }
+                  disabled={
+                    salvandoSaida
+                  }
                 >
                   Cancelar
                 </button>
@@ -3067,7 +3371,9 @@ export default function Estoque() {
                 <button
                   type="submit"
                   className="estoque-modal-save"
-                  disabled={salvandoSaida}
+                  disabled={
+                    salvandoSaida
+                  }
                 >
                   {salvandoSaida
                     ? "Salvando..."
@@ -3079,6 +3385,109 @@ export default function Estoque() {
               </div>
 
             </form>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =====================================================
+          MODAL DE CONFIRMAÇÃO
+      ===================================================== */}
+
+      {modalConfirmacao && (
+        <div
+          className="estoque-modal-overlay estoque-confirmacao-overlay"
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              fecharConfirmacao();
+            }
+          }}
+        >
+
+          <div
+            className="estoque-modal estoque-modal-confirmacao"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="estoque-confirmacao-icon">
+              !
+            </div>
+
+            <div className="estoque-modal-header">
+
+              <div>
+
+                <span>
+                  CONFIRMAÇÃO
+                </span>
+
+                <h2>
+                  {confirmacao.titulo}
+                </h2>
+
+                <p>
+                  {confirmacao.mensagem}
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                className="estoque-modal-close"
+                onClick={
+                  fecharConfirmacao
+                }
+                disabled={
+                  confirmando
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+            <div className="estoque-modal-footer">
+
+              <button
+                type="button"
+                className="estoque-modal-cancel"
+                onClick={
+                  fecharConfirmacao
+                }
+                disabled={
+                  confirmando
+                }
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className={
+                  confirmacao.tipo ===
+                  "danger"
+                    ? "estoque-modal-confirm-danger"
+                    : "estoque-modal-save"
+                }
+                onClick={
+                  executarConfirmacao
+                }
+                disabled={
+                  confirmando
+                }
+              >
+                {confirmando
+                  ? "Excluindo..."
+                  : confirmacao.textoConfirmar}
+              </button>
+
+            </div>
 
           </div>
 
