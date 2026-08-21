@@ -1545,7 +1545,7 @@ export default function Estoque() {
             <div className="estoque-stat">
 
               <span>
-                Valor total em estoque
+                Valor total em estoque (PREÇO DE VENDA)
               </span>
 
               <strong>

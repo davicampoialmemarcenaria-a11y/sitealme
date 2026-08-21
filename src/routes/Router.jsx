@@ -6,222 +6,165 @@ import Contato from "../pages/Contato/Contato";
 import Eua from "../pages/Eua/Eua";
 import Duvidas from "../pages/Duvidas/Duvidas";
 import Marceneiro from "../pages/Marceneiro/Marceneiro";
-
 import Login from "../pages/login/Login";
-
 
 import AdminLayout from "../pages/admin/Layout/AdminLayout";
 import Dashboard from "../pages/admin/Dashboard/Dashboard";
 import News from "../pages/admin/News/News";
 import Projetos from "../pages/admin/Projetos/Projetos";
-
+import Estoque from "../pages/admin/Estoque/Estoque";
 
 import Newsu from "../pages/Newsu/Newsu";
 import NewsPage from "../pages/Newsu/NewsPage/NewsPage";
 
-
 import Projetosu from "../pages/Projetosu/Projetosu";
 import ProjetosPage from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 
-
-import Estoque from "../pages/admin/Estoque/Estoque";
-
 import ProtectedRoute from "../components/ProtectedRoute";
-
 
 import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 
-
 export default function Router() {
-
-
     return (
-
         <BrowserRouter>
-        <ScrollToTop />
+
+            <ScrollToTop />
 
             <Routes>
 
-
-
-                {/* =====================
+                {/* =====================================================
                     SITE
-                ====================== */}
-
-
-
-                <Route 
-                    path="/" 
-                    element={<Home />} 
-                />
-
-
-
-                <Route 
-                    path="/sobre" 
-                    element={<Sobre />} 
-                />
-
-
-
-                <Route 
-                    path="/contato" 
-                    element={<Contato />} 
-                />
-
-
-
-                <Route 
-                    path="/eua" 
-                    element={<Eua />} 
-                />
-
-
-
-                <Route 
-                    path="/duvidas" 
-                    element={<Duvidas />} 
-                />
-
-
-
-                <Route 
-                    path="/marceneiro" 
-                    element={<Marceneiro />} 
-                />
-
-
-
-                <Route 
-                    path="/login" 
-                    element={<Login />} 
-                />
-
-
-
-
-                {/* =====================
-                    NEWS PÚBLICO
-                ====================== */}
-
-
-
-                <Route 
-                    path="/newsu" 
-                    element={<Newsu />} 
-                />
-
-
-
-                <Route 
-                    path="/news/:id" 
-                    element={<NewsPage />} 
-                />
-
-
-
-
-{/* =====================
-    PROJETOS PÚBLICO
-====================== */}
-
-
-<Route 
-    path="/projetos" 
-    element={<Projetosu />} 
-/>
-
-
-<Route 
-    path="/projetos/:id" 
-    element={<ProjetosPage />} 
-/>
-
-
-
-
-
-                {/* =====================
-                    ADMINISTRATIVO
-                ====================== */}
-
-
+                ===================================================== */}
 
                 <Route
+                    path="/"
+                    element={<Home />}
+                />
 
+                <Route
+                    path="/sobre"
+                    element={<Sobre />}
+                />
+
+                <Route
+                    path="/contato"
+                    element={<Contato />}
+                />
+
+                <Route
+                    path="/eua"
+                    element={<Eua />}
+                />
+
+                <Route
+                    path="/duvidas"
+                    element={<Duvidas />}
+                />
+
+                <Route
+                    path="/marceneiro"
+                    element={<Marceneiro />}
+                />
+
+                <Route
+                    path="/login"
+                    element={<Login />}
+                />
+
+
+                {/* =====================================================
+                    NEWS PÚBLICO
+                ===================================================== */}
+
+                <Route
+                    path="/newsu"
+                    element={<Newsu />}
+                />
+
+                <Route
+                    path="/news/:id"
+                    element={<NewsPage />}
+                />
+
+
+                {/* =====================================================
+                    PROJETOS PÚBLICO
+                ===================================================== */}
+
+                <Route
+                    path="/projetos"
+                    element={<Projetosu />}
+                />
+
+                <Route
+                    path="/projetos/:id"
+                    element={<ProjetosPage />}
+                />
+
+
+                {/* =====================================================
+                    ADMINISTRATIVO
+                ===================================================== */}
+
+                <Route
                     path="/admin"
-
                     element={
-
                         <ProtectedRoute
-
                             allowedRoles={[
-
                                 "administrativo_geral",
-
                                 "comercial",
-
                                 "producao",
-
                                 "financeiro"
-
-
                             ]}
-
                         >
-
                             <AdminLayout />
-
                         </ProtectedRoute>
-
                     }
-
                 >
 
-
+                    {/* =================================================
+                        DASHBOARD
+                    ================================================= */}
 
                     <Route
-
                         index
-
                         element={<Dashboard />}
-
                     />
 
 
+                    {/* =================================================
+                        NEWS
+                    ================================================= */}
 
                     <Route
-
                         path="news"
-
                         element={<News />}
-
                     />
 
 
+                    {/* =================================================
+                        PROJETOS
+                    ================================================= */}
 
                     <Route
-
                         path="projetos"
-
                         element={<Projetos />}
-
                     />
 
 
+                    {/* =================================================
+                        ESTOQUE
+                    ================================================= */}
+
+                    <Route
+                        path="estoque"
+                        element={<Estoque />}
+                    />
 
                 </Route>
 
-
-<Route path="/admin/estoque" element={<Estoque />} />
-
-
             </Routes>
 
-
-
         </BrowserRouter>
-
     );
-
 }

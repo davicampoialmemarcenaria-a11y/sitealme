@@ -118,13 +118,13 @@ export default function AdminLayout() {
 
                                 <NavLink 
 
-                                    to="/admin/financeiro"
+                                    to="/admin/Estoque"
 
                                     onClick={fecharMenu}
 
                                 >
 
-                                    Financeiro
+                                    Estoque
 
                                 </NavLink>
 

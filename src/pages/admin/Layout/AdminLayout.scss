@@ -150,29 +150,18 @@
 }
 
 
-.admin__content button{
-
+.admin__content > button{
     background:#4b2108;
-
     color:white;
-
     border:none;
-
     padding:14px 28px;
-
     border-radius:8px;
-
     cursor:pointer;
-
     transition:.3s;
-
 }
 
-
-.admin__content button:hover{
-
+.admin__content > button:hover{
     background:#6c3311;
-
 }
 
 
