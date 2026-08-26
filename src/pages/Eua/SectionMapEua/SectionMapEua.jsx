@@ -59,15 +59,11 @@ const SectionMapEua = () => {
                     </div>
 
                     <h1>
-
                         {t("international.title")}
-
                     </h1>
 
                     <p>
-
                         {t("international.description")}
-
                     </p>
 
                 </div>
@@ -115,6 +111,21 @@ const SectionMapEua = () => {
                     </div>
 
                 ))}
+
+            </div>
+
+            {/* BOTÃO FINAL */}
+
+            <div className="button-container-mapaeua">
+
+                <a
+                    href="https://almewoodworks.com/"
+                    className="button-mapaeua"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {t("international.button")}
+                </a>
 
             </div>
 

@@ -11,31 +11,31 @@
   "menu.morePages": "MORE PAGES",
 
   "hero.tag": "QUALITY • SOPHISTICATION • EXCLUSIVITY",
-  "hero.title": "Applying excellence and creating experiences",
-  "hero.description": "A woodworking company focused on management that follows every stage and process from beginning to end, ensuring organization, alignment, and a smooth execution in every detail.",
+  "hero.title": "Delivering excellence. Creating experiences.",
+  "hero.description": "A woodwork company specialized in end-to-end project management, overseeing every stage of the process with precision, organization, and meticulous attention to detail.",
   "hero.button": "LEARN MORE",
 
   "menu.navigation":"NAVEGATION MENU",
 
-  "experience.title": "Always thinking",
+  "experience.title": "Always looking",
   "experience.title2": "beyond aesthetics.",
   "experience.subtitle": "We create sensations",
 
   "experience.item1.title": "COMFORT",
-  "experience.item1.text": "Spaces that embrace those who live in them.",
+  "experience.item1.text": "Spaces designed to bring cosiness.",
 
   "experience.item2.title": "CALMNESS",
-  "experience.item2.text": "Projects that welcome, inspire, and bring serenity.",
+  "experience.item2.text": "Projects that feel warm, inspireing and welcoming.",
 
   "experience.item3.title": "TRANQUILITY",
-  "experience.item3.text": "Essential design for moments of peace.",
+  "experience.item3.text": "Essential design for peaceful moments.",
 
   "experience.item4.title": "PRECISION",
-  "experience.item4.text": "Strength and beauty in every detail.",
+  "experience.item4.text": "Strength meets beauty in every detail.",
 
 
   "projectsHome.title": "Dreams accomplished",
-  "projectsHome.description": "Every detail is designed and executed especially for you.",
+  "projectsHome.description": "Every detail is thoughtfully designed and crafted for you.",
   "projectsHome.tag": "WOODWORKING HIGHLIGHTS",
   "projectsHome.button": "SEE OUR PROJECTS UP CLOSE",
 
@@ -50,40 +50,40 @@
   "process.subtitle": "We work with processes",
 
   "process.step1.title": "1° CONTRACT SIGNING",
-  "process.step1.text": "After signing the contract, our production process begins.",
+  "process.step1.text": "Once the contract is signed, our production process begins.",
 
   "process.step2.title": "2° ONBOARDING MEETING",
-  "process.step2.text": "At this stage, you will meet with our team to better understand the company's processes while presenting your project, your needs, and what you want to achieve.",
+  "process.step2.text": "At this stage, you'll meet with our team to gain a clear understanding of our process while sharing your project, your needs, and your goals.",
 
   "process.step3.title": "3° PROJECT ALIGNMENT",
   "process.step3.text": "The moment where we discuss details and aspects that will not impact the final project value.",
 
   "process.step4.title": "4° PRODUCTION",
-  "process.step4.text": "The GC will be responsible for carrying out the necessary measurements so that, after receiving the materials, we can begin the project's pre-assembly.",
+  "process.step4.text": "The GC will take the required measurements so that, once the materials arrive, we can begin the project's pre-assembly.",
 
   "process.step5.title": "5° INSTALLATION",
-  "process.step5.text": "We deliver the materials to the project location to begin the installation process. The GC will monitor the team during this stage and send weekly reports with progress photos and the updated schedule.",
+  "process.step5.text": "We deliver the materials to the project site and begin the installation process. Throughout this stage, the GC oversees the team and provides weekly progress reports, including photos and an updated schedule.",
 
   "process.step6.title": "6° FINAL DELIVERY REPORT",
-  "process.step6.text": "This represents the conclusion of the delivery, but our team will remain available to provide technical assistance whenever necessary. If there are no requests, we will carry out an inspection visit within 30 days after the final delivery.",
+  "process.step6.text": "This marks the conclusion of the project, but our team remains available to provide technical support whenever needed. If no assistance is required, we'll schedule an inspection visit within 30 days of the final delivery.",
 
 "principles.subtitle": "Our principles",
 
 "principles.item1.title": "Quality in everything we do",
-"principles.item1.text": "We understand that every action, no matter how simple it may seem, must receive the highest level of dedication and quality we can deliver.",
+"principles.item1.text": "We understand that every action, no matter how simple it may seem, deserves the highest level of dedication and quality we can deliver.",
 
 "principles.item2.title": "Commitment to our word",
-"principles.item2.text": "Commitment to our word means honoring what we say in every situation, even when something goes beyond our control.",
+"principles.item2.text": "Commitment to our word means honoring what we promise in every situation, even when circumstances are beyond our control.",
 
-"principles.item3.title": "Growth for those who walk with us",
-"principles.item3.text": "We believe that a prosperous and lasting company is one where everyone grows together. Our development should create value for everyone who is part of our journey.",
+"principles.item3.title": "Growth for those who accompany us",
+"principles.item3.text": "We believe that a prosperous and lasting company is one where everyone grows together. Our growth should create value for everyone who is part of our journey.",
 
 "principles.item4.title": "Excellence in the experience",
-"principles.item4.text": "We must always maintain respect, kindness, and understand that every interaction should reflect excellence. Acting with responsibility, commitment, and dedication in every project.",
+"principles.item4.text": "We believe in maintaining respect and kindness in every interaction, ensuring that every experience reflects excellence. We act with responsibility, commitment, and dedication.",
 
 "principles.item5.title": "Long-term thinking", 
 
-"principles.item5.text": "Long-term thinking guides our decisions, ensuring that today is built not only for the present, but also for the future we want to achieve.",
+"principles.item5.text": "Long-term thinking guides our decisions, ensuring that what we build today is not only designed for the present, but also for the future we aim to create.",
 "footer.description": "We follow every stage, from beginning to end, ensuring organization, alignment, and a smooth execution in every detail.",
 
 "footer.aboutButton": "LEARN MORE ABOUT OUR STORY",
@@ -175,7 +175,7 @@
 "contact.title2": "project starts",
 "contact.title3": "with a conversation",
 
-"contact.description": "Throughout our process, we keep our clients informed about every stage of their project by sharing progress photos and regular construction reports.",
+"contact.description": "Through our process, we keep our clients informed about every stage of their project by sharing progress photos and regular construction reports.",
 
 "contact.cardTitle": "Request a quote or send us your project today",
 
@@ -189,7 +189,7 @@
 "usaHero.title2": "goes beyond borders.",
 "usaHero.title3": "We are international",
 
-"usaHero.description": "Custom woodworking without borders, with the same ALME quality and care.",
+"usaHero.description": "Custom woodwork without borders, with the same ALME quality and care.",
 
 "national.subtitle": "NATIONWIDE FOCUS",
 
@@ -201,13 +201,13 @@
 "national.card1.text": "Every project is carried out transparently and aligned with each client's needs.",
 
 "national.card2.title": "PROJECT MANAGEMENT",
-"national.card2.text": "We coordinate every stage, connecting technical development, production, and installation.",
+"national.card2.text": "We coordinate all stages, connecting technical development, production, and installation.",
 
 "national.card3.title": "PARTNERS",
 "national.card3.text": "We work with trusted professionals who share our values of quality, responsibility, and commitment.",
 
 "national.card4.title": "CRAFTSMANSHIP",
-"national.card4.text": "We maintain high standards of execution, ensuring every project reflects the care invested in every stage of the process.",
+"national.card4.text": "We maintain high standards of execution, ensuring our project reflects the care invested in each.",
 
 "international.subtitle": "INTERNATIONAL FOCUS",
 
@@ -216,7 +216,7 @@
 "international.description": "We develop and manage projects for the international market, connecting production and installation through carefully structured processes, relationships built on trust, commitment, and a long-term vision.",
 
 "international.card1.title": "PARTNERS",
-"international.card1.text": "We work with a selected network of manufacturers and installers, ensuring quality, reliability, and consistency from start to finish.",
+"international.card1.text": "We work with a selected network of manufacturers, ensuring quality, reliability, and consistency from start to end.",
 
 "international.card2.title": "PROJECT COORDINATION",
 "international.card2.text": "Every project undergoes a detailed review of dimensions, hardware, and construction methods to ensure precision during installation.",
@@ -344,7 +344,7 @@
 
 "marceneiro.formTitle": "Certification form",
 
-
+"international.button": "US - OPERATION",
 
 "marceneiroSection.title": "Our approach",
 
@@ -357,7 +357,7 @@
 "projectsHero.title1": "From an idea to a project,",
 "projectsHero.title2": "from a project to reality",
 
-"projectsHero.description": "Close monitoring and information alignment are essential to transform your project into reality.",
+"projectsHero.description": "Close coordination and information alignment are essential to transform your project into reality.",
 
 "projectLaw.title": "Project guidelines",
 
