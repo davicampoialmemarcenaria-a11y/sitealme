@@ -1,8 +1,13 @@
 import {
     BrowserRouter,
     Routes,
-    Route
+    Route,
+    Navigate
 } from "react-router-dom";
+
+import {
+    useAuth
+} from "../contexts/AuthContext";
 
 
 /*
@@ -92,6 +97,130 @@ SCROLL
 import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 
 
+/*
+=====================================================
+INÍCIO DO ADMIN
+=====================================================
+
+Quando o usuário acessar:
+
+/admin
+
+direcionamos cada perfil para sua própria área.
+
+Administrativo Geral → Dashboard
+Comercial            → Comercial
+Produção              → Produção
+Financeiro            → Financeiro
+
+=====================================================
+*/
+
+function AdminInicio() {
+
+    const {
+        role
+    } = useAuth();
+
+
+    /*
+    =================================================
+    ADMINISTRATIVO GERAL
+    =================================================
+    */
+
+    if (
+        role === "Administrativo Geral"
+    ) {
+
+        return (
+            <Dashboard />
+        );
+
+    }
+
+
+    /*
+    =================================================
+    COMERCIAL
+    =================================================
+    */
+
+    if (
+        role === "comercial"
+    ) {
+
+        return (
+            <Navigate
+                to="/admin/comercial"
+                replace
+            />
+        );
+
+    }
+
+
+    /*
+    =================================================
+    PRODUÇÃO
+    =================================================
+    */
+
+    if (
+        role === "producao"
+    ) {
+
+        return (
+            <Navigate
+                to="/admin/producao"
+                replace
+            />
+        );
+
+    }
+
+
+    /*
+    =================================================
+    FINANCEIRO
+    =================================================
+    */
+
+    if (
+        role === "financeiro"
+    ) {
+
+        return (
+            <Navigate
+                to="/admin/financeiro"
+                replace
+            />
+        );
+
+    }
+
+
+    /*
+    =================================================
+    ROLE DESCONHECIDA
+    =================================================
+    */
+
+    return (
+        <Navigate
+            to="/"
+            replace
+        />
+    );
+}
+
+
+/*
+=====================================================
+ROUTER
+=====================================================
+*/
+
 export default function Router() {
 
     return (
@@ -109,44 +238,59 @@ export default function Router() {
 
                 <Route
                     path="/"
-                    element={<Home />}
+                    element={
+                        <Home />
+                    }
                 />
 
 
                 <Route
                     path="/sobre"
-                    element={<Sobre />}
+                    element={
+                        <Sobre />
+                    }
                 />
 
 
                 <Route
                     path="/contato"
-                    element={<Contato />}
+                    element={
+                        <Contato />
+                    }
                 />
 
 
                 <Route
                     path="/eua"
-                    element={<Eua />}
+                    element={
+                        <Eua />
+                    }
                 />
 
 
                 <Route
                     path="/duvidas"
-                    element={<Duvidas />}
+                    element={
+                        <Duvidas />
+                    }
                 />
 
 
                 <Route
                     path="/marceneiro"
-                    element={<Marceneiro />}
+                    element={
+                        <Marceneiro />
+                    }
                 />
 
 
                 <Route
                     path="/login"
-                    element={<Login />}
+                    element={
+                        <Login />
+                    }
                 />
+
 
 
                 {/* =====================================================
@@ -155,14 +299,19 @@ export default function Router() {
 
                 <Route
                     path="/newsu"
-                    element={<Newsu />}
+                    element={
+                        <Newsu />
+                    }
                 />
 
 
                 <Route
                     path="/news/:id"
-                    element={<NewsPage />}
+                    element={
+                        <NewsPage />
+                    }
                 />
+
 
 
                 {/* =====================================================
@@ -171,14 +320,19 @@ export default function Router() {
 
                 <Route
                     path="/projetos"
-                    element={<Projetosu />}
+                    element={
+                        <Projetosu />
+                    }
                 />
 
 
                 <Route
                     path="/projetos/:id"
-                    element={<ProjetosPage />}
+                    element={
+                        <ProjetosPage />
+                    }
                 />
+
 
 
                 {/* =====================================================
@@ -194,7 +348,7 @@ export default function Router() {
                         <ProtectedRoute
 
                             allowedRoles={[
-                                "administrativo_geral",
+                                "Administrativo Geral",
                                 "comercial",
                                 "producao",
                                 "financeiro"
@@ -212,9 +366,7 @@ export default function Router() {
 
 
                     {/* =================================================
-                        DASHBOARD
-
-                        SOMENTE ADMINISTRADOR
+                        INÍCIO DO ADMIN
                     ================================================= */}
 
                     <Route
@@ -222,28 +374,17 @@ export default function Router() {
                         index
 
                         element={
-
-                            <ProtectedRoute
-
-                                allowedRoles={[
-                                    "administrativo_geral"
-                                ]}
-
-                            >
-
-                                <Dashboard />
-
-                            </ProtectedRoute>
-
+                            <AdminInicio />
                         }
 
                     />
 
 
+
                     {/* =================================================
                         COMERCIAL
 
-                        ADMINISTRADOR + COMERCIAL
+                        Administrativo Geral + Comercial
                     ================================================= */}
 
                     <Route
@@ -255,7 +396,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral",
+                                    "Administrativo Geral",
                                     "comercial"
                                 ]}
 
@@ -276,10 +417,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         PRODUÇÃO
 
-                        ADMINISTRADOR + PRODUÇÃO
+                        Administrativo Geral + Produção
                     ================================================= */}
 
                     <Route
@@ -291,7 +433,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral",
+                                    "Administrativo Geral",
                                     "producao"
                                 ]}
 
@@ -312,10 +454,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         FINANCEIRO
 
-                        ADMINISTRADOR + FINANCEIRO
+                        Administrativo Geral + Financeiro
                     ================================================= */}
 
                     <Route
@@ -327,7 +470,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral",
+                                    "Administrativo Geral",
                                     "financeiro"
                                 ]}
 
@@ -348,10 +491,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         ESTOQUE
 
-                        ADMINISTRADOR + FINANCEIRO
+                        Administrativo Geral + Financeiro
                     ================================================= */}
 
                     <Route
@@ -363,7 +507,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral",
+                                    "Administrativo Geral",
                                     "financeiro"
                                 ]}
 
@@ -378,10 +522,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         NEWS
 
-                        SOMENTE ADMINISTRADOR
+                        Somente Administrativo Geral
                     ================================================= */}
 
                     <Route
@@ -393,7 +538,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral"
+                                    "Administrativo Geral"
                                 ]}
 
                             >
@@ -407,10 +552,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         PROJETOS
 
-                        SOMENTE ADMINISTRADOR
+                        Somente Administrativo Geral
                     ================================================= */}
 
                     <Route
@@ -422,7 +568,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral"
+                                    "Administrativo Geral"
                                 ]}
 
                             >
@@ -436,10 +582,11 @@ export default function Router() {
                     />
 
 
+
                     {/* =================================================
                         USUÁRIOS
 
-                        SOMENTE ADMINISTRADOR
+                        Somente Administrativo Geral
                     ================================================= */}
 
                     <Route
@@ -451,7 +598,7 @@ export default function Router() {
                             <ProtectedRoute
 
                                 allowedRoles={[
-                                    "administrativo_geral"
+                                    "Administrativo Geral"
                                 ]}
 
                             >
@@ -468,10 +615,25 @@ export default function Router() {
                 </Route>
 
 
+                {/* =====================================================
+                    ROTA NÃO ENCONTRADA
+                ===================================================== */}
+
+                <Route
+
+                    path="*"
+
+                    element={
+                        <Navigate
+                            to="/"
+                            replace
+                        />
+                    }
+
+                />
+
             </Routes>
 
         </BrowserRouter>
-
     );
-
 }

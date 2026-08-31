@@ -1,23 +1,30 @@
-import { Navigate } from "react-router-dom";
+import {
+    Navigate,
+    useLocation
+} from "react-router-dom";
+
 import { useAuth } from "../contexts/AuthContext";
 
+
 export default function ProtectedRoute({
-
     children,
-
     allowedRoles = []
-
 }) {
 
     const {
-
         user,
-
         role,
-
         loading
-
     } = useAuth();
+
+    const location = useLocation();
+
+
+    /*
+    =====================================================
+    CARREGANDO AUTENTICAÇÃO
+    =====================================================
+    */
 
     if (loading) {
 
@@ -37,29 +44,80 @@ export default function ProtectedRoute({
                 Carregando...
 
             </div>
-
         );
-
     }
+
+
+    /*
+    =====================================================
+    USUÁRIO NÃO AUTENTICADO
+    =====================================================
+    */
 
     if (!user) {
 
-        return <Navigate to="/login" replace />;
+        return (
 
+            <Navigate
+                to="/login"
+                replace
+                state={{
+                    from: location.pathname
+                }}
+            />
+
+        );
     }
 
-    if (
 
-        allowedRoles.length > 0 &&
+    /*
+    =====================================================
+    VERIFICAR PERMISSÃO
+    =====================================================
+    */
 
-        !allowedRoles.includes(role)
+    const autorizado =
+        allowedRoles.length === 0 ||
+        allowedRoles.includes(role);
 
-    ) {
 
-        return <Navigate to="/" replace />;
+    /*
+    =====================================================
+    SEM PERMISSÃO
+    =====================================================
+    */
 
+    if (!autorizado) {
+
+        console.warn(
+            "Acesso negado:",
+            {
+                caminho:
+                    location.pathname,
+
+                role,
+
+                allowedRoles
+            }
+        );
+
+
+        return (
+
+            <Navigate
+                to="/"
+                replace
+            />
+
+        );
     }
+
+
+    /*
+    =====================================================
+    ACESSO LIBERADO
+    =====================================================
+    */
 
     return children;
-
 }

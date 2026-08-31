@@ -145,7 +145,7 @@ export default function Login() {
 
                 switch (tipo) {
 
-                    case "administrativo_geral":
+                    case "Administrativo Geral":
                     case "comercial":
                     case "producao":
                     case "financeiro":

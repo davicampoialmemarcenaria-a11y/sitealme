@@ -403,7 +403,7 @@ export default function AdminLayout() {
 
                         {
 
-                            role === "administrativo_geral"
+                            role === "Administrativo Geral"
 
                             && (
 
@@ -435,7 +435,7 @@ export default function AdminLayout() {
                             (
 
                                 role ===
-                                    "administrativo_geral"
+                                    "Administrativo Geral"
 
                                 ||
 
@@ -472,7 +472,7 @@ export default function AdminLayout() {
                             (
 
                                 role ===
-                                    "administrativo_geral"
+                                    "Administrativo Geral"
 
                                 ||
 
@@ -509,7 +509,7 @@ export default function AdminLayout() {
                             (
 
                                 role ===
-                                    "administrativo_geral"
+                                   "Administrativo Geral"
 
                                 ||
 
@@ -635,7 +635,7 @@ export default function AdminLayout() {
                         {
 
                             role ===
-                                "administrativo_geral"
+                                "Administrativo Geral"
 
                             && (
 
@@ -754,7 +754,7 @@ export default function AdminLayout() {
                         {
 
                             role ===
-                                "administrativo_geral"
+                               "Administrativo Geral"
 
                             && (
 

@@ -154,15 +154,14 @@ async function verificarAdministrador(
             ? userRole?.roles?.[0]?.nome
             : userRole?.roles?.nome;
 
-    if (
-        roleNome !==
-        "administrativo_geral"
-    ) {
-        throw new Error(
-            "Apenas administradores podem gerenciar usuários."
-        );
-    }
-
+  if (
+    roleNome !==
+    "Administrativo Geral"
+) {
+    throw new Error(
+        "Apenas administradores podem gerenciar usuários."
+    );
+}
     return user;
 }
 
