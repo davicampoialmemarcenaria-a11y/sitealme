@@ -1,279 +1,694 @@
-.admin{
+.admin {
 
-    display:flex;
+    display: flex;
 
-    height:100vh;
+    height: 100vh;
 
-    background:#f7f5f2;
+    background: #f7f5f2;
 
-}
-
-
-.admin__sidebar{
-
-    width:270px;
-
-    background:#4b2108;
-
-    color:white;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:space-between;
-
-    padding:35px 25px;
+    overflow: hidden;
 
 }
 
 
-.admin__logo h2{
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
-    margin:0;
+.admin__sidebar {
 
-    font-size:34px;
+    width: 270px;
 
-    font-weight:500;
+    min-width: 270px;
 
-}
+    height: 100vh;
 
+    box-sizing: border-box;
 
-.admin__logo span{
+    background: #4b2108;
 
-    display:block;
+    color: white;
 
-    margin-top:6px;
+    display: flex;
 
-    opacity:.75;
+    flex-direction: column;
 
-    font-size:13px;
+    justify-content: space-between;
 
-}
+    padding: 35px 20px 25px;
 
+    overflow-y: auto;
 
-.admin__sidebar nav{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:14px;
-
-    margin-top:50px;
+    overflow-x: hidden;
 
 }
 
 
-.admin__sidebar nav a{
+/* =========================================================
+   PARTE SUPERIOR
+========================================================= */
 
-    color:white;
+.admin__top {
 
-    text-decoration:none;
-
-    padding:14px 18px;
-
-    border-radius:8px;
-
-    transition:.25s;
-
-    font-size:15px;
+    width: 100%;
 
 }
 
 
-.admin__sidebar nav a:hover{
+/* =========================================================
+   LOGO
+========================================================= */
 
-    background:#6a3518;
+.admin__logo {
 
-}
-
-
-.admin__sidebar nav a.active{
-
-    background:#d38a17;
-
-    color:white;
+    padding: 0 5px;
 
 }
 
 
-.logout{
+.admin__logo h2 {
 
-    margin-top:auto;
+    margin: 0;
 
-    height:48px;
+    font-size: 34px;
 
-    border:none;
+    font-weight: 500;
 
-    background:#d38a17;
-
-    color:white;
-
-    border-radius:8px;
-
-    cursor:pointer;
-
-    font-size:15px;
-
-    transition:.3s;
+    letter-spacing: 1px;
 
 }
 
 
-.logout:hover{
+.admin__logo span {
 
-    background:#b8740f;
+    display: block;
 
-}
+    margin-top: 6px;
 
+    opacity: .75;
 
-.admin__content{
-
-    flex:1;
-
-    padding:50px;
-
-    overflow:auto;
+    font-size: 13px;
 
 }
 
 
-.admin__content h1{
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
 
-    font-size:38px;
+.admin__sidebar nav {
 
-    color:#4b2108;
+    display: flex;
 
-    margin-bottom:25px;
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-top: 45px;
 
 }
 
 
-.admin__content > button{
-    background:#4b2108;
-    color:white;
-    border:none;
-    padding:14px 28px;
-    border-radius:8px;
-    cursor:pointer;
-    transition:.3s;
+/* =========================================================
+   LINKS PRINCIPAIS
+========================================================= */
+
+.admin__sidebar nav > a {
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    color: white;
+
+    text-decoration: none;
+
+    padding: 13px 16px;
+
+    border-radius: 8px;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .2s ease;
+
+    font-size: 15px;
+
 }
 
-.admin__content > button:hover{
-    background:#6c3311;
+
+.admin__sidebar nav > a:hover {
+
+    background: #6a3518;
+
 }
 
 
+.admin__sidebar nav > a.active {
 
-/* ==========================
+    background: #d38a17;
+
+    color: white;
+
+}
+
+
+/* =========================================================
+   GRUPO DE MENU
+========================================================= */
+
+.admin__menu-group {
+
+    width: 100%;
+
+}
+
+
+/* =========================================================
+   BOTÃO DO MENU EXPANSÍVEL
+========================================================= */
+
+.admin__menu-toggle {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    padding: 13px 16px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    text-align: left;
+
+    transition:
+        background .25s ease,
+        color .25s ease;
+
+}
+
+
+.admin__menu-toggle:hover {
+
+    background: #6a3518;
+
+}
+
+
+.admin__menu-toggle.active {
+
+    background: #d38a17;
+
+}
+
+
+/* =========================================================
+   SETA
+========================================================= */
+
+.admin__arrow {
+
+    font-size: 22px;
+
+    line-height: 1;
+
+    transition: transform .25s ease;
+
+    opacity: .8;
+
+}
+
+
+.admin__arrow.aberta {
+
+    transform: rotate(90deg);
+
+}
+
+
+/* =========================================================
+   SUBMENU
+========================================================= */
+
+.admin__submenu {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    max-height: 0;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    transition:
+        max-height .3s ease,
+        opacity .25s ease;
+
+}
+
+
+.admin__submenu.aberto {
+
+    max-height: 150px;
+
+    opacity: 1;
+
+    margin-top: 3px;
+
+}
+
+
+/* =========================================================
+   LINKS DO SUBMENU
+========================================================= */
+
+.admin__submenu a {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    color: rgba(255, 255, 255, .78);
+
+    text-decoration: none;
+
+    padding: 10px 16px 10px 38px;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+
+    transition:
+        background .25s ease,
+        color .25s ease;
+
+}
+
+
+.admin__submenu a::before {
+
+    content: "";
+
+    position: absolute;
+
+    left: 20px;
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, .45);
+
+}
+
+
+.admin__submenu a:hover {
+
+    background: #6a3518;
+
+    color: white;
+
+}
+
+
+.admin__submenu a.active {
+
+    background: rgba(211, 138, 23, .75);
+
+    color: white;
+
+}
+
+
+.admin__submenu a.active::before {
+
+    background: white;
+
+}
+
+
+/* =========================================================
+   RODAPÉ DA SIDEBAR
+========================================================= */
+
+.admin__footer {
+
+    width: 100%;
+
+    margin-top: 30px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255, 255, 255, .12);
+
+}
+
+
+/* =========================================================
+   PERFIL
+========================================================= */
+
+.admin__profile {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 0 5px 16px;
+
+    min-width: 0;
+
+}
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
+
+.admin__profile-avatar {
+
+    flex-shrink: 0;
+
+    width: 38px;
+
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #d38a17;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+}
+
+
+/* =========================================================
+   INFORMAÇÕES DO PERFIL
+========================================================= */
+
+.admin__profile-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+
+}
+
+
+.admin__profile-info strong {
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    max-width: 170px;
+
+}
+
+
+.admin__profile-info span {
+
+    margin-top: 3px;
+
+    color: rgba(255, 255, 255, .58);
+
+    font-size: 12px;
+
+}
+
+
+/* =========================================================
+   BOTÃO SAIR
+========================================================= */
+
+.logout {
+
+    width: 100%;
+
+    height: 44px;
+
+    border: 1px solid rgba(255, 255, 255, .15);
+
+    background: transparent;
+
+    color: rgba(255, 255, 255, .85);
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        border-color .25s ease;
+
+}
+
+
+.logout:hover {
+
+    background: rgba(211, 138, 23, .18);
+
+    border-color: rgba(211, 138, 23, .5);
+
+    color: white;
+
+}
+
+
+/* =========================================================
+   CONTEÚDO
+========================================================= */
+
+.admin__content {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 50px;
+
+    overflow: auto;
+
+}
+
+
+.admin__content h1 {
+
+    font-size: 38px;
+
+    color: #4b2108;
+
+    margin-bottom: 25px;
+
+}
+
+
+.admin__content > button {
+
+    background: #4b2108;
+
+    color: white;
+
+    border: none;
+
+    padding: 14px 28px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    transition: .3s;
+
+}
+
+
+.admin__content > button:hover {
+
+    background: #6c3311;
+
+}
+
+
+/* =========================================================
    MENU MOBILE
-========================== */
+========================================================= */
 
+.menu-mobile {
 
-.menu-mobile{
-
-    display:none;
+    display: none;
 
 }
 
 
-
-/* ==========================
+/* =========================================================
    RESPONSIVO
-========================== */
+========================================================= */
+
+@media (max-width: 768px) {
 
 
-@media(max-width:768px){
+    .admin {
 
+        display: block;
 
-    .admin{
-
-        display:block;
-
-    }
-
-.menu-mobile{
-
-    display:flex;
-
-    position:fixed;
-
-    top:20px;
-
-    right:20px;
-
-    z-index:2000;
-
-    width:45px;
-
-    height:45px;
-
-    align-items:center;
-
-    justify-content:center;
-
-    border:none;
-
-    border-radius:10px;
-
-    background:#4b2108;
-
-    color:white;
-
-    font-size:25px;
-
-    cursor:pointer;
-
-}
-
-
-
-    .admin__sidebar{
-
-        position:fixed;
-
-        top:0;
-
-        left:-300px;
-
-        width:270px;
-
-        height:100vh;
-
-        z-index:1500;
-
-        transition:.35s ease;
-
-        box-sizing:border-box;
+        overflow: auto;
 
     }
 
 
+    /* ================================================
+       BOTÃO MOBILE
+    ================================================ */
 
-    .admin__sidebar.ativo{
+    .menu-mobile {
 
-        left:0;
+        display: flex;
+
+        position: fixed;
+
+        top: 20px;
+
+        right: 20px;
+
+        z-index: 2000;
+
+        width: 45px;
+
+        height: 45px;
+
+        align-items: center;
+
+        justify-content: center;
+
+        border: none;
+
+        border-radius: 10px;
+
+        background: #4b2108;
+
+        color: white;
+
+        font-size: 25px;
+
+        cursor: pointer;
+
+        box-shadow: 0 5px 20px rgba(0, 0, 0, .15);
 
     }
 
 
+    /* ================================================
+       SIDEBAR MOBILE
+    ================================================ */
 
-    .admin__content{
+    .admin__sidebar {
 
-         width:100%;
+        position: fixed;
 
-    padding:80px 20px 30px;
+        top: 0;
 
-    box-sizing:border-box;
+        left: -300px;
+
+        width: 270px;
+
+        min-width: 270px;
+
+        height: 100vh;
+
+        z-index: 1500;
+
+        transition: left .35s ease;
+
+        box-sizing: border-box;
+
+        box-shadow: 8px 0 30px rgba(0, 0, 0, .15);
 
     }
 
 
+    .admin__sidebar.ativo {
 
-    .admin__content h1{
+        left: 0;
 
-        font-size:28px;
+    }
+
+
+    /* ================================================
+       CONTEÚDO MOBILE
+    ================================================ */
+
+    .admin__content {
+
+        width: 100%;
+
+        min-height: 100vh;
+
+        padding: 80px 20px 30px;
+
+        box-sizing: border-box;
+
+    }
+
+
+    .admin__content h1 {
+
+        font-size: 28px;
 
     }
 

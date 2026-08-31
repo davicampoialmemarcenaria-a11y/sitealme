@@ -2,114 +2,122 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../services/supabase";
 import toast from "react-hot-toast";
-
 import Navbar from "../../components/Navbar/Navbar";
 import Footer from "../../components/Footer/Footer";
-
 import "./Login.scss";
-
 
 export default function Login() {
 
-
     const navigate = useNavigate();
 
+    const [usuario, setUsuario] = useState("");
+    const [senha, setSenha] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const [email,setEmail] = useState("");
-    const [senha,setSenha] = useState("");
-
-    const [loading,setLoading] = useState(false);
-
-
-
-    async function entrar(e){
+    async function entrar(e) {
 
         e.preventDefault();
 
-
-
-        if(!email || !senha){
-
+        if (!usuario || !senha) {
             toast.error(
                 "Preencha todos os campos."
             );
-
             return;
-
         }
 
-
-
-        try{
-
+        try {
 
             setLoading(true);
 
-
+            // =================================================
+            // 1. BUSCA O E-MAIL ATRAVÉS DO NOME DE USUÁRIO
+            // =================================================
 
             const {
+                data: emailEncontrado,
+                error: usernameError
+            } = await supabase.rpc(
+                "get_email_by_username",
+                {
+                    p_username: usuario.trim()
+                }
+            );
 
-                data,
-                error
+            if (usernameError) {
 
-            } = await supabase.auth.signInWithPassword({
-
-                email,
-
-                password:senha
-
-            });
-
-
-
-            if(error){
+                console.error(usernameError);
 
                 toast.error(
-                    "E-mail ou senha incorretos."
+                    "Erro ao verificar o usuário."
                 );
 
                 return;
+            }
 
+            if (!emailEncontrado) {
+
+                toast.error(
+                    "Usuário ou senha incorretos."
+                );
+
+                return;
             }
 
 
+            // =================================================
+            // 2. LOGIN NO SUPABASE AUTH
+            // =================================================
+
+            const {
+                data,
+                error
+            } = await supabase.auth.signInWithPassword({
+                email: emailEncontrado,
+                password: senha
+            });
+
+
+            if (error) {
+
+                console.error(error);
+
+                toast.error(
+                    "Usuário ou senha incorretos."
+                );
+
+                return;
+            }
+
+
+            // =================================================
+            // 3. USUÁRIO AUTENTICADO
+            // =================================================
 
             const user = data.user;
 
 
-
-            /*
-            BUSCA O TIPO DE USUÁRIO
-            */
+            // =================================================
+            // 4. BUSCA O TIPO DE USUÁRIO
+            // =================================================
 
             const {
-
-                data:perfil,
-
-                error:perfilError
-
+                data: perfil,
+                error: perfilError
             } = await supabase
-
                 .from("user_roles")
-
                 .select(`
-
                     roles(
                         nome
                     )
-
                 `)
-
                 .eq(
                     "user_id",
                     user.id
                 )
-
                 .single();
 
 
-
-            if(perfilError){
+            if (perfilError) {
 
                 console.log(perfilError);
 
@@ -118,256 +126,163 @@ export default function Login() {
                 );
 
                 return;
-
             }
-
 
 
             const tipo = perfil.roles.nome;
 
 
+            // =================================================
+            // 5. LOGIN REALIZADO
+            // =================================================
 
             toast.success(
                 "Login realizado."
             );
 
 
+            setTimeout(() => {
 
-            setTimeout(()=>{
-
-
-                switch(tipo){
-
-
+                switch (tipo) {
 
                     case "administrativo_geral":
-
                     case "comercial":
-
                     case "producao":
-
                     case "financeiro":
-
 
                         navigate("/admin");
 
-                    break;
-
-
+                        break;
 
 
                     case "homologado":
 
-
                         navigate("/homologados");
 
-                    break;
-
-
+                        break;
 
 
                     case "parceiro":
 
-
                         navigate("/parceiros");
 
-                    break;
-
-
+                        break;
 
 
                     default:
-
 
                         navigate("/");
 
                 }
 
+            }, 700);
 
 
-            },700);
-
-
-
-        }
-
-        catch(err){
-
+        } catch (err) {
 
             console.error(err);
-
 
             toast.error(
                 "Erro ao conectar com o servidor."
             );
 
-
-        }
-
-
-        finally{
-
+        } finally {
 
             setLoading(false);
 
-
         }
-
 
     }
 
 
-
-
     return (
-
         <>
 
-        <section className="login">
+            <section className="login">
 
+                <Navbar />
 
-            <Navbar />
+                <div className="login__background"></div>
 
 
-            <div className="login__background"></div>
+                <div className="login__card">
 
+                    <h1>
+                        LOGIN
+                    </h1>
 
 
+                    <form onSubmit={entrar}>
 
-            <div className="login__card">
+                        <label htmlFor="usuario">
+                            Usuário
+                        </label>
 
 
-                <h1>
-                    LOGIN
-                </h1>
+                        <input
+                            id="usuario"
+                            type="text"
+                            autoComplete="username"
+                            value={usuario}
+                            onChange={
+                                e => setUsuario(e.target.value)
+                            }
+                            placeholder="Digite seu usuário"
+                        />
 
 
+                        <label htmlFor="senha">
+                            Senha
+                        </label>
 
 
-                <form onSubmit={entrar}>
+                        <input
+                            id="senha"
+                            type="password"
+                            autoComplete="current-password"
+                            value={senha}
+                            onChange={
+                                e => setSenha(e.target.value)
+                            }
+                            placeholder="Digite sua senha"
+                        />
 
 
-                    <label htmlFor="email">
-                        E-mail
-                    </label>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                        >
 
+                            {
+                                loading
+                                    ? "ENTRANDO..."
+                                    : "ENTRAR"
+                            }
 
+                        </button>
 
-                    <input
+                    </form>
 
-                        id="email"
+                </div>
 
-                        type="email"
 
-                        autoComplete="email"
+                <div className="login__title">
 
-                        value={email}
+                    <h2>
+                        Administrativo
+                        <br />
+                        Homologados
+                        <br />
+                        Parceiros
+                    </h2>
 
-                        onChange={
-                            e=>setEmail(e.target.value)
-                        }
+                </div>
 
-                    />
+            </section>
 
 
-
-
-                    <label htmlFor="senha">
-
-                        Senha
-
-                    </label>
-
-
-
-
-                    <input
-
-                        id="senha"
-
-                        type="password"
-
-                        autoComplete="current-password"
-
-                        value={senha}
-
-                        onChange={
-                            e=>setSenha(e.target.value)
-                        }
-
-                    />
-
-
-
-
-                    <button
-
-                        type="submit"
-
-                        disabled={loading}
-
-                    >
-
-                        {
-
-                        loading
-
-                        ?
-
-                        "ENTRANDO..."
-
-                        :
-
-                        "ENTRAR"
-
-                        }
-
-
-                    </button>
-
-
-
-                </form>
-
-
-
-            </div>
-
-
-
-
-
-            <div className="login__title">
-
-
-                <h2>
-
-                    Administrativo
-
-                    <br/>
-
-                    Homologados
-
-                    <br/>
-
-                    Parceiros
-
-                </h2>
-
-
-
-            </div>
-
-
-
-        </section>
-
-
-
-        <Footer />
+            <Footer />
 
         </>
-
     );
-
 }
