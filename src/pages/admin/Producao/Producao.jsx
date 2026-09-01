@@ -1,6 +1,7 @@
 import {
     FiArrowRight,
-    FiBox
+    FiBox,
+    FiCalendar
 } from "react-icons/fi";
 
 import {
@@ -55,7 +56,7 @@ export default function Producao() {
 
 
                 {/* =================================================
-                    BOTÃO OBRAS
+                    CARD OBRAS
                 ================================================= */}
 
                 <button
@@ -112,9 +113,66 @@ export default function Producao() {
                 </button>
 
 
+
+                {/* =================================================
+                    CARD CRONOGRAMA
+                ================================================= */}
+<button
+    type="button"
+    className="producao-card"
+    onClick={() => {
+        console.log("CLICOU CRONOGRAMAS");
+        console.log("INDO PARA:", "/admin/cronogramas");
+
+        navigate("/admin/cronogramas");
+    }}
+>
+
+                    <div
+                        className="producao-card-icon"
+                    >
+
+                        <FiCalendar />
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-content"
+                    >
+
+                        <span>
+                            PRODUÇÃO
+                        </span>
+
+                        <h2>
+                            Cronograma
+                        </h2>
+
+                        <p>
+                            Organize os prazos e acompanhe
+                            o cronograma das obras da ALME.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
             </section>
 
 
         </section>
+
     );
+
 }

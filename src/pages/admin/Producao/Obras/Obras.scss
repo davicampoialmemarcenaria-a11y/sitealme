@@ -1286,6 +1286,27 @@ MODAL
 
     max-width: 550px;
 
+    box-sizing: border-box;
+
+    overflow: hidden;
+}
+
+.obras-modal-small .obras-modal-footer {
+
+    margin-top: 25px;
+
+    padding: 0 32px 30px;
+
+    box-sizing: border-box;
+}
+
+.obras-modal-small .obras-modal-header {
+
+    padding-left: 32px;
+
+    padding-right: 32px;
+
+    box-sizing: border-box;
 }
 
 
@@ -1600,8 +1621,10 @@ FOOTER MODAL
 
     margin-top: 25px;
 
-}
+    padding-top: 5px;
 
+    box-sizing: border-box;
+}
 
 .obras-btn-cancel,
 .obras-btn-save,
