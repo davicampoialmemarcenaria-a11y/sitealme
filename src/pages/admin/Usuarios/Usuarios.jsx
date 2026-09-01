@@ -62,54 +62,45 @@ export default function Usuarios() {
         setUsuarios
     ] = useState([]);
 
-
     const [
         roles,
         setRoles
     ] = useState([]);
-
 
     const [
         loading,
         setLoading
     ] = useState(true);
 
-
     const [
         salvando,
         setSalvando
     ] = useState(false);
-
 
     const [
         modal,
         setModal
     ] = useState(false);
 
-
     const [
         modalSenha,
         setModalSenha
     ] = useState(false);
-
 
     const [
         modalExcluir,
         setModalExcluir
     ] = useState(false);
 
-
     const [
         editando,
         setEditando
     ] = useState(null);
 
-
     const [
         usuarioSelecionado,
         setUsuarioSelecionado
     ] = useState(null);
-
 
     const [
         form,
@@ -118,12 +109,10 @@ export default function Usuarios() {
         ...FORM_INICIAL
     });
 
-
     const [
         novaSenha,
         setNovaSenha
     ] = useState("");
-
 
     const [
         erro,
@@ -132,9 +121,9 @@ export default function Usuarios() {
 
 
     /*
-    =====================================================
+    =================================================
     CARREGAR USUÁRIOS
-    =====================================================
+    =================================================
     */
 
     async function carregarUsuarios() {
@@ -143,14 +132,7 @@ export default function Usuarios() {
 
         setErro("");
 
-
         try {
-
-            /*
-            =============================================
-            LISTAR USUÁRIOS
-            =============================================
-            */
 
             const {
                 data,
@@ -162,33 +144,24 @@ export default function Usuarios() {
                         "admin-users",
                         {
                             body: {
-                                action: "list"
+                                action:
+                                    "list"
                             }
                         }
                     );
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             if (data?.error) {
-
                 throw new Error(
                     data.error
                 );
-
             }
 
-
-            /*
-            =============================================
-            USUÁRIOS
-            =============================================
-            */
 
             setUsuarios(
 
@@ -200,12 +173,6 @@ export default function Usuarios() {
 
             );
 
-
-            /*
-            =============================================
-            ROLES
-            =============================================
-            */
 
             if (
                 Array.isArray(
@@ -220,12 +187,6 @@ export default function Usuarios() {
             }
 
             else {
-
-                /*
-                =========================================
-                FALLBACK
-                =========================================
-                */
 
                 const {
                     data: rolesData,
@@ -245,9 +206,7 @@ export default function Usuarios() {
 
 
                 if (rolesError) {
-
                     throw rolesError;
-
                 }
 
 
@@ -258,18 +217,15 @@ export default function Usuarios() {
                         ? rolesData
                         : []
                 );
-
             }
 
         }
-
         catch (err) {
 
             console.error(
                 "Erro ao carregar usuários:",
                 err
             );
-
 
             setErro(
 
@@ -280,20 +236,18 @@ export default function Usuarios() {
             );
 
         }
-
         finally {
 
             setLoading(false);
 
         }
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     CARREGAR AO ABRIR
-    =====================================================
+    =================================================
     */
 
     useEffect(() => {
@@ -304,37 +258,29 @@ export default function Usuarios() {
 
 
     /*
-    =====================================================
-    ABRIR NOVO USUÁRIO
-    =====================================================
+    =================================================
+    ABRIR NOVO
+    =================================================
     */
 
     function abrirNovoUsuario() {
 
-        setEditando(
-            null
-        );
-
+        setEditando(null);
 
         setForm({
             ...FORM_INICIAL
         });
 
-
         setErro("");
 
-
-        setModal(
-            true
-        );
-
+        setModal(true);
     }
 
 
     /*
-    =====================================================
+    =================================================
     ABRIR EDIÇÃO
-    =====================================================
+    =================================================
     */
 
     function abrirEdicao(
@@ -363,19 +309,15 @@ export default function Usuarios() {
             role_id:
                 usuario.role_id !== null &&
                 usuario.role_id !== undefined
+
                     ? String(
                         usuario.role_id
                     )
+
                     : "",
 
             senha:
                 "",
-
-            /*
-            =============================================
-            PERMISSÃO DE TODAS AS OBRAS
-            =============================================
-            */
 
             pode_ver_todas_obras:
                 usuario.pode_ver_todas_obras === true
@@ -385,53 +327,39 @@ export default function Usuarios() {
 
         setErro("");
 
-
-        setModal(
-            true
-        );
-
+        setModal(true);
     }
 
 
     /*
-    =====================================================
+    =================================================
     FECHAR MODAL
-    =====================================================
+    =================================================
     */
 
     function fecharModal() {
 
         if (salvando) {
-
             return;
-
         }
 
 
-        setModal(
-            false
-        );
+        setModal(false);
 
-
-        setEditando(
-            null
-        );
-
+        setEditando(null);
 
         setForm({
             ...FORM_INICIAL
         });
 
-
         setErro("");
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     ALTERAR CAMPO
-    =====================================================
+    =================================================
     */
 
     function alterarCampo(
@@ -447,30 +375,24 @@ export default function Usuarios() {
 
 
         setForm(
-
             prev => ({
 
                 ...prev,
 
                 [name]:
-
                     type === "checkbox"
-
                         ? checked
-
                         : value
 
             })
-
         );
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     GERAR USERNAME
-    =====================================================
+    =================================================
     */
 
     function gerarUsernameAutomatico() {
@@ -497,14 +419,13 @@ export default function Usuarios() {
 
 
         return "";
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     SALVAR USUÁRIO
-    =====================================================
+    =================================================
     */
 
     async function salvarUsuario(
@@ -516,26 +437,16 @@ export default function Usuarios() {
         setErro("");
 
 
-        /*
-        =============================================
-        NORMALIZAR
-        =============================================
-        */
-
         const nome =
-            form.nome
-                .trim();
-
+            form.nome.trim();
 
         const email =
             form.email
                 .trim()
                 .toLowerCase();
 
-
         const username =
             gerarUsernameAutomatico();
-
 
         const roleId =
             form.role_id
@@ -544,15 +455,14 @@ export default function Usuarios() {
                 )
                 : null;
 
-
         const podeVerTodasObras =
             form.pode_ver_todas_obras === true;
 
 
         /*
-        =============================================
-        VALIDAR NOME
-        =============================================
+        =================================================
+        VALIDAR
+        =================================================
         */
 
         if (!nome) {
@@ -562,15 +472,8 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
-
-        /*
-        =============================================
-        VALIDAR E-MAIL
-        =============================================
-        */
 
         if (!email) {
 
@@ -579,15 +482,8 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
-
-        /*
-        =============================================
-        VALIDAR USERNAME
-        =============================================
-        */
 
         if (!username) {
 
@@ -596,15 +492,8 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
-
-        /*
-        =============================================
-        VALIDAR ROLE
-        =============================================
-        */
 
         if (!roleId) {
 
@@ -613,14 +502,13 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
         /*
-        =============================================
-        SENHA NA CRIAÇÃO
-        =============================================
+        =================================================
+        SENHA SOMENTE NA CRIAÇÃO
+        =================================================
         */
 
         if (
@@ -633,16 +521,12 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
         if (
-
             !editando &&
-
             form.senha.length < 6
-
         ) {
 
             setErro(
@@ -650,21 +534,18 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
-        setSalvando(
-            true
-        );
+        setSalvando(true);
 
 
         try {
 
             /*
-            =============================================
+            =================================================
             CRIAR
-            =============================================
+            =================================================
             */
 
             if (!editando) {
@@ -695,12 +576,6 @@ export default function Usuarios() {
                                     password:
                                         form.senha,
 
-                                    /*
-                                    =================================
-                                    NOVA PERMISSÃO
-                                    =================================
-                                    */
-
                                     pode_ver_todas_obras:
                                         podeVerTodasObras
 
@@ -710,27 +585,22 @@ export default function Usuarios() {
 
 
                 if (error) {
-
                     throw error;
-
                 }
 
 
                 if (data?.error) {
-
                     throw new Error(
                         data.error
                     );
-
                 }
-
             }
 
 
             /*
-            =============================================
+            =================================================
             EDITAR
-            =============================================
+            =================================================
             */
 
             else {
@@ -761,12 +631,6 @@ export default function Usuarios() {
                                     role_id:
                                         roleId,
 
-                                    /*
-                                    =================================
-                                    NOVA PERMISSÃO
-                                    =================================
-                                    */
-
                                     pode_ver_todas_obras:
                                         podeVerTodasObras
 
@@ -776,27 +640,22 @@ export default function Usuarios() {
 
 
                 if (error) {
-
                     throw error;
-
                 }
 
 
                 if (data?.error) {
-
                     throw new Error(
                         data.error
                     );
-
                 }
-
             }
 
 
             /*
-            =============================================
+            =================================================
             FINALIZAR
-            =============================================
+            =================================================
             */
 
             fecharModal();
@@ -804,14 +663,12 @@ export default function Usuarios() {
             await carregarUsuarios();
 
         }
-
         catch (err) {
 
             console.error(
                 "Erro ao salvar usuário:",
                 err
             );
-
 
             setErro(
 
@@ -822,22 +679,18 @@ export default function Usuarios() {
             );
 
         }
-
         finally {
 
-            setSalvando(
-                false
-            );
+            setSalvando(false);
 
         }
-
     }
 
 
     /*
-    =====================================================
-    ABRIR ALTERAÇÃO DE SENHA
-    =====================================================
+    =================================================
+    ABRIR SENHA
+    =================================================
     */
 
     function abrirSenha(
@@ -848,57 +701,40 @@ export default function Usuarios() {
             usuario
         );
 
-
         setNovaSenha("");
-
 
         setErro("");
 
-
-        setModalSenha(
-            true
-        );
-
+        setModalSenha(true);
     }
 
 
     /*
-    =====================================================
+    =================================================
     FECHAR SENHA
-    =====================================================
+    =================================================
     */
 
     function fecharSenha() {
 
         if (salvando) {
-
             return;
-
         }
 
+        setModalSenha(false);
 
-        setModalSenha(
-            false
-        );
-
-
-        setUsuarioSelecionado(
-            null
-        );
-
+        setUsuarioSelecionado(null);
 
         setNovaSenha("");
 
-
         setErro("");
-
     }
 
 
     /*
-    =====================================================
-    SALVAR SENHA
-    =====================================================
+    =================================================
+    ALTERAR SENHA
+    =================================================
     */
 
     async function salvarSenha(
@@ -917,7 +753,6 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
@@ -930,7 +765,6 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
@@ -943,13 +777,10 @@ export default function Usuarios() {
             );
 
             return;
-
         }
 
 
-        setSalvando(
-            true
-        );
+        setSalvando(true);
 
 
         try {
@@ -980,18 +811,14 @@ export default function Usuarios() {
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
             if (data?.error) {
-
                 throw new Error(
                     data.error
                 );
-
             }
 
 
@@ -1000,14 +827,12 @@ export default function Usuarios() {
             await carregarUsuarios();
 
         }
-
         catch (err) {
 
             console.error(
                 "Erro ao alterar senha:",
                 err
             );
-
 
             setErro(
 
@@ -1018,22 +843,18 @@ export default function Usuarios() {
             );
 
         }
-
         finally {
 
-            setSalvando(
-                false
-            );
+            setSalvando(false);
 
         }
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     ABRIR EXCLUSÃO
-    =====================================================
+    =================================================
     */
 
     function abrirExclusao(
@@ -1044,21 +865,16 @@ export default function Usuarios() {
             usuario
         );
 
-
         setErro("");
 
-
-        setModalExcluir(
-            true
-        );
-
+        setModalExcluir(true);
     }
 
 
     /*
-    =====================================================
-    EXCLUIR
-    =====================================================
+    =================================================
+    EXCLUIR USUÁRIO
+    =================================================
     */
 
     async function excluirUsuario() {
@@ -1066,16 +882,11 @@ export default function Usuarios() {
         if (
             !usuarioSelecionado?.id
         ) {
-
             return;
-
         }
 
 
-        setSalvando(
-            true
-        );
-
+        setSalvando(true);
 
         setErro("");
 
@@ -1105,9 +916,7 @@ export default function Usuarios() {
 
 
             if (error) {
-
                 throw error;
-
             }
 
 
@@ -1116,31 +925,22 @@ export default function Usuarios() {
                 throw new Error(
                     data.error
                 );
-
             }
 
 
-            setModalExcluir(
-                false
-            );
+            setModalExcluir(false);
 
-
-            setUsuarioSelecionado(
-                null
-            );
-
+            setUsuarioSelecionado(null);
 
             await carregarUsuarios();
 
         }
-
         catch (err) {
 
             console.error(
                 "Erro ao excluir usuário:",
                 err
             );
-
 
             setErro(
 
@@ -1151,22 +951,18 @@ export default function Usuarios() {
             );
 
         }
-
         finally {
 
-            setSalvando(
-                false
-            );
+            setSalvando(false);
 
         }
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     NOME DA ROLE
-    =====================================================
+    =================================================
     */
 
     function nomeRole(
@@ -1178,7 +974,6 @@ export default function Usuarios() {
         ) {
 
             return usuario.role;
-
         }
 
 
@@ -1194,14 +989,13 @@ export default function Usuarios() {
             role?.nome ||
             "Sem perfil"
         );
-
     }
 
 
     /*
-    =====================================================
+    =================================================
     DATA
-    =====================================================
+    =================================================
     */
 
     function formatarData(
@@ -1209,9 +1003,7 @@ export default function Usuarios() {
     ) {
 
         if (!data) {
-
             return "-";
-
         }
 
 
@@ -1228,7 +1020,6 @@ export default function Usuarios() {
         ) {
 
             return "-";
-
         }
 
 
@@ -1236,14 +1027,13 @@ export default function Usuarios() {
             .toLocaleDateString(
                 "pt-BR"
             );
-
     }
 
 
     /*
-    =====================================================
-    TEXTO PERMISSÃO
-    =====================================================
+    =================================================
+    TEXTO DA PERMISSÃO
+    =================================================
     */
 
     function textoPermissaoObras(
@@ -1255,27 +1045,22 @@ export default function Usuarios() {
             ? "Todas as obras"
 
             : "Somente relacionadas";
-
     }
 
 
     /*
-    =====================================================
-    TELA
-    =====================================================
+    =================================================
+    RENDER
+    =================================================
     */
 
     return (
 
         <section className="usuarios-page">
 
-
-            {/* =================================================
-                HEADER
-            ================================================= */}
+            {/* HEADER */}
 
             <div className="usuarios-header">
-
 
                 <div>
 
@@ -1283,11 +1068,9 @@ export default function Usuarios() {
                         PAINEL ADMINISTRATIVO
                     </span>
 
-
                     <h1>
                         Usuários
                     </h1>
-
 
                     <p>
                         Gerencie os usuários, perfis de acesso,
@@ -1299,31 +1082,23 @@ export default function Usuarios() {
 
                 <div className="usuarios-header-actions">
 
-
                     <button
-
                         type="button"
-
                         className="usuarios-btn-refresh"
-
                         onClick={
                             carregarUsuarios
                         }
-
                         disabled={
                             loading
                         }
-
                     >
 
                         <FiRefreshCw
-
                             className={
                                 loading
                                     ? "girando"
                                     : ""
                             }
-
                         />
 
                         Atualizar
@@ -1332,15 +1107,11 @@ export default function Usuarios() {
 
 
                     <button
-
                         type="button"
-
                         className="usuarios-btn-add"
-
                         onClick={
                             abrirNovoUsuario
                         }
-
                     >
 
                         <FiPlus />
@@ -1349,45 +1120,32 @@ export default function Usuarios() {
 
                     </button>
 
-
                 </div>
 
             </div>
 
 
-            {/* =================================================
-                ERRO
-            ================================================= */}
+            {/* ERRO */}
 
             {
-
                 erro &&
-
                 !modal &&
-
                 !modalSenha &&
-
                 !modalExcluir &&
 
                 (
 
                     <div className="usuarios-error">
-
                         {erro}
-
                     </div>
 
                 )
-
             }
 
 
-            {/* =================================================
-                SUMMARY
-            ================================================= */}
+            {/* SUMMARY */}
 
             <div className="usuarios-summary">
-
 
                 <div>
 
@@ -1395,11 +1153,8 @@ export default function Usuarios() {
                         USUÁRIOS
                     </span>
 
-
                     <strong>
-                        {
-                            usuarios.length
-                        }
+                        {usuarios.length}
                     </strong>
 
                 </div>
@@ -1411,11 +1166,8 @@ export default function Usuarios() {
                         PERFIS
                     </span>
 
-
                     <strong>
-                        {
-                            roles.length
-                        }
+                        {roles.length}
                     </strong>
 
                 </div>
@@ -1426,7 +1178,6 @@ export default function Usuarios() {
                     <span>
                         ACESSO A TODAS AS OBRAS
                     </span>
-
 
                     <strong>
 
@@ -1441,19 +1192,14 @@ export default function Usuarios() {
 
                 </div>
 
-
             </div>
 
 
-            {/* =================================================
-                TABELA
-            ================================================= */}
+            {/* TABELA */}
 
             <section className="usuarios-content">
 
-
                 <div className="usuarios-section-title">
-
 
                     <div>
 
@@ -1461,19 +1207,16 @@ export default function Usuarios() {
                             ACESSOS
                         </span>
 
-
                         <h2>
                             Usuários cadastrados
                         </h2>
 
                     </div>
 
-
                 </div>
 
 
                 {
-
                     loading
 
                         ?
@@ -1497,7 +1240,6 @@ export default function Usuarios() {
                             <div className="usuarios-table-wrapper">
 
                                 <table className="usuarios-table">
-
 
                                     <thead>
 
@@ -1538,9 +1280,7 @@ export default function Usuarios() {
 
                                     <tbody>
 
-
                                         {
-
                                             usuarios.length === 0
 
                                                 ?
@@ -1550,15 +1290,10 @@ export default function Usuarios() {
                                                     <tr>
 
                                                         <td
-
                                                             colSpan="7"
-
                                                             className="usuarios-empty"
-
                                                         >
-
                                                             Nenhum usuário cadastrado.
-
                                                         </td>
 
                                                     </tr>
@@ -1570,73 +1305,52 @@ export default function Usuarios() {
                                                 (
 
                                                     usuarios.map(
-
                                                         usuario => (
 
                                                             <tr
-
                                                                 key={
                                                                     usuario.id
                                                                 }
-
                                                             >
-
 
                                                                 <td>
 
                                                                     <div className="usuario-identidade">
 
-
                                                                         <div className="usuario-avatar">
 
                                                                             {
-
                                                                                 (
-
                                                                                     usuario.nome ||
-
                                                                                     usuario.email ||
-
                                                                                     "U"
-
                                                                                 )
-
                                                                                     .charAt(0)
-
                                                                                     .toUpperCase()
-
                                                                             }
 
                                                                         </div>
-
 
                                                                         <div>
 
                                                                             <strong>
 
                                                                                 {
-
                                                                                     usuario.nome ||
-
                                                                                     "Sem nome"
-
                                                                                 }
 
                                                                             </strong>
 
-
                                                                             <small>
 
                                                                                 {
-
                                                                                     usuario.id
-
                                                                                 }
 
                                                                             </small>
 
                                                                         </div>
-
 
                                                                     </div>
 
@@ -1646,11 +1360,8 @@ export default function Usuarios() {
                                                                 <td>
 
                                                                     {
-
                                                                         usuario.email ||
-
                                                                         "-"
-
                                                                     }
 
                                                                 </td>
@@ -1659,11 +1370,8 @@ export default function Usuarios() {
                                                                 <td>
 
                                                                     {
-
                                                                         usuario.username ||
-
                                                                         "-"
-
                                                                     }
 
                                                                 </td>
@@ -1674,11 +1382,9 @@ export default function Usuarios() {
                                                                     <span className="usuario-role">
 
                                                                         {
-
                                                                             nomeRole(
                                                                                 usuario
                                                                             )
-
                                                                         }
 
                                                                     </span>
@@ -1704,25 +1410,18 @@ export default function Usuarios() {
 
                                                                         {
 
-                                                                            usuario.pode_ver_todas_obras === true
+                                                                            usuario.pode_ver_todas_obras === true &&
 
-                                                                                ? (
-
-                                                                                    <FiEye />
-
-                                                                                )
-
-                                                                                : null
+                                                                            (
+                                                                                <FiEye />
+                                                                            )
 
                                                                         }
 
-
                                                                         {
-
                                                                             textoPermissaoObras(
                                                                                 usuario
                                                                             )
-
                                                                         }
 
                                                                     </span>
@@ -1733,11 +1432,9 @@ export default function Usuarios() {
                                                                 <td>
 
                                                                     {
-
                                                                         formatarData(
                                                                             usuario.created_at
                                                                         )
-
                                                                     }
 
                                                                 </td>
@@ -1746,7 +1443,6 @@ export default function Usuarios() {
                                                                 <td>
 
                                                                     <div className="usuario-acoes">
-
 
                                                                         <button
 
@@ -1810,34 +1506,26 @@ export default function Usuarios() {
 
                                                                         </button>
 
-
                                                                     </div>
 
                                                                 </td>
 
-
                                                             </tr>
 
                                                         )
-
                                                     )
 
                                                 )
-
                                         }
 
-
                                     </tbody>
-
 
                                 </table>
 
                             </div>
 
                         )
-
                 }
-
 
             </section>
 
@@ -1847,62 +1535,42 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-
-                modal &&
-
-                (
+                modal && (
 
                     <div className="usuarios-modal-overlay">
 
-
                         <div className="usuarios-modal">
 
-
                             <header className="usuarios-modal-header">
-
 
                                 <div>
 
                                     <span>
 
                                         {
-
                                             editando
-
                                                 ? "EDITAR USUÁRIO"
-
                                                 : "NOVO USUÁRIO"
-
                                         }
 
                                     </span>
 
-
                                     <h2>
 
                                         {
-
                                             editando
-
                                                 ? "Editar usuário"
-
                                                 : "Cadastrar usuário"
-
                                         }
 
                                     </h2>
 
-
                                     <p>
 
                                         {
-
                                             editando
-
                                                 ? "Atualize os dados, perfil e permissões do usuário."
-
                                                 : "Preencha os dados para criar um novo acesso."
-
                                         }
 
                                     </p>
@@ -1930,7 +1598,6 @@ export default function Usuarios() {
 
                                 </button>
 
-
                             </header>
 
 
@@ -1944,14 +1611,10 @@ export default function Usuarios() {
 
                             >
 
-
                                 <div className="usuarios-form-grid">
 
 
-                                    {/* NOME */}
-
                                     <div className="usuarios-form-group">
-
 
                                         <label>
 
@@ -1982,15 +1645,14 @@ export default function Usuarios() {
 
                                             autoComplete="off"
 
+                                            required
+
                                         />
 
                                     </div>
 
 
-                                    {/* USERNAME */}
-
                                     <div className="usuarios-form-group">
-
 
                                         <label>
 
@@ -2021,15 +1683,14 @@ export default function Usuarios() {
 
                                             autoComplete="off"
 
+                                            required
+
                                         />
 
                                     </div>
 
 
-                                    {/* E-MAIL */}
-
                                     <div className="usuarios-form-group full">
-
 
                                         <label>
 
@@ -2060,15 +1721,14 @@ export default function Usuarios() {
 
                                             autoComplete="off"
 
+                                            required
+
                                         />
 
                                     </div>
 
 
-                                    {/* ROLE */}
-
                                     <div className="usuarios-form-group">
-
 
                                         <label>
 
@@ -2093,6 +1753,8 @@ export default function Usuarios() {
                                                 alterarCampo
                                             }
 
+                                            required
+
                                         >
 
                                             <option value="">
@@ -2103,53 +1765,37 @@ export default function Usuarios() {
 
 
                                             {
-
                                                 roles.map(
-
                                                     role => (
 
                                                         <option
-
                                                             key={
                                                                 role.id
                                                             }
-
                                                             value={
                                                                 role.id
                                                             }
-
                                                         >
 
                                                             {
-
                                                                 role.nome
-
                                                             }
 
                                                         </option>
 
                                                     )
-
                                                 )
-
                                             }
 
                                         </select>
 
-
                                     </div>
 
 
-                                    {/* SENHA */}
-
                                     {
-
-                                        !editando &&
-
-                                        (
+                                        !editando && (
 
                                             <div className="usuarios-form-group">
-
 
                                                 <label>
 
@@ -2180,46 +1826,40 @@ export default function Usuarios() {
 
                                                     autoComplete="new-password"
 
+                                                    required
+
                                                 />
 
                                             </div>
 
                                         )
-
                                     }
 
 
                                     {/* =================================================
-                                        PERMISSÃO DE OBRAS
+                                        PERMISSÃO
                                     ================================================= */}
 
                                     <div className="usuarios-permissao-box full">
 
-
                                         <div className="usuarios-permissao-texto">
 
-
                                             <strong>
-
                                                 Visualização das obras
-
                                             </strong>
-
 
                                             <span>
 
-                                                Usuários sem esta permissão visualizam
-                                                somente as obras em que o próprio username
-                                                está cadastrado como RDO, marceneiro ou projetista.
+                                                Sem esta permissão, o usuário vê somente
+                                                as obras em que seu username está cadastrado
+                                                como RDO, marceneiro ou projetista.
 
                                             </span>
-
 
                                         </div>
 
 
                                         <label className="usuarios-switch">
-
 
                                             <input
 
@@ -2237,12 +1877,9 @@ export default function Usuarios() {
 
                                             />
 
-
                                             <span className="usuarios-switch-slider"></span>
 
-
                                         </label>
-
 
                                     </div>
 
@@ -2262,13 +1899,11 @@ export default function Usuarios() {
                                     >
 
                                         {
-
                                             form.pode_ver_todas_obras
 
                                                 ? "Este usuário poderá visualizar todas as obras."
 
-                                                : "Este usuário visualizará apenas as obras relacionadas ao próprio username."
-
+                                                : "Este usuário visualizará somente as obras relacionadas ao próprio username."
                                         }
 
                                     </div>
@@ -2278,10 +1913,7 @@ export default function Usuarios() {
 
 
                                 {
-
-                                    erro &&
-
-                                    (
+                                    erro && (
 
                                         <div className="usuarios-form-error">
 
@@ -2292,12 +1924,10 @@ export default function Usuarios() {
                                         </div>
 
                                     )
-
                                 }
 
 
                                 <footer className="usuarios-modal-footer">
-
 
                                     <button
 
@@ -2314,9 +1944,7 @@ export default function Usuarios() {
                                         }
 
                                     >
-
                                         Cancelar
-
                                     </button>
 
 
@@ -2333,7 +1961,6 @@ export default function Usuarios() {
                                     >
 
                                         {
-
                                             salvando
 
                                                 ? "Salvando..."
@@ -2343,25 +1970,19 @@ export default function Usuarios() {
                                                     ? "Salvar alterações"
 
                                                     : "Criar usuário"
-
                                         }
 
                                     </button>
 
-
                                 </footer>
-
 
                             </form>
 
-
                         </div>
-
 
                     </div>
 
                 )
-
             }
 
 
@@ -2370,19 +1991,13 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-
-                modalSenha &&
-
-                (
+                modalSenha && (
 
                     <div className="usuarios-modal-overlay">
 
-
                         <div className="usuarios-modal usuarios-modal-small">
 
-
                             <header className="usuarios-modal-header">
-
 
                                 <div>
 
@@ -2390,11 +2005,9 @@ export default function Usuarios() {
                                         SEGURANÇA
                                     </span>
 
-
                                     <h2>
                                         Alterar senha
                                     </h2>
-
 
                                     <p>
 
@@ -2403,11 +2016,8 @@ export default function Usuarios() {
                                         <strong>
 
                                             {
-
                                                 usuarioSelecionado?.nome ||
-
                                                 usuarioSelecionado?.email
-
                                             }
 
                                         </strong>
@@ -2437,7 +2047,6 @@ export default function Usuarios() {
 
                                 </button>
 
-
                             </header>
 
 
@@ -2451,9 +2060,7 @@ export default function Usuarios() {
 
                             >
 
-
                                 <div className="usuarios-form-group">
-
 
                                     <label>
 
@@ -2493,10 +2100,7 @@ export default function Usuarios() {
 
 
                                 {
-
-                                    erro &&
-
-                                    (
+                                    erro && (
 
                                         <div className="usuarios-form-error">
 
@@ -2507,12 +2111,10 @@ export default function Usuarios() {
                                         </div>
 
                                     )
-
                                 }
 
 
                                 <footer className="usuarios-modal-footer">
-
 
                                     <button
 
@@ -2529,9 +2131,7 @@ export default function Usuarios() {
                                         }
 
                                     >
-
                                         Cancelar
-
                                     </button>
 
 
@@ -2548,31 +2148,22 @@ export default function Usuarios() {
                                     >
 
                                         {
-
                                             salvando
-
                                                 ? "Salvando..."
-
                                                 : "Alterar senha"
-
                                         }
 
                                     </button>
 
-
                                 </footer>
-
 
                             </form>
 
-
                         </div>
-
 
                     </div>
 
                 )
-
             }
 
 
@@ -2581,19 +2172,13 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-
-                modalExcluir &&
-
-                (
+                modalExcluir && (
 
                     <div className="usuarios-modal-overlay">
 
-
                         <div className="usuarios-modal usuarios-modal-small">
 
-
                             <header className="usuarios-modal-header">
-
 
                                 <div>
 
@@ -2601,11 +2186,9 @@ export default function Usuarios() {
                                         ATENÇÃO
                                     </span>
 
-
                                     <h2>
                                         Excluir usuário?
                                     </h2>
-
 
                                     <p>
 
@@ -2614,11 +2197,8 @@ export default function Usuarios() {
                                         <strong>
 
                                             {
-
                                                 usuarioSelecionado?.nome ||
-
                                                 usuarioSelecionado?.email
-
                                             }
 
                                         </strong>
@@ -2660,15 +2240,11 @@ export default function Usuarios() {
 
                                 </button>
 
-
                             </header>
 
 
                             {
-
-                                erro &&
-
-                                (
+                                erro && (
 
                                     <div className="usuarios-form-error usuarios-delete-error">
 
@@ -2679,12 +2255,10 @@ export default function Usuarios() {
                                     </div>
 
                                 )
-
                             }
 
 
                             <footer className="usuarios-modal-footer">
-
 
                                 <button
 
@@ -2711,9 +2285,7 @@ export default function Usuarios() {
                                     }
 
                                 >
-
                                     Cancelar
-
                                 </button>
 
 
@@ -2734,33 +2306,22 @@ export default function Usuarios() {
                                 >
 
                                     {
-
                                         salvando
-
                                             ? "Excluindo..."
-
                                             : "Excluir usuário"
-
                                     }
 
                                 </button>
 
-
                             </footer>
 
-
                         </div>
-
 
                     </div>
 
                 )
-
             }
 
-
         </section>
-
     );
-
 }

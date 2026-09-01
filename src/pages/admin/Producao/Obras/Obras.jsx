@@ -12,7 +12,9 @@ import {
     FiRefreshCw,
     FiArrowLeft,
     FiSearch,
-    FiFilter
+    FiFilter,
+    FiCheck,
+    FiRotateCcw
 } from "react-icons/fi";
 
 import {
@@ -94,13 +96,25 @@ export default function Obras() {
 
     /*
     =================================================
-    OBRAS
+    OBRAS ATIVAS
     =================================================
     */
 
     const [
         obras,
         setObras
+    ] = useState([]);
+
+
+    /*
+    =================================================
+    OBRAS CONCLUÍDAS
+    =================================================
+    */
+
+    const [
+        obrasConcluidas,
+        setObrasConcluidas
     ] = useState([]);
 
 
@@ -130,6 +144,18 @@ export default function Obras() {
 
     /*
     =================================================
+    ABA ATUAL
+    =================================================
+    */
+
+    const [
+        aba,
+        setAba
+    ] = useState("ativas");
+
+
+    /*
+    =================================================
     LOADING
     =================================================
     */
@@ -138,6 +164,12 @@ export default function Obras() {
         loading,
         setLoading
     ] = useState(true);
+
+
+    const [
+        loadingConcluidas,
+        setLoadingConcluidas
+    ] = useState(false);
 
 
     const [
@@ -155,6 +187,18 @@ export default function Obras() {
     const [
         salvando,
         setSalvando
+    ] = useState(false);
+
+
+    const [
+        concluindo,
+        setConcluindo
+    ] = useState(false);
+
+
+    const [
+        desconcluindo,
+        setDesconcluindo
     ] = useState(false);
 
 
@@ -176,9 +220,21 @@ export default function Obras() {
     ] = useState(false);
 
 
+    const [
+        modalConcluir,
+        setModalConcluir
+    ] = useState(false);
+
+
+    const [
+        modalDesconcluir,
+        setModalDesconcluir
+    ] = useState(false);
+
+
     /*
     =================================================
-    EDIÇÃO
+    EDIÇÃO / SELEÇÃO
     =================================================
     */
 
@@ -191,6 +247,18 @@ export default function Obras() {
     const [
         obraSelecionada,
         setObraSelecionada
+    ] = useState(null);
+
+
+    const [
+        obraParaConcluir,
+        setObraParaConcluir
+    ] = useState(null);
+
+
+    const [
+        obraParaDesconcluir,
+        setObraParaDesconcluir
     ] = useState(null);
 
 
@@ -232,22 +300,6 @@ export default function Obras() {
     ] = useState("");
 
 
-    /*
-    =================================================
-    FILTRO DE RESPONSÁVEL
-    =================================================
-
-    ""
-
-    = todas as obras
-
-    username
-
-    = somente obras relacionadas ao usuário
-
-    =================================================
-    */
-
     const [
         filtroResponsavel,
         setFiltroResponsavel
@@ -256,7 +308,7 @@ export default function Obras() {
 
     /*
     =================================================
-    CARREGAR DADOS
+    CARREGAR OBRAS ATIVAS + USUÁRIOS
     =================================================
     */
 
@@ -275,7 +327,7 @@ export default function Obras() {
             );
 
             console.log(
-                "CARREGANDO OBRAS"
+                "CARREGANDO OBRAS ATIVAS"
             );
 
             console.log(
@@ -317,12 +369,13 @@ export default function Obras() {
                 throw new Error(
                     data.error
                 );
+
             }
 
 
             /*
             =============================================
-            OBRAS
+            OBRAS ATIVAS
             =============================================
             */
 
@@ -338,7 +391,10 @@ export default function Obras() {
 
 
             setObras(
-                listaObras
+                listaObras.filter(
+                    obra =>
+                        obra.concluida !== true
+                )
             );
 
 
@@ -378,21 +434,6 @@ export default function Obras() {
 
             );
 
-
-            console.log(
-                "OBRAS RECEBIDAS:",
-                listaObras.length
-            );
-
-            console.log(
-                "USUÁRIOS RECEBIDOS:",
-                listaUsuarios.length
-            );
-
-            console.log(
-                "USUÁRIO ATUAL:",
-                data?.usuarioAtual
-            );
 
         }
 
@@ -434,6 +475,101 @@ export default function Obras() {
 
     /*
     =================================================
+    CARREGAR OBRAS CONCLUÍDAS
+    =================================================
+    */
+
+    async function carregarObrasConcluidas() {
+
+        setLoadingConcluidas(true);
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-obras",
+                        {
+                            body: {
+                                action:
+                                    "list_concluidas"
+                            }
+                        }
+                    );
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            if (data?.error) {
+
+                throw new Error(
+                    data.error
+                );
+
+            }
+
+
+            const lista =
+
+                Array.isArray(
+                    data?.obras
+                )
+
+                    ? data.obras
+
+                    : [];
+
+
+            setObrasConcluidas(
+
+                lista.filter(
+                    obra =>
+                        obra.concluida === true
+                )
+
+            );
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "Erro ao carregar obras concluídas:",
+                err
+            );
+
+
+            setErro(
+
+                err?.message ||
+
+                "Não foi possível carregar as obras concluídas."
+
+            );
+
+
+            setObrasConcluidas([]);
+
+        }
+
+        finally {
+
+            setLoadingConcluidas(false);
+
+        }
+
+    }
+
+
+    /*
+    =================================================
     CARREGAR AO ABRIR
     =================================================
     */
@@ -442,7 +578,40 @@ export default function Obras() {
 
         carregarDados();
 
+        carregarObrasConcluidas();
+
     }, []);
+
+
+    /*
+    =================================================
+    TROCAR ABA
+    =================================================
+    */
+
+    function trocarAba(
+        novaAba
+    ) {
+
+        setAba(
+            novaAba
+        );
+
+        setBusca("");
+
+        setFiltroResponsavel("");
+
+        setErro("");
+
+        if (
+            novaAba === "concluidas"
+        ) {
+
+            carregarObrasConcluidas();
+
+        }
+
+    }
 
 
     /*
@@ -524,7 +693,7 @@ export default function Obras() {
 
     /*
     =================================================
-    SALVAR RASCUNHO AUTOMATICAMENTE
+    SALVAR RASCUNHO
     =================================================
     */
 
@@ -635,7 +804,7 @@ export default function Obras() {
 
     /*
     =================================================
-    USUÁRIOS COM USERNAME
+    USUÁRIOS VÁLIDOS
     =================================================
     */
 
@@ -673,7 +842,7 @@ export default function Obras() {
 
     /*
     =================================================
-    USUÁRIOS RDO
+    RDO
     =================================================
     */
 
@@ -695,7 +864,7 @@ export default function Obras() {
 
     /*
     =================================================
-    USUÁRIOS MARCENEIROS
+    MARCENEIROS
     =================================================
     */
 
@@ -717,7 +886,7 @@ export default function Obras() {
 
     /*
     =================================================
-    USUÁRIOS PROJETISTAS
+    PROJETISTAS
     =================================================
     */
 
@@ -739,7 +908,7 @@ export default function Obras() {
 
     /*
     =================================================
-    FILTRAR OBRAS
+    FILTRAR OBRAS ATIVAS
     =================================================
     */
 
@@ -758,28 +927,27 @@ export default function Obras() {
 
 
         return obras.filter(
-            obra => {
 
+            obra => {
 
                 /*
                 =========================================
-                FILTRO POR RESPONSÁVEL
-                =========================================
-
-                Pode ser utilizado pelo:
-
-                - Administrador
-                - Produção com permissão especial
-
+                FILTRO RESPONSÁVEL
                 =========================================
                 */
 
                 if (
+
                     responsavel &&
+
                     (
+
                         ehAdministrador ||
+
                         podeVerTodasObras
+
                     )
+
                 ) {
 
                     const rdo =
@@ -815,9 +983,12 @@ export default function Obras() {
                         projetista === responsavel;
 
 
-                    if (!corresponde) {
+                    if (
+                        !corresponde
+                    ) {
 
                         return false;
+
                     }
 
                 }
@@ -825,13 +996,14 @@ export default function Obras() {
 
                 /*
                 =========================================
-                BUSCA GERAL
+                BUSCA
                 =========================================
                 */
 
                 if (!termo) {
 
                     return true;
+
                 }
 
 
@@ -861,6 +1033,7 @@ export default function Obras() {
 
 
                 return campos.some(
+
                     campo =>
 
                         String(
@@ -870,9 +1043,11 @@ export default function Obras() {
                             .includes(
                                 termo
                             )
+
                 );
 
             }
+
         );
 
     }, [
@@ -892,29 +1067,149 @@ export default function Obras() {
 
     /*
     =================================================
+    FILTRAR CONCLUÍDAS
+    =================================================
+    */
+
+    const obrasConcluidasFiltradas = useMemo(() => {
+
+        const termo =
+            busca
+                .trim()
+                .toLowerCase();
+
+
+        if (!termo) {
+
+            return obrasConcluidas;
+
+        }
+
+
+        return obrasConcluidas.filter(
+
+            obra => {
+
+                const campos = [
+
+                    obra.nome,
+
+                    obra.endereco,
+
+                    obra.cliente_nome,
+
+                    obra.arquiteto_empresa,
+
+                    obra.rdo_nome,
+
+                    obra.marceneiro_nome,
+
+                    obra.projetista_nome,
+
+                    obra.data_inicio_esperada,
+
+                    obra.valor,
+
+                    obra.dias_finalizacao_esperado,
+
+                    obra.concluida_at
+
+                ];
+
+
+                return campos.some(
+
+                    campo =>
+
+                        String(
+                            campo ?? ""
+                        )
+                            .toLowerCase()
+                            .includes(
+                                termo
+                            )
+
+                );
+
+            }
+
+        );
+
+    }, [
+
+        obrasConcluidas,
+
+        busca
+
+    ]);
+
+
+    /*
+    =================================================
+    OBRAS EXIBIDAS
+    =================================================
+    */
+
+    const obrasExibidas =
+
+        aba === "ativas"
+
+            ? obrasFiltradas
+
+            : obrasConcluidasFiltradas;
+
+
+    /*
+    =================================================
+    CONTADORES
+    =================================================
+    */
+
+    const quantidadeObrasAtivas =
+        obrasFiltradas.length;
+
+
+    const quantidadeObrasConcluidas =
+        obrasConcluidas.length;
+
+
+    /*
+    =================================================
     TEXTO DE VISUALIZAÇÃO
     =================================================
     */
 
     const textoVisualizacao =
 
-        ehAdministrador
+        aba === "concluidas"
 
-            ? (
-                filtroResponsavel
-                    ? "Obras do responsável"
-                    : "Todas as obras"
-            )
+            ? "Todas as concluídas"
 
-            : podeVerTodasObras
+            : ehAdministrador
 
                 ? (
+
                     filtroResponsavel
+
                         ? "Obras do responsável"
+
                         : "Todas as obras"
+
                 )
 
-                : "Minhas obras";
+                : podeVerTodasObras
+
+                    ? (
+
+                        filtroResponsavel
+
+                            ? "Obras do responsável"
+
+                            : "Todas as obras"
+
+                    )
+
+                    : "Minhas obras";
 
 
     /*
@@ -1034,6 +1329,293 @@ export default function Obras() {
 
     /*
     =================================================
+    CONCLUIR
+    =================================================
+    */
+
+    function abrirConclusao(
+        obra
+    ) {
+
+        setObraParaConcluir(
+            obra
+        );
+
+        setErro("");
+
+        setModalConcluir(
+            true
+        );
+
+    }
+
+
+    function fecharConclusao() {
+
+        if (concluindo) {
+            return;
+        }
+
+
+        setModalConcluir(
+            false
+        );
+
+        setObraParaConcluir(
+            null
+        );
+
+        setErro("");
+
+    }
+
+
+    async function confirmarConclusao() {
+
+        if (
+            !obraParaConcluir?.id
+        ) {
+
+            return;
+
+        }
+
+
+        setConcluindo(true);
+
+        setErro("");
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-obras",
+                        {
+                            body: {
+
+                                action:
+                                    "complete",
+
+                                id:
+                                    obraParaConcluir.id
+
+                            }
+                        }
+                    );
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            if (data?.error) {
+
+                throw new Error(
+                    data.error
+                );
+
+            }
+
+
+            setModalConcluir(
+                false
+            );
+
+            setObraParaConcluir(
+                null
+            );
+
+
+            await carregarDados();
+
+            await carregarObrasConcluidas();
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "Erro ao concluir obra:",
+                err
+            );
+
+
+            setErro(
+
+                err?.message ||
+
+                "Não foi possível concluir a obra."
+
+            );
+
+        }
+
+        finally {
+
+            setConcluindo(false);
+
+        }
+
+    }
+
+
+    /*
+    =================================================
+    DESCONCLUIR
+    =================================================
+    */
+
+    function abrirDesconclusao(
+        obra
+    ) {
+
+        setObraParaDesconcluir(
+            obra
+        );
+
+        setErro("");
+
+        setModalDesconcluir(
+            true
+        );
+
+    }
+
+
+    function fecharDesconclusao() {
+
+        if (desconcluindo) {
+            return;
+        }
+
+
+        setModalDesconcluir(
+            false
+        );
+
+        setObraParaDesconcluir(
+            null
+        );
+
+        setErro("");
+
+    }
+
+
+    async function confirmarDesconclusao() {
+
+        if (
+            !obraParaDesconcluir?.id
+        ) {
+
+            return;
+
+        }
+
+
+        setDesconcluindo(true);
+
+        setErro("");
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-obras",
+                        {
+                            body: {
+
+                                action:
+                                    "uncomplete",
+
+                                id:
+                                    obraParaDesconcluir.id
+
+                            }
+                        }
+                    );
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            if (data?.error) {
+
+                throw new Error(
+                    data.error
+                );
+
+            }
+
+
+            setModalDesconcluir(
+                false
+            );
+
+            setObraParaDesconcluir(
+                null
+            );
+
+
+            await carregarDados();
+
+            await carregarObrasConcluidas();
+
+
+            /*
+            =============================================
+            VOLTAR AUTOMATICAMENTE PARA ATIVAS
+            =============================================
+            */
+
+            setAba("ativas");
+
+        }
+
+        catch (err) {
+
+            console.error(
+                "Erro ao desconcluir obra:",
+                err
+            );
+
+
+            setErro(
+
+                err?.message ||
+
+                "Não foi possível desconcluir a obra."
+
+            );
+
+        }
+
+        finally {
+
+            setDesconcluindo(false);
+
+        }
+
+    }
+
+
+    /*
+    =================================================
     FECHAR MODAL
     =================================================
     */
@@ -1107,12 +1689,6 @@ export default function Obras() {
         setErro("");
 
 
-        /*
-        =============================================
-        VALIDAR NOME
-        =============================================
-        */
-
         if (
             !form.nome.trim()
         ) {
@@ -1122,14 +1698,9 @@ export default function Obras() {
             );
 
             return;
+
         }
 
-
-        /*
-        =============================================
-        VALIDAR VALOR
-        =============================================
-        */
 
         if (
 
@@ -1146,14 +1717,9 @@ export default function Obras() {
             );
 
             return;
+
         }
 
-
-        /*
-        =============================================
-        VALIDAR DIAS
-        =============================================
-        */
 
         if (
 
@@ -1170,14 +1736,9 @@ export default function Obras() {
             );
 
             return;
+
         }
 
-
-        /*
-        =============================================
-        VALIDAR RDO
-        =============================================
-        */
 
         if (
 
@@ -1186,6 +1747,7 @@ export default function Obras() {
             !usuariosRdo.some(
 
                 usuario =>
+
                     usuario.username ===
                     form.rdo_nome
 
@@ -1198,14 +1760,9 @@ export default function Obras() {
             );
 
             return;
+
         }
 
-
-        /*
-        =============================================
-        VALIDAR MARCENEIRO
-        =============================================
-        */
 
         if (
 
@@ -1214,6 +1771,7 @@ export default function Obras() {
             !usuariosMarceneiros.some(
 
                 usuario =>
+
                     usuario.username ===
                     form.marceneiro_nome
 
@@ -1226,14 +1784,9 @@ export default function Obras() {
             );
 
             return;
+
         }
 
-
-        /*
-        =============================================
-        VALIDAR PROJETISTA
-        =============================================
-        */
 
         if (
 
@@ -1242,6 +1795,7 @@ export default function Obras() {
             !usuariosProjetistas.some(
 
                 usuario =>
+
                     usuario.username ===
                     form.projetista_nome
 
@@ -1254,6 +1808,7 @@ export default function Obras() {
             );
 
             return;
+
         }
 
 
@@ -1357,12 +1912,6 @@ export default function Obras() {
             };
 
 
-            console.log(
-                "ENVIANDO OBRA:",
-                payload
-            );
-
-
             const {
                 data,
                 error
@@ -1378,13 +1927,6 @@ export default function Obras() {
                     );
 
 
-            console.log(
-                "RESPOSTA OBRA:",
-                data,
-                error
-            );
-
-
             if (error) {
                 throw error;
             }
@@ -1395,14 +1937,9 @@ export default function Obras() {
                 throw new Error(
                     data.error
                 );
+
             }
 
-
-            /*
-            =============================================
-            SUCESSO
-            =============================================
-            */
 
             limparRascunho();
 
@@ -1418,6 +1955,8 @@ export default function Obras() {
 
 
             await carregarDados();
+
+            await carregarObrasConcluidas();
 
         }
 
@@ -1450,7 +1989,7 @@ export default function Obras() {
 
     /*
     =================================================
-    ABRIR EXCLUSÃO
+    EXCLUSÃO
     =================================================
     */
 
@@ -1469,12 +2008,6 @@ export default function Obras() {
     }
 
 
-    /*
-    =================================================
-    FECHAR EXCLUSÃO
-    =================================================
-    */
-
     function fecharExclusao() {
 
         if (salvando) {
@@ -1491,18 +2024,14 @@ export default function Obras() {
     }
 
 
-    /*
-    =================================================
-    EXCLUIR OBRA
-    =================================================
-    */
-
     async function excluirObra() {
 
         if (
             !obraSelecionada?.id
         ) {
+
             return;
+
         }
 
 
@@ -1545,12 +2074,16 @@ export default function Obras() {
                 throw new Error(
                     data.error
                 );
+
             }
 
 
             fecharExclusao();
 
+
             await carregarDados();
+
+            await carregarObrasConcluidas();
 
         }
 
@@ -1603,6 +2136,7 @@ export default function Obras() {
             return (
                 `${usuario.username} — ${usuario.nome}`
             );
+
         }
 
 
@@ -1658,6 +2192,45 @@ export default function Obras() {
 
     /*
     =================================================
+    FORMATAR DATA/HORA
+    =================================================
+    */
+
+    function formatarDataHora(
+        data
+    ) {
+
+        if (!data) {
+            return "-";
+        }
+
+
+        const dataObj =
+            new Date(
+                data
+            );
+
+
+        if (
+            Number.isNaN(
+                dataObj.getTime()
+            )
+        ) {
+
+            return "-";
+
+        }
+
+
+        return dataObj.toLocaleDateString(
+            "pt-BR"
+        );
+
+    }
+
+
+    /*
+    =================================================
     FORMATAR MOEDA
     =================================================
     */
@@ -1677,6 +2250,7 @@ export default function Obras() {
         ) {
 
             return "-";
+
         }
 
 
@@ -1691,6 +2265,7 @@ export default function Obras() {
         ) {
 
             return "-";
+
         }
 
 
@@ -1786,12 +2361,20 @@ export default function Obras() {
 
                         className="obras-btn-refresh"
 
-                        onClick={
-                            carregarDados
-                        }
+                        onClick={() => {
+
+                            carregarDados();
+
+                            carregarObrasConcluidas();
+
+                        }}
 
                         disabled={
-                            loading
+
+                            loading ||
+
+                            loadingConcluidas
+
                         }
 
                     >
@@ -1800,8 +2383,16 @@ export default function Obras() {
 
                             className={
 
-                                loading
+                                (
+
+                                    loading ||
+
+                                    loadingConcluidas
+
+                                )
+
                                     ? "girando"
+
                                     : ""
 
                             }
@@ -1813,26 +2404,37 @@ export default function Obras() {
                     </button>
 
 
-                    <button
+                    {
 
-                        type="button"
+                        aba === "ativas" &&
 
-                        className="obras-btn-add"
+                        (
 
-                        onClick={
-                            abrirNovaObra
-                        }
+                            <button
 
-                    >
+                                type="button"
 
-                        <FiPlus />
+                                className="obras-btn-add"
 
-                        Nova obra
+                                onClick={
+                                    abrirNovaObra
+                                }
 
-                    </button>
+                            >
+
+                                <FiPlus />
+
+                                Nova obra
+
+                            </button>
+
+                        )
+
+                    }
 
 
                 </div>
+
 
             </header>
 
@@ -1848,6 +2450,10 @@ export default function Obras() {
                 !modal &&
 
                 !modalExcluir &&
+
+                !modalConcluir &&
+
+                !modalDesconcluir &&
 
                 (
 
@@ -1874,12 +2480,12 @@ export default function Obras() {
                 <div>
 
                     <span>
-                        OBRAS VISÍVEIS
+                        OBRAS EM ANDAMENTO
                     </span>
 
                     <strong>
                         {
-                            obrasFiltradas.length
+                            quantidadeObrasAtivas
                         }
                     </strong>
 
@@ -1889,12 +2495,12 @@ export default function Obras() {
                 <div>
 
                     <span>
-                        OBRAS DISPONÍVEIS
+                        OBRAS CONCLUÍDAS
                     </span>
 
                     <strong>
                         {
-                            obras.length
+                            quantidadeObrasConcluidas
                         }
                     </strong>
 
@@ -1905,15 +2511,91 @@ export default function Obras() {
 
 
             {/* =================================================
+                ABAS
+            ================================================= */}
+
+            <section className="obras-abas">
+
+
+                <button
+
+                    type="button"
+
+                    className={
+
+                        aba === "ativas"
+
+                            ? "ativa"
+
+                            : ""
+
+                    }
+
+                    onClick={() =>
+                        trocarAba(
+                            "ativas"
+                        )
+                    }
+
+                >
+
+                    Em andamento
+
+                    <span>
+
+                        {
+                            quantidadeObrasAtivas
+                        }
+
+                    </span>
+
+                </button>
+
+
+                <button
+
+                    type="button"
+
+                    className={
+
+                        aba === "concluidas"
+
+                            ? "ativa"
+
+                            : ""
+
+                    }
+
+                    onClick={() =>
+                        trocarAba(
+                            "concluidas"
+                        )
+                    }
+
+                >
+
+                    Concluídas
+
+                    <span>
+
+                        {
+                            quantidadeObrasConcluidas
+                        }
+
+                    </span>
+
+                </button>
+
+
+            </section>
+
+
+            {/* =================================================
                 FILTROS
             ================================================= */}
 
             <section className="obras-filtros">
 
-
-                {/* =============================================
-                    BUSCA
-                ============================================= */}
 
                 <div className="obras-filtro-busca">
 
@@ -1935,7 +2617,15 @@ export default function Obras() {
                             )
                         }
 
-                        placeholder="Buscar por obra, endereço, cliente, arquiteto, RDO, marceneiro ou projetista..."
+                        placeholder={
+
+                            aba === "ativas"
+
+                                ? "Buscar por obra, endereço, cliente, arquiteto, RDO, marceneiro ou projetista..."
+
+                                : "Buscar entre as obras concluídas..."
+
+                        }
 
                     />
 
@@ -1970,106 +2660,105 @@ export default function Obras() {
                 </div>
 
 
-                {/* =============================================
-                    FILTRO DE RESPONSÁVEL
-                ============================================= */}
-
                 {
 
-                    (
-                        ehAdministrador ||
-                        podeVerTodasObras
-                    )
-
-                    &&
+                    aba === "ativas" &&
 
                     (
 
-                        <div className="obras-filtro-responsavel">
+                        (
+                            ehAdministrador ||
+
+                            podeVerTodasObras
+                        )
+
+                        &&
+
+                        (
+
+                            <div className="obras-filtro-responsavel">
 
 
-                            <FiFilter />
+                                <FiFilter />
 
 
-                            <select
+                                <select
 
-                                value={
-                                    filtroResponsavel
-                                }
+                                    value={
+                                        filtroResponsavel
+                                    }
 
-                                onChange={e =>
-                                    setFiltroResponsavel(
-                                        e.target.value
-                                    )
-                                }
+                                    onChange={e =>
+                                        setFiltroResponsavel(
+                                            e.target.value
+                                        )
+                                    }
 
-                                disabled={
-                                    loadingUsuarios
-                                }
+                                    disabled={
+                                        loadingUsuarios
+                                    }
 
-                            >
+                                >
 
-                                <option value="">
+                                    <option value="">
+
+                                        {
+
+                                            loadingUsuarios
+
+                                                ? "Carregando responsáveis..."
+
+                                                : "Todas as obras"
+
+                                        }
+
+                                    </option>
+
 
                                     {
 
-                                        loadingUsuarios
+                                        usuariosValidos.map(
 
-                                            ? "Carregando responsáveis..."
+                                            usuario => (
 
-                                            : "Todas as obras"
+                                                <option
 
-                                    }
+                                                    key={
+                                                        usuario.id
+                                                    }
 
-                                </option>
+                                                    value={
+                                                        usuario.username
+                                                    }
 
+                                                >
 
-                                {
+                                                    {
+                                                        textoUsuario(
+                                                            usuario
+                                                        )
+                                                    }
 
-                                    usuariosValidos.map(
+                                                </option>
 
-                                        usuario => (
-
-                                            <option
-
-                                                key={
-                                                    usuario.id
-                                                }
-
-                                                value={
-                                                    usuario.username
-                                                }
-
-                                            >
-
-                                                {
-                                                    textoUsuario(
-                                                        usuario
-                                                    )
-                                                }
-
-                                            </option>
+                                            )
 
                                         )
 
-                                    )
-
-                                }
+                                    }
 
 
-                            </select>
+                                </select>
 
 
-                        </div>
+                            </div>
+
+                        )
 
                     )
 
                 }
 
-
-                {/* =============================================
-                    STATUS DE VISUALIZAÇÃO
-                ============================================= */}
 
                 <div className="obras-filtro-info">
 
@@ -2086,15 +2775,13 @@ export default function Obras() {
                 </div>
 
 
-                {/* =============================================
-                    LIMPAR FILTROS
-                ============================================= */}
-
                 {
 
                     (
                         busca ||
+
                         filtroResponsavel
+
                     )
 
                     &&
@@ -2140,12 +2827,32 @@ export default function Obras() {
                     <div>
 
                         <span>
-                            PRODUÇÃO
+
+                            {
+
+                                aba === "ativas"
+
+                                    ? "PRODUÇÃO"
+
+                                    : "HISTÓRICO"
+
+                            }
+
                         </span>
 
 
                         <h2>
-                            Obras cadastradas
+
+                            {
+
+                                aba === "ativas"
+
+                                    ? "Obras em andamento"
+
+                                    : "Obras concluídas"
+
+                            }
+
                         </h2>
 
                     </div>
@@ -2155,7 +2862,9 @@ export default function Obras() {
 
                         (
                             busca ||
+
                             filtroResponsavel
+
                         )
 
                         &&
@@ -2166,14 +2875,16 @@ export default function Obras() {
 
                                 {
 
-                                    obrasFiltradas.length
+                                    obrasExibidas.length
 
                                 }
 
                                 {
 
-                                    obrasFiltradas.length === 1
+                                    obrasExibidas.length === 1
+
                                         ? " obra encontrada"
+
                                         : " obras encontradas"
 
                                 }
@@ -2190,7 +2901,15 @@ export default function Obras() {
 
                 {
 
-                    loading
+                    (
+
+                        aba === "ativas"
+
+                            ? loading
+
+                            : loadingConcluidas
+
+                    )
 
                         ? (
 
@@ -2198,7 +2917,15 @@ export default function Obras() {
 
                                 <FiRefreshCw />
 
-                                Carregando obras...
+                                {
+
+                                    aba === "ativas"
+
+                                        ? "Carregando obras..."
+
+                                        : "Carregando obras concluídas..."
+
+                                }
 
                             </div>
 
@@ -2256,9 +2983,27 @@ export default function Obras() {
                                                 Dias
                                             </th>
 
-                                            <th>
-                                                Ações
-                                            </th>
+                                            {
+
+                                                aba === "concluidas"
+
+                                                    ? (
+
+                                                        <th>
+                                                            Concluída em
+                                                        </th>
+
+                                                    )
+
+                                                    : (
+
+                                                        <th>
+                                                            Ações
+                                                        </th>
+
+                                                    )
+
+                                            }
 
                                         </tr>
 
@@ -2270,7 +3015,7 @@ export default function Obras() {
 
                                         {
 
-                                            obrasFiltradas.length === 0
+                                            obrasExibidas.length === 0
 
                                                 ? (
 
@@ -2286,11 +3031,27 @@ export default function Obras() {
 
                                                             {
 
-                                                                obras.length === 0
+                                                                aba === "ativas"
 
-                                                                    ? "Nenhuma obra disponível para este usuário."
+                                                                    ? (
 
-                                                                    : "Nenhuma obra corresponde aos filtros."
+                                                                        obras.length === 0
+
+                                                                            ? "Nenhuma obra disponível para este usuário."
+
+                                                                            : "Nenhuma obra corresponde aos filtros."
+
+                                                                    )
+
+                                                                    : (
+
+                                                                        obrasConcluidas.length === 0
+
+                                                                            ? "Nenhuma obra concluída."
+
+                                                                            : "Nenhuma obra concluída corresponde aos filtros."
+
+                                                                    )
 
                                                             }
 
@@ -2302,7 +3063,7 @@ export default function Obras() {
 
                                                 : (
 
-                                                    obrasFiltradas.map(
+                                                    obrasExibidas.map(
 
                                                         obra => (
 
@@ -2326,10 +3087,13 @@ export default function Obras() {
                                                                         </strong>
 
                                                                         <small>
+
                                                                             #
+
                                                                             {
                                                                                 obra.id
                                                                             }
+
                                                                         </small>
 
                                                                     </div>
@@ -2340,8 +3104,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.endereco ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2350,8 +3117,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.cliente_nome ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2360,8 +3130,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.arquiteto_empresa ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2400,8 +3173,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.rdo_nome ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2410,8 +3186,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.marceneiro_nome ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2420,8 +3199,11 @@ export default function Obras() {
                                                                 <td>
 
                                                                     {
+
                                                                         obra.projetista_nome ||
+
                                                                         "-"
+
                                                                     }
 
                                                                 </td>
@@ -2444,56 +3226,142 @@ export default function Obras() {
                                                                 </td>
 
 
-                                                                <td>
+                                                                {
 
-                                                                    <div className="obra-acoes">
+                                                                    aba === "concluidas"
 
+                                                                        ? (
 
-                                                                        <button
+                                                                            <td>
 
-                                                                            type="button"
-
-                                                                            className="obra-action edit"
-
-                                                                            title="Editar obra"
-
-                                                                            onClick={() =>
-                                                                                abrirEdicao(
-                                                                                    obra
-                                                                                )
-                                                                            }
-
-                                                                        >
-
-                                                                            <FiEdit2 />
-
-                                                                        </button>
+                                                                                <div className="obra-acoes">
 
 
-                                                                        <button
+                                                                                    <button
 
-                                                                            type="button"
+                                                                                        type="button"
 
-                                                                            className="obra-action delete"
+                                                                                        className="obra-action uncomplete"
 
-                                                                            title="Excluir obra"
+                                                                                        title="Desconcluir obra"
 
-                                                                            onClick={() =>
-                                                                                abrirExclusao(
-                                                                                    obra
-                                                                                )
-                                                                            }
+                                                                                        onClick={() =>
+                                                                                            abrirDesconclusao(
+                                                                                                obra
+                                                                                            )
+                                                                                        }
 
-                                                                        >
+                                                                                    >
 
-                                                                            <FiTrash2 />
+                                                                                        <FiRotateCcw />
 
-                                                                        </button>
+                                                                                    </button>
 
 
-                                                                    </div>
+                                                                                    <button
 
-                                                                </td>
+                                                                                        type="button"
+
+                                                                                        className="obra-action delete"
+
+                                                                                        title="Excluir obra"
+
+                                                                                        onClick={() =>
+                                                                                            abrirExclusao(
+                                                                                                obra
+                                                                                            )
+                                                                                        }
+
+                                                                                    >
+
+                                                                                        <FiTrash2 />
+
+                                                                                    </button>
+
+
+                                                                                </div>
+
+                                                                            </td>
+
+                                                                        )
+
+                                                                        : (
+
+                                                                            <td>
+
+                                                                                <div className="obra-acoes">
+
+
+                                                                                    <button
+
+                                                                                        type="button"
+
+                                                                                        className="obra-action edit"
+
+                                                                                        title="Editar obra"
+
+                                                                                        onClick={() =>
+                                                                                            abrirEdicao(
+                                                                                                obra
+                                                                                            )
+                                                                                        }
+
+                                                                                    >
+
+                                                                                        <FiEdit2 />
+
+                                                                                    </button>
+
+
+                                                                                    <button
+
+                                                                                        type="button"
+
+                                                                                        className="obra-action complete"
+
+                                                                                        title="Concluir obra"
+
+                                                                                        onClick={() =>
+                                                                                            abrirConclusao(
+                                                                                                obra
+                                                                                            )
+                                                                                        }
+
+                                                                                    >
+
+                                                                                        <FiCheck />
+
+                                                                                    </button>
+
+
+                                                                                    <button
+
+                                                                                        type="button"
+
+                                                                                        className="obra-action delete"
+
+                                                                                        title="Excluir obra"
+
+                                                                                        onClick={() =>
+                                                                                            abrirExclusao(
+                                                                                                obra
+                                                                                            )
+                                                                                        }
+
+                                                                                    >
+
+                                                                                        <FiTrash2 />
+
+                                                                                    </button>
+
+
+                                                                                </div>
+
+                                                                            </td>
+
+                                                                        )
+
+                                                                }
 
 
                                                             </tr>
@@ -2629,8 +3497,6 @@ export default function Obras() {
                                 <div className="obras-form-grid">
 
 
-                                    {/* NOME */}
-
                                     <div className="obras-form-group full">
 
                                         <label>
@@ -2669,8 +3535,6 @@ export default function Obras() {
                                     </div>
 
 
-                                    {/* ENDEREÇO */}
-
                                     <div className="obras-form-group full">
 
                                         <label>
@@ -2700,8 +3564,6 @@ export default function Obras() {
 
                                     </div>
 
-
-                                    {/* CLIENTE */}
 
                                     <div className="obras-form-group">
 
@@ -2733,8 +3595,6 @@ export default function Obras() {
                                     </div>
 
 
-                                    {/* ARQUITETO */}
-
                                     <div className="obras-form-group">
 
                                         <label>
@@ -2765,8 +3625,6 @@ export default function Obras() {
                                     </div>
 
 
-                                    {/* DATA */}
-
                                     <div className="obras-form-group">
 
                                         <label>
@@ -2792,8 +3650,6 @@ export default function Obras() {
 
                                     </div>
 
-
-                                    {/* VALOR */}
 
                                     <div className="obras-form-group">
 
@@ -2826,8 +3682,6 @@ export default function Obras() {
 
                                     </div>
 
-
-                                    {/* RDO */}
 
                                     <div className="obras-form-group">
 
@@ -2910,8 +3764,6 @@ export default function Obras() {
                                     </div>
 
 
-                                    {/* MARCENEIRO */}
-
                                     <div className="obras-form-group">
 
                                         <label>
@@ -2993,8 +3845,6 @@ export default function Obras() {
                                     </div>
 
 
-                                    {/* PROJETISTA */}
-
                                     <div className="obras-form-group">
 
                                         <label>
@@ -3075,8 +3925,6 @@ export default function Obras() {
 
                                     </div>
 
-
-                                    {/* DIAS */}
 
                                     <div className="obras-form-group">
 
@@ -3172,13 +4020,9 @@ export default function Obras() {
 
                                             salvando
 
-                                                ?
+                                                ? "Salvando..."
 
-                                                "Salvando..."
-
-                                                :
-
-                                                editando
+                                                : editando
 
                                                     ? "Salvar alterações"
 
@@ -3193,6 +4037,332 @@ export default function Obras() {
 
 
                             </form>
+
+
+                        </div>
+
+
+                    </div>
+
+                )
+
+            }
+
+
+            {/* =================================================
+                MODAL CONCLUIR
+            ================================================= */}
+
+            {
+
+                modalConcluir &&
+
+                (
+
+                    <div className="obras-modal-overlay">
+
+
+                        <div className="obras-modal obras-modal-small">
+
+
+                            <header className="obras-modal-header">
+
+
+                                <div>
+
+                                    <span>
+                                        CONCLUSÃO
+                                    </span>
+
+
+                                    <h2>
+                                        Concluir obra?
+                                    </h2>
+
+
+                                    <p>
+
+                                        Você está prestes a marcar a obra{" "}
+
+                                        <strong>
+
+                                            {
+                                                obraParaConcluir?.nome
+                                            }
+
+                                        </strong>
+
+                                        {" "}como concluída.
+
+                                        Ela será movida para a aba de concluídas.
+
+                                    </p>
+
+                                </div>
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-modal-close"
+
+                                    onClick={
+                                        fecharConclusao
+                                    }
+
+                                    disabled={
+                                        concluindo
+                                    }
+
+                                >
+
+                                    <FiX />
+
+                                </button>
+
+
+                            </header>
+
+
+                            {
+
+                                erro &&
+
+                                (
+
+                                    <div className="obras-form-error">
+
+                                        {
+                                            erro
+                                        }
+
+                                    </div>
+
+                                )
+
+                            }
+
+
+                            <footer className="obras-modal-footer">
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-btn-cancel"
+
+                                    onClick={
+                                        fecharConclusao
+                                    }
+
+                                    disabled={
+                                        concluindo
+                                    }
+
+                                >
+
+                                    Cancelar
+
+                                </button>
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-btn-complete"
+
+                                    onClick={
+                                        confirmarConclusao
+                                    }
+
+                                    disabled={
+                                        concluindo
+                                    }
+
+                                >
+
+                                    <FiCheck />
+
+                                    {
+
+                                        concluindo
+
+                                            ? "Concluindo..."
+
+                                            : "Concluir obra"
+
+                                    }
+
+                                </button>
+
+
+                            </footer>
+
+
+                        </div>
+
+
+                    </div>
+
+                )
+
+            }
+
+
+            {/* =================================================
+                MODAL DESCONCLUIR
+            ================================================= */}
+
+            {
+
+                modalDesconcluir &&
+
+                (
+
+                    <div className="obras-modal-overlay">
+
+
+                        <div className="obras-modal obras-modal-small">
+
+
+                            <header className="obras-modal-header">
+
+
+                                <div>
+
+                                    <span>
+                                        RETORNAR PARA PRODUÇÃO
+                                    </span>
+
+
+                                    <h2>
+                                        Desconcluir obra?
+                                    </h2>
+
+
+                                    <p>
+
+                                        Você está prestes a retirar a obra{" "}
+
+                                        <strong>
+
+                                            {
+                                                obraParaDesconcluir?.nome
+                                            }
+
+                                        </strong>
+
+                                        {" "}da lista de concluídas.
+
+                                        Ela voltará para as obras em andamento.
+
+                                    </p>
+
+                                </div>
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-modal-close"
+
+                                    onClick={
+                                        fecharDesconclusao
+                                    }
+
+                                    disabled={
+                                        desconcluindo
+                                    }
+
+                                >
+
+                                    <FiX />
+
+                                </button>
+
+
+                            </header>
+
+
+                            {
+
+                                erro &&
+
+                                (
+
+                                    <div className="obras-form-error">
+
+                                        {
+                                            erro
+                                        }
+
+                                    </div>
+
+                                )
+
+                            }
+
+
+                            <footer className="obras-modal-footer">
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-btn-cancel"
+
+                                    onClick={
+                                        fecharDesconclusao
+                                    }
+
+                                    disabled={
+                                        desconcluindo
+                                    }
+
+                                >
+
+                                    Cancelar
+
+                                </button>
+
+
+                                <button
+
+                                    type="button"
+
+                                    className="obras-btn-uncomplete"
+
+                                    onClick={
+                                        confirmarDesconclusao
+                                    }
+
+                                    disabled={
+                                        desconcluindo
+                                    }
+
+                                >
+
+                                    <FiRotateCcw />
+
+                                    {
+
+                                        desconcluindo
+
+                                            ? "Desconcluindo..."
+
+                                            : "Desconcluir obra"
+
+                                    }
+
+                                </button>
+
+
+                            </footer>
 
 
                         </div>

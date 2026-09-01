@@ -8,10 +8,8 @@ CORS
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
-
     "Access-Control-Allow-Headers":
         "authorization, x-client-info, apikey, content-type",
-
     "Access-Control-Allow-Methods":
         "GET, POST, PUT, DELETE, OPTIONS",
 };
@@ -37,10 +35,6 @@ const supabaseServiceRoleKey =
 =====================================================
 CLIENTE NORMAL
 =====================================================
-
-Usado para validar o usuário autenticado.
-
-=====================================================
 */
 
 const supabaseAuth =
@@ -53,12 +47,6 @@ const supabaseAuth =
 /*
 =====================================================
 CLIENTE ADMIN
-=====================================================
-
-Usado somente dentro da Edge Function.
-
-A SERVICE ROLE KEY nunca vai para o React.
-
 =====================================================
 */
 
@@ -79,17 +67,13 @@ function jsonResponse(
     data: unknown,
     status = 200
 ) {
-
     return new Response(
         JSON.stringify(data),
         {
             status,
-
             headers: {
                 ...corsHeaders,
-
-                "Content-Type":
-                    "application/json",
+                "Content-Type": "application/json",
             },
         }
     );
@@ -100,17 +84,11 @@ function jsonResponse(
 =====================================================
 NORMALIZAR TEXTO
 =====================================================
-
-Usado para comparar usernames sem diferença
-entre maiúsculas/minúsculas ou espaços.
-
-=====================================================
 */
 
 function normalizarTexto(
     valor: unknown
 ) {
-
     return String(
         valor ?? ""
     )
@@ -121,23 +99,25 @@ function normalizarTexto(
 
 /*
 =====================================================
-VERIFICAR PERMISSÃO
+NORMALIZAR BOOLEAN
 =====================================================
+*/
 
-Permitidos:
+function normalizarBoolean(
+    valor: unknown
+) {
+    return (
+        valor === true ||
+        valor === "true" ||
+        valor === 1 ||
+        valor === "1"
+    );
+}
 
-ROLE 1
-Administrativo Geral
 
-ROLE 3
-Produção
-
-Além disso:
-
-ROLE 3 + pode_ver_todas_obras = true
-
-→ pode visualizar todas as obras.
-
+/*
+=====================================================
+VERIFICAR PERMISSÃO
 =====================================================
 */
 
@@ -147,7 +127,7 @@ async function verificarProducao(
 
     /*
     =================================================
-    BUSCAR AUTHORIZATION
+    AUTHORIZATION
     =================================================
     */
 
@@ -157,7 +137,6 @@ async function verificarProducao(
         );
 
     if (!authHeader) {
-
         throw new Error(
             "Usuário não autenticado."
         );
@@ -166,7 +145,7 @@ async function verificarProducao(
 
     /*
     =================================================
-    EXTRAIR TOKEN
+    TOKEN
     =================================================
     */
 
@@ -179,7 +158,6 @@ async function verificarProducao(
             .trim();
 
     if (!token) {
-
         throw new Error(
             "Token de autenticação não encontrado."
         );
@@ -260,7 +238,7 @@ async function verificarProducao(
 
     /*
     =================================================
-    EXTRAIR ROLE
+    ROLE
     =================================================
     */
 
@@ -271,13 +249,6 @@ async function verificarProducao(
             ? userRole?.roles?.[0]?.nome
             : userRole?.roles?.nome;
 
-
-    /*
-    =================================================
-    ROLE ID
-    =================================================
-    */
-
     const roleId =
         Number(
             userRole?.role_id
@@ -287,14 +258,6 @@ async function verificarProducao(
     /*
     =================================================
     BUSCAR PROFILE
-    =================================================
-
-    Aqui buscamos os dados reais do usuário.
-
-    IMPORTANTE:
-    A permissão de visualizar todas as obras
-    vem da tabela profiles.
-
     =================================================
     */
 
@@ -335,24 +298,29 @@ async function verificarProducao(
     PERMISSÃO ESPECIAL
     =================================================
 
-    ROLE 1:
-    sempre pode ver tudo.
+    ROLE 1
+    → sempre pode ver tudo.
 
-    ROLE 3:
-    somente pode ver tudo quando
-    pode_ver_todas_obras = true.
+    ROLE 3 + pode_ver_todas_obras = true
+    → pode ver tudo.
+
+    ROLE 3 normal
+    → somente relacionadas ao username.
 
     =================================================
     */
 
     const podeVerTodasObras =
         roleId === 1 ||
-        profile?.pode_ver_todas_obras === true;
+        (
+            roleId === 3 &&
+            profile?.pode_ver_todas_obras === true
+        );
 
 
     /*
     =================================================
-    VERIFICAR ACESSO À FUNÇÃO
+    ACESSO À FUNÇÃO
     =================================================
     */
 
@@ -382,13 +350,13 @@ async function verificarProducao(
     );
 
     console.log(
-        "USUÁRIO:",
-        user.email
+        "USER ID:",
+        user.id
     );
 
     console.log(
-        "USER ID:",
-        user.id
+        "EMAIL:",
+        user.email
     );
 
     console.log(
@@ -412,7 +380,7 @@ async function verificarProducao(
     );
 
     console.log(
-        "PODE VER TODAS AS OBRAS:",
+        "PODE VER TODAS:",
         podeVerTodasObras
     );
 
@@ -420,12 +388,6 @@ async function verificarProducao(
         "===================================="
     );
 
-
-    /*
-    =================================================
-    RETORNO
-    =================================================
-    */
 
     return {
 
@@ -447,6 +409,7 @@ async function verificarProducao(
             "",
 
         podeVerTodasObras
+
     };
 }
 
@@ -467,13 +430,11 @@ function normalizarObra(
             ""
         ).trim();
 
-
     const endereco =
         String(
             body?.endereco ??
             ""
         ).trim();
-
 
     const cliente_nome =
         String(
@@ -482,7 +443,6 @@ function normalizarObra(
             ""
         ).trim();
 
-
     const arquiteto_empresa =
         String(
             body?.arquiteto_empresa ??
@@ -490,7 +450,6 @@ function normalizarObra(
             body?.empresa ??
             ""
         ).trim();
-
 
     const data_inicio_esperada =
         body?.data_inicio_esperada ||
@@ -511,12 +470,9 @@ function normalizarObra(
         valor === undefined ||
         valor === null
     ) {
-
         valor = null;
-
     }
     else {
-
         valor =
             Number(
                 valor
@@ -526,7 +482,7 @@ function normalizarObra(
 
     /*
     =================================================
-    RDO
+    RESPONSÁVEIS
     =================================================
     */
 
@@ -537,26 +493,12 @@ function normalizarObra(
             ""
         ).trim();
 
-
-    /*
-    =================================================
-    MARCENEIRO
-    =================================================
-    */
-
     const marceneiro_nome =
         String(
             body?.marceneiro_nome ??
             body?.marceneiro ??
             ""
         ).trim();
-
-
-    /*
-    =================================================
-    PROJETISTA
-    =================================================
-    */
 
     const projetista_nome =
         String(
@@ -580,18 +522,26 @@ function normalizarObra(
         dias_finalizacao_esperado === undefined ||
         dias_finalizacao_esperado === null
     ) {
-
-        dias_finalizacao_esperado =
-            null;
-
+        dias_finalizacao_esperado = null;
     }
     else {
-
         dias_finalizacao_esperado =
             Number(
                 dias_finalizacao_esperado
             );
     }
+
+
+    /*
+    =================================================
+    CONCLUÍDA
+    =================================================
+    */
+
+    const concluida =
+        normalizarBoolean(
+            body?.concluida
+        );
 
 
     return {
@@ -614,7 +564,9 @@ function normalizarObra(
 
         projetista_nome,
 
-        dias_finalizacao_esperado
+        dias_finalizacao_esperado,
+
+        concluida
 
     };
 }
@@ -700,6 +652,8 @@ async function listarTodasAsObras() {
                 marceneiro_nome,
                 projetista_nome,
                 dias_finalizacao_esperado,
+                concluida,
+                concluida_at,
                 created_at,
                 updated_at
             `)
@@ -729,16 +683,66 @@ async function listarTodasAsObras() {
 
 /*
 =====================================================
-FILTRAR OBRAS DO USUÁRIO
+LISTAR OBRAS CONCLUÍDAS
 =====================================================
+*/
 
-A Produção normal só visualiza obras em que
-o próprio username esteja relacionado em:
+async function listarObrasConcluidas() {
 
-- rdo_nome
-- marceneiro_nome
-- projetista_nome
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .select(`
+                id,
+                nome,
+                endereco,
+                cliente_nome,
+                arquiteto_empresa,
+                data_inicio_esperada,
+                valor,
+                rdo_nome,
+                marceneiro_nome,
+                projetista_nome,
+                dias_finalizacao_esperado,
+                concluida,
+                concluida_at,
+                created_at,
+                updated_at
+            `)
+            .eq(
+                "concluida",
+                true
+            )
+            .order(
+                "concluida_at",
+                {
+                    ascending: false,
+                    nullsFirst: false
+                }
+            );
 
+    if (error) {
+
+        console.error(
+            "Erro ao listar obras concluídas:",
+            error
+        );
+
+        throw new Error(
+            error.message
+        );
+    }
+
+    return data || [];
+}
+
+
+/*
+=====================================================
+FILTRAR OBRAS DO USUÁRIO
 =====================================================
 */
 
@@ -752,24 +756,10 @@ function filtrarObrasDoUsuario(
             username
         );
 
-
-    /*
-    =================================================
-    SEM USERNAME
-    =================================================
-    */
-
     if (!usernameNormalizado) {
-
         return [];
     }
 
-
-    /*
-    =================================================
-    FILTRAR
-    =================================================
-    */
 
     return obras.filter(
         obra => {
@@ -791,13 +781,9 @@ function filtrarObrasDoUsuario(
 
 
             return (
-
                 rdo === usernameNormalizado ||
-
                 marceneiro === usernameNormalizado ||
-
                 projetista === usernameNormalizado
-
             );
         }
     );
@@ -806,32 +792,158 @@ function filtrarObrasDoUsuario(
 
 /*
 =====================================================
-LISTAR USUÁRIOS RESPONSÁVEIS
+VERIFICAR ACESSO À OBRA
 =====================================================
+*/
 
-Retorna todos os usuários que possuem username.
+function usuarioPodeAcessarObra(
+    obra: any,
+    acesso: any,
+    exigirNaoConcluida = false
+) {
 
-Também retorna:
+    /*
+    =================================================
+    SE EXIGIR OBRA ABERTA
+    =================================================
+    */
 
-- role_id
-- role_nome
+    if (
+        exigirNaoConcluida &&
+        obra.concluida === true
+    ) {
+        return false;
+    }
 
-Usado para os selects de:
 
-- RDO
-- Marceneiro
-- Projetista
+    /*
+    =================================================
+    ADMINISTRATIVO GERAL
+    =================================================
+    */
 
+    if (
+        acesso.roleId === 1
+    ) {
+        return true;
+    }
+
+
+    /*
+    =================================================
+    PRODUÇÃO COM ACESSO GLOBAL
+    =================================================
+    */
+
+    if (
+        acesso.roleId === 3 &&
+        acesso.podeVerTodasObras === true
+    ) {
+        return true;
+    }
+
+
+    /*
+    =================================================
+    PRODUÇÃO NORMAL
+    =================================================
+    */
+
+    if (
+        acesso.roleId === 3
+    ) {
+
+        return (
+            filtrarObrasDoUsuario(
+                [obra],
+                acesso.username
+            ).length > 0
+        );
+    }
+
+
+    return false;
+}
+
+
+/*
+=====================================================
+BUSCAR OBRA POR ID
+=====================================================
+*/
+
+async function buscarObraPorId(
+    id: any
+) {
+
+    if (!id) {
+        throw new Error(
+            "ID da obra é obrigatório."
+        );
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .select(`
+                id,
+                nome,
+                endereco,
+                cliente_nome,
+                arquiteto_empresa,
+                data_inicio_esperada,
+                valor,
+                rdo_nome,
+                marceneiro_nome,
+                projetista_nome,
+                dias_finalizacao_esperado,
+                concluida,
+                concluida_at,
+                created_at,
+                updated_at
+            `)
+            .eq(
+                "id",
+                id
+            )
+            .maybeSingle();
+
+    if (error) {
+
+        console.error(
+            "Erro ao buscar obra:",
+            error
+        );
+
+        throw new Error(
+            error.message
+        );
+    }
+
+
+    if (!data) {
+
+        throw new Error(
+            "Obra não encontrada."
+        );
+    }
+
+
+    return data;
+}
+
+
+/*
+=====================================================
+LISTAR USUÁRIOS RESPONSÁVEIS
 =====================================================
 */
 
 async function listarUsuariosResponsaveis() {
-
-    /*
-    =================================================
-    BUSCAR PROFILES
-    =================================================
-    */
 
     const {
         data: profiles,
@@ -864,20 +976,8 @@ async function listarUsuariosResponsaveis() {
     }
 
 
-    /*
-    =================================================
-    ARRAY
-    =================================================
-    */
-
     const usuarios: any[] = [];
 
-
-    /*
-    =================================================
-    BUSCAR ROLE DE CADA USUÁRIO
-    =================================================
-    */
 
     for (
         const profile
@@ -902,6 +1002,7 @@ async function listarUsuariosResponsaveis() {
                     profile.id
                 )
                 .maybeSingle();
+
 
         if (userRoleError) {
 
@@ -944,12 +1045,6 @@ async function listarUsuariosResponsaveis() {
     }
 
 
-    /*
-    =================================================
-    SOMENTE USUÁRIOS COM USERNAME
-    =================================================
-    */
-
     const usuariosValidos =
         usuarios.filter(
             usuario =>
@@ -958,13 +1053,6 @@ async function listarUsuariosResponsaveis() {
                 )
         );
 
-
-    /*
-    =================================================
-    RDO
-    ROLE 3
-    =================================================
-    */
 
     const usuariosRdo =
         usuariosValidos.filter(
@@ -975,13 +1063,6 @@ async function listarUsuariosResponsaveis() {
         );
 
 
-    /*
-    =================================================
-    PROJETISTAS
-    ROLE 3
-    =================================================
-    */
-
     const usuariosProjetistas =
         usuariosValidos.filter(
             usuario =>
@@ -991,13 +1072,6 @@ async function listarUsuariosResponsaveis() {
         );
 
 
-    /*
-    =================================================
-    MARCENEIROS
-    ROLE 5
-    =================================================
-    */
-
     const usuariosMarceneiros =
         usuariosValidos.filter(
             usuario =>
@@ -1005,41 +1079,6 @@ async function listarUsuariosResponsaveis() {
                     usuario.role_id
                 ) === 5
         );
-
-
-    /*
-    =================================================
-    LOG
-    =================================================
-    */
-
-    console.log(
-        "===================================="
-    );
-
-    console.log(
-        "USUÁRIOS RESPONSÁVEIS:",
-        usuariosValidos
-    );
-
-    console.log(
-        "RDO:",
-        usuariosRdo
-    );
-
-    console.log(
-        "MARCENEIROS:",
-        usuariosMarceneiros
-    );
-
-    console.log(
-        "PROJETISTAS:",
-        usuariosProjetistas
-    );
-
-    console.log(
-        "===================================="
-    );
 
 
     return {
@@ -1120,7 +1159,13 @@ async function criarObra(
                     null,
 
                 dias_finalizacao_esperado:
-                    obra.dias_finalizacao_esperado
+                    obra.dias_finalizacao_esperado,
+
+                concluida:
+                    false,
+
+                concluida_at:
+                    null
 
             })
             .select()
@@ -1178,6 +1223,16 @@ async function editarObra(
     );
 
 
+    const obraAtual =
+        await buscarObraPorId(
+            id
+        );
+
+
+    const agora =
+        new Date().toISOString();
+
+
     const {
         data,
         error
@@ -1222,8 +1277,14 @@ async function editarObra(
                 dias_finalizacao_esperado:
                     obra.dias_finalizacao_esperado,
 
+                concluida:
+                    obraAtual.concluida,
+
+                concluida_at:
+                    obraAtual.concluida_at,
+
                 updated_at:
-                    new Date().toISOString()
+                    agora
 
             })
             .eq(
@@ -1253,12 +1314,13 @@ async function editarObra(
 
 /*
 =====================================================
-EXCLUIR OBRA
+CONCLUIR OBRA
 =====================================================
 */
 
-async function excluirObra(
-    body: any
+async function concluirObra(
+    body: any,
+    acesso: any
 ) {
 
     const id =
@@ -1270,6 +1332,270 @@ async function excluirObra(
 
         throw new Error(
             "ID da obra é obrigatório."
+        );
+    }
+
+
+    const obra =
+        await buscarObraPorId(
+            id
+        );
+
+
+    if (
+        !usuarioPodeAcessarObra(
+            obra,
+            acesso,
+            true
+        )
+    ) {
+
+        throw new Error(
+            "Você não possui permissão para concluir esta obra."
+        );
+    }
+
+
+    if (
+        obra.concluida === true
+    ) {
+
+        throw new Error(
+            "Esta obra já está concluída."
+        );
+    }
+
+
+    const agora =
+        new Date().toISOString();
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .update({
+
+                concluida:
+                    true,
+
+                concluida_at:
+                    agora,
+
+                updated_at:
+                    agora
+
+            })
+            .eq(
+                "id",
+                id
+            )
+            .eq(
+                "concluida",
+                false
+            )
+            .select()
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "Erro ao concluir obra:",
+            error
+        );
+
+        throw new Error(
+            error.message
+        );
+    }
+
+
+    return data;
+}
+
+
+/*
+=====================================================
+DESCONCLUIR OBRA
+=====================================================
+*/
+
+async function desconcluirObra(
+    body: any,
+    acesso: any
+) {
+
+    const id =
+        body?.id ??
+        body?.obra_id;
+
+
+    if (!id) {
+
+        throw new Error(
+            "ID da obra é obrigatório."
+        );
+    }
+
+
+    console.log(
+        "===================================="
+    );
+
+    console.log(
+        "DESCONCLUINDO OBRA:",
+        id
+    );
+
+
+    const obra =
+        await buscarObraPorId(
+            id
+        );
+
+
+    /*
+    =================================================
+    VERIFICAR ACESSO
+    =================================================
+    */
+
+    if (
+        !usuarioPodeAcessarObra(
+            obra,
+            acesso,
+            false
+        )
+    ) {
+
+        throw new Error(
+            "Você não possui permissão para desconcluir esta obra."
+        );
+    }
+
+
+    /*
+    =================================================
+    VERIFICAR STATUS
+    =================================================
+    */
+
+    if (
+        obra.concluida !== true
+    ) {
+
+        throw new Error(
+            "Esta obra já está em andamento."
+        );
+    }
+
+
+    /*
+    =================================================
+    ALTERAR
+    =================================================
+    */
+
+    const agora =
+        new Date().toISOString();
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .update({
+
+                concluida:
+                    false,
+
+                concluida_at:
+                    null,
+
+                updated_at:
+                    agora
+
+            })
+            .eq(
+                "id",
+                id
+            )
+            .eq(
+                "concluida",
+                true
+            )
+            .select()
+            .single();
+
+
+    if (error) {
+
+        console.error(
+            "ERRO AO DESCONCLUIR OBRA:",
+            error
+        );
+
+        throw new Error(
+            error.message
+        );
+    }
+
+
+    console.log(
+        "OBRA DESCONCLUÍDA COM SUCESSO:",
+        data
+    );
+
+
+    return data;
+}
+
+
+/*
+=====================================================
+EXCLUIR OBRA
+=====================================================
+*/
+
+async function excluirObra(
+    body: any,
+    acesso: any
+) {
+
+    const id =
+        body?.id ??
+        body?.obra_id;
+
+
+    if (!id) {
+
+        throw new Error(
+            "ID da obra é obrigatório."
+        );
+    }
+
+
+    const obra =
+        await buscarObraPorId(
+            id
+        );
+
+
+    if (
+        !usuarioPodeAcessarObra(
+            obra,
+            acesso,
+            false
+        )
+    ) {
+
+        throw new Error(
+            "Você não possui permissão para excluir esta obra."
         );
     }
 
@@ -1323,9 +1649,9 @@ Deno.serve(
     ) => {
 
         /*
-        =================================================
+        =============================================
         CORS
-        =================================================
+        =============================================
         */
 
         if (
@@ -1346,9 +1672,9 @@ Deno.serve(
         try {
 
             /*
-            =================================================
+            =========================================
             VERIFICAR ACESSO
-            =================================================
+            =========================================
             */
 
             const acesso =
@@ -1358,9 +1684,9 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
             LER BODY
-            =================================================
+            =========================================
             */
 
             let body: any = {};
@@ -1392,38 +1718,30 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
             ACTION
-            =================================================
+            =========================================
             */
 
             const action =
                 body?.action ||
                 (
                     req.method === "GET"
-
                         ? "list"
-
                         : req.method === "POST"
-
                             ? "create"
-
                             : req.method === "PUT"
-
                                 ? "update"
-
                                 : req.method === "DELETE"
-
                                     ? "delete"
-
                                     : ""
                 );
 
 
             /*
-            =================================================
+            =========================================
             LOG
-            =================================================
+            =========================================
             */
 
             console.log(
@@ -1431,7 +1749,7 @@ Deno.serve(
             );
 
             console.log(
-                "ADMIN-OBRAS"
+                "ADMIN-OBRAS REQUEST"
             );
 
             console.log(
@@ -1445,8 +1763,8 @@ Deno.serve(
             );
 
             console.log(
-                "ROLE ID:",
-                acesso.roleId
+                "USER ID:",
+                acesso.user.id
             );
 
             console.log(
@@ -1455,8 +1773,18 @@ Deno.serve(
             );
 
             console.log(
+                "ROLE:",
+                acesso.roleId
+            );
+
+            console.log(
                 "PODE VER TODAS:",
                 acesso.podeVerTodasObras
+            );
+
+            console.log(
+                "BODY:",
+                JSON.stringify(body)
             );
 
             console.log(
@@ -1465,9 +1793,9 @@ Deno.serve(
 
 
             /*
-            =================================================
-            LISTAR
-            =================================================
+            =========================================
+            LISTAR ATIVAS
+            =========================================
             */
 
             if (
@@ -1475,31 +1803,24 @@ Deno.serve(
                 "list"
             ) {
 
-                /*
-                =============================================
-                BUSCAR TODAS AS OBRAS
-                =============================================
-                */
-
                 const todasAsObras =
                     await listarTodasAsObras();
 
 
-                /*
-                =============================================
-                APLICAR REGRA DE VISUALIZAÇÃO
-                =============================================
-                */
+                const obrasAtivas =
+                    todasAsObras.filter(
+                        obra =>
+                            obra.concluida !== true
+                    );
+
 
                 let obras: any[] = [];
 
 
                 /*
-                =============================================
+                =====================================
                 ADMINISTRATIVO GERAL
-                ROLE 1
-                → VÊ TUDO
-                =============================================
+                =====================================
                 */
 
                 if (
@@ -1507,17 +1828,14 @@ Deno.serve(
                 ) {
 
                     obras =
-                        todasAsObras;
+                        obrasAtivas;
                 }
 
 
                 /*
-                =============================================
-                PRODUÇÃO COM PERMISSÃO ESPECIAL
-                ROLE 3
-                pode_ver_todas_obras = true
-                → VÊ TUDO
-                =============================================
+                =====================================
+                PRODUÇÃO GLOBAL
+                =====================================
                 */
 
                 else if (
@@ -1526,17 +1844,14 @@ Deno.serve(
                 ) {
 
                     obras =
-                        todasAsObras;
+                        obrasAtivas;
                 }
 
 
                 /*
-                =============================================
+                =====================================
                 PRODUÇÃO NORMAL
-                ROLE 3
-                pode_ver_todas_obras = false
-                → VÊ SOMENTE AS SUAS OBRAS
-                =============================================
+                =====================================
                 */
 
                 else if (
@@ -1545,27 +1860,15 @@ Deno.serve(
 
                     obras =
                         filtrarObrasDoUsuario(
-                            todasAsObras,
+                            obrasAtivas,
                             acesso.username
                         );
                 }
 
 
-                /*
-                =============================================
-                BUSCAR USUÁRIOS
-                =============================================
-                */
-
                 const dadosUsuarios =
                     await listarUsuariosResponsaveis();
 
-
-                /*
-                =============================================
-                RETORNO
-                =============================================
-                */
 
                 return jsonResponse({
 
@@ -1616,9 +1919,77 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
+            LISTAR CONCLUÍDAS
+            =========================================
+            */
+
+            if (
+                action ===
+                "list_concluidas"
+            ) {
+
+                const concluidas =
+                    await listarObrasConcluidas();
+
+
+                const dadosUsuarios =
+                    await listarUsuariosResponsaveis();
+
+
+                return jsonResponse({
+
+                    success:
+                        true,
+
+                    obras:
+                        concluidas,
+
+                    usuarios:
+                        dadosUsuarios.usuarios,
+
+                    usuariosRdo:
+                        dadosUsuarios.usuariosRdo,
+
+                    usuariosMarceneiros:
+                        dadosUsuarios.usuariosMarceneiros,
+
+                    usuariosProjetistas:
+                        dadosUsuarios.usuariosProjetistas,
+
+                    usuarioAtual: {
+
+                        id:
+                            acesso.user.id,
+
+                        nome:
+                            acesso.nome,
+
+                        username:
+                            acesso.username,
+
+                        email:
+                            acesso.email,
+
+                        role_id:
+                            acesso.roleId,
+
+                        role:
+                            acesso.roleNome,
+
+                        pode_ver_todas_obras:
+                            acesso.podeVerTodasObras
+
+                    }
+
+                });
+            }
+
+
+            /*
+            =========================================
             CRIAR
-            =================================================
+            =========================================
             */
 
             if (
@@ -1634,12 +2005,10 @@ Deno.serve(
 
                 return jsonResponse(
                     {
-
                         success:
                             true,
 
                         obra
-
                     },
                     201
                 );
@@ -1647,15 +2016,106 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
+            CONCLUIR
+            =========================================
+            */
+
+            if (
+                action ===
+                "complete"
+            ) {
+
+                const obra =
+                    await concluirObra(
+                        body,
+                        acesso
+                    );
+
+
+                return jsonResponse({
+
+                    success:
+                        true,
+
+                    obra
+
+                });
+            }
+
+
+            /*
+            =========================================
+            DESCONCLUIR
+            =========================================
+            */
+
+            if (
+                action ===
+                "uncomplete"
+            ) {
+
+                const obra =
+                    await desconcluirObra(
+                        body,
+                        acesso
+                    );
+
+
+                return jsonResponse({
+
+                    success:
+                        true,
+
+                    obra
+
+                });
+            }
+
+
+            /*
+            =========================================
             EDITAR
-            =================================================
+            =========================================
             */
 
             if (
                 action ===
                 "update"
             ) {
+
+                const id =
+                    body?.id ??
+                    body?.obra_id;
+
+
+                if (!id) {
+
+                    throw new Error(
+                        "ID da obra é obrigatório."
+                    );
+                }
+
+
+                const obraAtual =
+                    await buscarObraPorId(
+                        id
+                    );
+
+
+                if (
+                    !usuarioPodeAcessarObra(
+                        obraAtual,
+                        acesso,
+                        false
+                    )
+                ) {
+
+                    throw new Error(
+                        "Você não possui permissão para editar esta obra."
+                    );
+                }
+
 
                 const obra =
                     await editarObra(
@@ -1675,9 +2135,9 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
             EXCLUIR
-            =================================================
+            =========================================
             */
 
             if (
@@ -1687,7 +2147,8 @@ Deno.serve(
 
                 const resultado =
                     await excluirObra(
-                        body
+                        body,
+                        acesso
                     );
 
 
@@ -1698,9 +2159,9 @@ Deno.serve(
 
 
             /*
-            =================================================
+            =========================================
             ACTION DESCONHECIDA
-            =================================================
+            =========================================
             */
 
             return jsonResponse(
@@ -1717,7 +2178,6 @@ Deno.serve(
             );
 
         }
-
         catch (
             error
         ) {
@@ -1737,12 +2197,14 @@ Deno.serve(
 
 
             return jsonResponse(
+
                 {
 
                     success:
                         false,
 
                     error:
+
                         error instanceof Error
 
                             ? error.message
@@ -1750,7 +2212,9 @@ Deno.serve(
                             : "Erro interno."
 
                 },
+
                 400
+
             );
         }
     }
