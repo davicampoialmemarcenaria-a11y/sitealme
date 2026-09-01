@@ -1,0 +1,258 @@
+.producao-page {
+
+    width: 100%;
+    min-height: 100%;
+
+}
+
+
+.producao-header {
+
+    margin-bottom: 45px;
+
+}
+
+
+.producao-header span {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+    color: #d38a17;
+
+}
+
+
+.producao-header h1 {
+
+    margin: 0;
+
+    color: #4b2108;
+
+    font-size: 42px;
+
+    font-weight: 500;
+
+}
+
+
+.producao-header p {
+
+    margin-top: 12px;
+
+    margin-bottom: 0;
+
+    color: #777;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+
+}
+
+
+.producao-content {
+
+    display: flex;
+
+    align-items: flex-start;
+
+}
+
+
+.producao-card {
+
+    width: 100%;
+
+    max-width: 420px;
+
+    min-height: 190px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 22px;
+
+    position: relative;
+
+    padding: 28px;
+
+    border: 1px solid #e4ddd5;
+
+    border-radius: 16px;
+
+    background: #fff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+
+}
+
+
+.producao-card:hover {
+
+    transform: translateY(-4px);
+
+    border-color: #d38a17;
+
+    box-shadow:
+        0 18px 40px rgba(
+            75,
+            33,
+            8,
+            .10
+        );
+
+}
+
+
+.producao-card-icon {
+
+    flex-shrink: 0;
+
+    width: 58px;
+
+    height: 58px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background: #f3e5d2;
+
+    color: #4b2108;
+
+    font-size: 27px;
+
+}
+
+
+.producao-card-content {
+
+    flex: 1;
+
+}
+
+
+.producao-card-content span {
+
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.8px;
+
+    color: #d38a17;
+
+}
+
+
+.producao-card-content h2 {
+
+    margin: 0;
+
+    color: #4b2108;
+
+    font-size: 25px;
+
+    font-weight: 500;
+
+}
+
+
+.producao-card-content p {
+
+    margin: 7px 0 0;
+
+    color: #777;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+}
+
+
+.producao-card-arrow {
+
+    flex-shrink: 0;
+
+    color: #d38a17;
+
+    font-size: 23px;
+
+    transition:
+        transform .25s ease;
+
+}
+
+
+.producao-card:hover
+.producao-card-arrow {
+
+    transform: translateX(5px);
+
+}
+
+
+.producao-empty {
+
+    padding: 50px;
+
+    text-align: center;
+
+}
+
+
+.producao-empty h1 {
+
+    color: #4b2108;
+
+}
+
+
+.producao-empty p {
+
+    color: #777;
+
+}
+
+
+@media (max-width: 768px) {
+
+    .producao-header h1 {
+
+        font-size: 32px;
+
+    }
+
+
+    .producao-card {
+
+        max-width: none;
+
+    }
+
+}

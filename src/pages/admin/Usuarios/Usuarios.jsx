@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import {
     FiPlus,
@@ -6,57 +9,131 @@ import {
     FiTrash2,
     FiKey,
     FiX,
-    FiRefreshCw
+    FiRefreshCw,
+    FiEye
 } from "react-icons/fi";
 
-import { supabase } from "../../../services/supabase";
+import {
+    supabase
+} from "../../../services/supabase";
 
 import "./Usuarios.scss";
 
 
+/*
+=====================================================
+FORMULÁRIO INICIAL
+=====================================================
+*/
+
 const FORM_INICIAL = {
+
     nome: "",
+
     email: "",
+
     username: "",
+
     role_id: "",
-    senha: ""
+
+    senha: "",
+
+    pode_ver_todas_obras: false
+
 };
 
 
+/*
+=====================================================
+COMPONENTE
+=====================================================
+*/
+
 export default function Usuarios() {
 
-    const [usuarios, setUsuarios] = useState([]);
+    /*
+    =================================================
+    ESTADOS
+    =================================================
+    */
 
-    const [roles, setRoles] = useState([]);
+    const [
+        usuarios,
+        setUsuarios
+    ] = useState([]);
 
-    const [loading, setLoading] = useState(true);
 
-    const [salvando, setSalvando] = useState(false);
+    const [
+        roles,
+        setRoles
+    ] = useState([]);
 
-    const [modal, setModal] = useState(false);
 
-    const [modalSenha, setModalSenha] = useState(false);
+    const [
+        loading,
+        setLoading
+    ] = useState(true);
 
-    const [modalExcluir, setModalExcluir] = useState(false);
 
-    const [editando, setEditando] = useState(null);
+    const [
+        salvando,
+        setSalvando
+    ] = useState(false);
 
-    const [usuarioSelecionado, setUsuarioSelecionado] =
-        useState(null);
 
-    const [form, setForm] =
-        useState(FORM_INICIAL);
+    const [
+        modal,
+        setModal
+    ] = useState(false);
 
-    const [novaSenha, setNovaSenha] =
-        useState("");
 
-    const [erro, setErro] =
-        useState("");
+    const [
+        modalSenha,
+        setModalSenha
+    ] = useState(false);
+
+
+    const [
+        modalExcluir,
+        setModalExcluir
+    ] = useState(false);
+
+
+    const [
+        editando,
+        setEditando
+    ] = useState(null);
+
+
+    const [
+        usuarioSelecionado,
+        setUsuarioSelecionado
+    ] = useState(null);
+
+
+    const [
+        form,
+        setForm
+    ] = useState({
+        ...FORM_INICIAL
+    });
+
+
+    const [
+        novaSenha,
+        setNovaSenha
+    ] = useState("");
+
+
+    const [
+        erro,
+        setErro
+    ] = useState("");
 
 
     /*
     =====================================================
-    CARREGAR USUÁRIOS E PERFIS
+    CARREGAR USUÁRIOS
     =====================================================
     */
 
@@ -66,25 +143,29 @@ export default function Usuarios() {
 
         setErro("");
 
+
         try {
 
             /*
             =============================================
-            LISTAR USUÁRIOS PELA EDGE FUNCTION
+            LISTAR USUÁRIOS
             =============================================
             */
 
             const {
                 data,
                 error
-            } = await supabase.functions.invoke(
-                "admin-users",
-                {
-                    body: {
-                        action: "list"
-                    }
-                }
-            );
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-users",
+                        {
+                            body: {
+                                action: "list"
+                            }
+                        }
+                    );
 
 
             if (error) {
@@ -105,52 +186,80 @@ export default function Usuarios() {
 
             /*
             =============================================
-            A EDGE FUNCTION RETORNA "usuarios"
+            USUÁRIOS
             =============================================
             */
 
             setUsuarios(
-                Array.isArray(data?.usuarios)
+
+                Array.isArray(
+                    data?.usuarios
+                )
                     ? data.usuarios
                     : []
+
             );
 
 
             /*
             =============================================
-            BUSCAR ROLES DIRETAMENTE DA TABELA
+            ROLES
             =============================================
             */
 
-            const {
-                data: rolesData,
-                error: rolesError
-            } = await supabase
+            if (
+                Array.isArray(
+                    data?.roles
+                )
+            ) {
 
-                .from("roles")
-
-                .select("id, nome")
-
-                .order(
-                    "nome",
-                    {
-                        ascending: true
-                    }
+                setRoles(
+                    data.roles
                 );
-
-
-            if (rolesError) {
-
-                throw rolesError;
 
             }
 
+            else {
 
-            setRoles(
-                Array.isArray(rolesData)
-                    ? rolesData
-                    : []
-            );
+                /*
+                =========================================
+                FALLBACK
+                =========================================
+                */
+
+                const {
+                    data: rolesData,
+                    error: rolesError
+                } =
+                    await supabase
+                        .from("roles")
+                        .select(
+                            "id, nome"
+                        )
+                        .order(
+                            "nome",
+                            {
+                                ascending: true
+                            }
+                        );
+
+
+                if (rolesError) {
+
+                    throw rolesError;
+
+                }
+
+
+                setRoles(
+                    Array.isArray(
+                        rolesData
+                    )
+                        ? rolesData
+                        : []
+                );
+
+            }
 
         }
 
@@ -161,9 +270,13 @@ export default function Usuarios() {
                 err
             );
 
+
             setErro(
+
                 err?.message ||
+
                 "Não foi possível carregar os usuários."
+
             );
 
         }
@@ -198,15 +311,22 @@ export default function Usuarios() {
 
     function abrirNovoUsuario() {
 
-        setEditando(null);
+        setEditando(
+            null
+        );
+
 
         setForm({
             ...FORM_INICIAL
         });
 
+
         setErro("");
 
-        setModal(true);
+
+        setModal(
+            true
+        );
 
     }
 
@@ -217,9 +337,14 @@ export default function Usuarios() {
     =====================================================
     */
 
-    function abrirEdicao(usuario) {
+    function abrirEdicao(
+        usuario
+    ) {
 
-        setEditando(usuario);
+        setEditando(
+            usuario
+        );
+
 
         setForm({
 
@@ -236,17 +361,34 @@ export default function Usuarios() {
                 "",
 
             role_id:
-                usuario.role_id
-                    ? String(usuario.role_id)
+                usuario.role_id !== null &&
+                usuario.role_id !== undefined
+                    ? String(
+                        usuario.role_id
+                    )
                     : "",
 
-            senha: ""
+            senha:
+                "",
+
+            /*
+            =============================================
+            PERMISSÃO DE TODAS AS OBRAS
+            =============================================
+            */
+
+            pode_ver_todas_obras:
+                usuario.pode_ver_todas_obras === true
 
         });
 
+
         setErro("");
 
-        setModal(true);
+
+        setModal(
+            true
+        );
 
     }
 
@@ -259,15 +401,27 @@ export default function Usuarios() {
 
     function fecharModal() {
 
-        if (salvando) return;
+        if (salvando) {
 
-        setModal(false);
+            return;
 
-        setEditando(null);
+        }
+
+
+        setModal(
+            false
+        );
+
+
+        setEditando(
+            null
+        );
+
 
         setForm({
             ...FORM_INICIAL
         });
+
 
         setErro("");
 
@@ -276,50 +430,63 @@ export default function Usuarios() {
 
     /*
     =====================================================
-    ALTERAR FORM
+    ALTERAR CAMPO
     =====================================================
     */
 
-    function alterarCampo(e) {
+    function alterarCampo(
+        e
+    ) {
 
         const {
             name,
-            value
+            value,
+            type,
+            checked
         } = e.target;
 
 
-        setForm(prev => ({
+        setForm(
 
-            ...prev,
+            prev => ({
 
-            [name]: value
+                ...prev,
 
-        }));
+                [name]:
+
+                    type === "checkbox"
+
+                        ? checked
+
+                        : value
+
+            })
+
+        );
 
     }
 
 
     /*
     =====================================================
-    GERAR USERNAME AUTOMATICAMENTE
+    GERAR USERNAME
     =====================================================
     */
 
     function gerarUsernameAutomatico() {
 
-        if (form.username.trim()) {
+        if (
+            form.username.trim()
+        ) {
 
             return form.username.trim();
 
         }
 
 
-        /*
-        Se o usuário não preencher username,
-        usamos a parte anterior do e-mail.
-        */
-
-        if (form.email.trim()) {
+        if (
+            form.email.trim()
+        ) {
 
             return form.email
                 .trim()
@@ -340,7 +507,9 @@ export default function Usuarios() {
     =====================================================
     */
 
-    async function salvarUsuario(e) {
+    async function salvarUsuario(
+        e
+    ) {
 
         e.preventDefault();
 
@@ -349,24 +518,42 @@ export default function Usuarios() {
 
         /*
         =============================================
-        VALIDAÇÕES
+        NORMALIZAR
         =============================================
         */
 
         const nome =
-            form.nome.trim();
+            form.nome
+                .trim();
+
 
         const email =
-            form.email.trim().toLowerCase();
+            form.email
+                .trim()
+                .toLowerCase();
+
 
         const username =
             gerarUsernameAutomatico();
 
+
         const roleId =
             form.role_id
-                ? Number(form.role_id)
+                ? Number(
+                    form.role_id
+                )
                 : null;
 
+
+        const podeVerTodasObras =
+            form.pode_ver_todas_obras === true;
+
+
+        /*
+        =============================================
+        VALIDAR NOME
+        =============================================
+        */
 
         if (!nome) {
 
@@ -379,6 +566,12 @@ export default function Usuarios() {
         }
 
 
+        /*
+        =============================================
+        VALIDAR E-MAIL
+        =============================================
+        */
+
         if (!email) {
 
             setErro(
@@ -390,6 +583,12 @@ export default function Usuarios() {
         }
 
 
+        /*
+        =============================================
+        VALIDAR USERNAME
+        =============================================
+        */
+
         if (!username) {
 
             setErro(
@@ -400,6 +599,12 @@ export default function Usuarios() {
 
         }
 
+
+        /*
+        =============================================
+        VALIDAR ROLE
+        =============================================
+        */
 
         if (!roleId) {
 
@@ -414,11 +619,14 @@ export default function Usuarios() {
 
         /*
         =============================================
-        SENHA SOMENTE NA CRIAÇÃO
+        SENHA NA CRIAÇÃO
         =============================================
         */
 
-        if (!editando && !form.senha.trim()) {
+        if (
+            !editando &&
+            !form.senha.trim()
+        ) {
 
             setErro(
                 "Informe uma senha para o novo usuário."
@@ -430,8 +638,11 @@ export default function Usuarios() {
 
 
         if (
+
             !editando &&
+
             form.senha.length < 6
+
         ) {
 
             setErro(
@@ -443,7 +654,9 @@ export default function Usuarios() {
         }
 
 
-        setSalvando(true);
+        setSalvando(
+            true
+        );
 
 
         try {
@@ -456,50 +669,44 @@ export default function Usuarios() {
 
             if (!editando) {
 
-                console.log(
-                    "ENVIANDO CREATE:",
-                    {
-                        action: "create",
-                        nome,
-                        email,
-                        username,
-                        role_id: roleId,
-                        password: form.senha
-                    }
-                );
-
-
                 const {
                     data,
                     error
-                } = await supabase.functions.invoke(
-                    "admin-users",
-                    {
-                        body: {
+                } =
+                    await supabase
+                        .functions
+                        .invoke(
+                            "admin-users",
+                            {
+                                body: {
 
-                            action: "create",
+                                    action:
+                                        "create",
 
-                            nome,
+                                    nome,
 
-                            email,
+                                    email,
 
-                            username,
+                                    username,
 
-                            role_id: roleId,
+                                    role_id:
+                                        roleId,
 
-                            password:
-                                form.senha
+                                    password:
+                                        form.senha,
 
-                        }
-                    }
-                );
+                                    /*
+                                    =================================
+                                    NOVA PERMISSÃO
+                                    =================================
+                                    */
 
+                                    pode_ver_todas_obras:
+                                        podeVerTodasObras
 
-                console.log(
-                    "RESPOSTA CREATE:",
-                    data,
-                    error
-                );
+                                }
+                            }
+                        );
 
 
                 if (error) {
@@ -528,57 +735,44 @@ export default function Usuarios() {
 
             else {
 
-                console.log(
-                    "ENVIANDO UPDATE:",
-                    {
-                        action: "update",
-                        id: editando.id,
-                        nome,
-                        email,
-                        username,
-                        role_id: roleId
-                    }
-                );
-
-
                 const {
                     data,
                     error
-                } = await supabase.functions.invoke(
-                    "admin-users",
-                    {
-                        body: {
+                } =
+                    await supabase
+                        .functions
+                        .invoke(
+                            "admin-users",
+                            {
+                                body: {
 
-                            action: "update",
+                                    action:
+                                        "update",
 
-                            /*
-                            IMPORTANTE:
-                            A Edge Function espera "id",
-                            não "user_id".
-                            */
+                                    id:
+                                        editando.id,
 
-                            id:
-                                editando.id,
+                                    nome,
 
-                            nome,
+                                    email,
 
-                            email,
+                                    username,
 
-                            username,
+                                    role_id:
+                                        roleId,
 
-                            role_id:
-                                roleId
+                                    /*
+                                    =================================
+                                    NOVA PERMISSÃO
+                                    =================================
+                                    */
 
-                        }
-                    }
-                );
+                                    pode_ver_todas_obras:
+                                        podeVerTodasObras
 
-
-                console.log(
-                    "RESPOSTA UPDATE:",
-                    data,
-                    error
-                );
+                                }
+                            }
+                        );
 
 
                 if (error) {
@@ -618,16 +812,22 @@ export default function Usuarios() {
                 err
             );
 
+
             setErro(
+
                 err?.message ||
+
                 "Não foi possível salvar o usuário."
+
             );
 
         }
 
         finally {
 
-            setSalvando(false);
+            setSalvando(
+                false
+            );
 
         }
 
@@ -640,17 +840,24 @@ export default function Usuarios() {
     =====================================================
     */
 
-    function abrirSenha(usuario) {
+    function abrirSenha(
+        usuario
+    ) {
 
         setUsuarioSelecionado(
             usuario
         );
 
+
         setNovaSenha("");
+
 
         setErro("");
 
-        setModalSenha(true);
+
+        setModalSenha(
+            true
+        );
 
     }
 
@@ -663,13 +870,25 @@ export default function Usuarios() {
 
     function fecharSenha() {
 
-        if (salvando) return;
+        if (salvando) {
 
-        setModalSenha(false);
+            return;
 
-        setUsuarioSelecionado(null);
+        }
+
+
+        setModalSenha(
+            false
+        );
+
+
+        setUsuarioSelecionado(
+            null
+        );
+
 
         setNovaSenha("");
+
 
         setErro("");
 
@@ -682,7 +901,9 @@ export default function Usuarios() {
     =====================================================
     */
 
-    async function salvarSenha(e) {
+    async function salvarSenha(
+        e
+    ) {
 
         e.preventDefault();
 
@@ -700,7 +921,9 @@ export default function Usuarios() {
         }
 
 
-        if (novaSenha.length < 6) {
+        if (
+            novaSenha.length < 6
+        ) {
 
             setErro(
                 "A senha deve ter pelo menos 6 caracteres."
@@ -711,7 +934,9 @@ export default function Usuarios() {
         }
 
 
-        if (!usuarioSelecionado?.id) {
+        if (
+            !usuarioSelecionado?.id
+        ) {
 
             setErro(
                 "Usuário inválido."
@@ -722,52 +947,36 @@ export default function Usuarios() {
         }
 
 
-        setSalvando(true);
+        setSalvando(
+            true
+        );
 
 
         try {
 
-            console.log(
-                "ENVIANDO PASSWORD:",
-                {
-                    action: "password",
-                    id:
-                        usuarioSelecionado.id
-                }
-            );
-
-
             const {
                 data,
                 error
-            } = await supabase.functions.invoke(
-                "admin-users",
-                {
-                    body: {
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-users",
+                        {
+                            body: {
 
-                        action: "password",
+                                action:
+                                    "password",
 
-                        /*
-                        IMPORTANTE:
-                        A Edge Function espera "id".
-                        */
+                                id:
+                                    usuarioSelecionado.id,
 
-                        id:
-                            usuarioSelecionado.id,
+                                password:
+                                    novaSenha
 
-                        password:
-                            novaSenha
-
-                    }
-                }
-            );
-
-
-            console.log(
-                "RESPOSTA PASSWORD:",
-                data,
-                error
-            );
+                            }
+                        }
+                    );
 
 
             if (error) {
@@ -799,16 +1008,22 @@ export default function Usuarios() {
                 err
             );
 
+
             setErro(
+
                 err?.message ||
+
                 "Não foi possível alterar a senha."
+
             );
 
         }
 
         finally {
 
-            setSalvando(false);
+            setSalvando(
+                false
+            );
 
         }
 
@@ -817,19 +1032,25 @@ export default function Usuarios() {
 
     /*
     =====================================================
-    CONFIRMAR EXCLUSÃO
+    ABRIR EXCLUSÃO
     =====================================================
     */
 
-    function abrirExclusao(usuario) {
+    function abrirExclusao(
+        usuario
+    ) {
 
         setUsuarioSelecionado(
             usuario
         );
 
+
         setErro("");
 
-        setModalExcluir(true);
+
+        setModalExcluir(
+            true
+        );
 
     }
 
@@ -842,58 +1063,45 @@ export default function Usuarios() {
 
     async function excluirUsuario() {
 
-        if (!usuarioSelecionado?.id) {
+        if (
+            !usuarioSelecionado?.id
+        ) {
 
             return;
 
         }
 
 
-        setSalvando(true);
+        setSalvando(
+            true
+        );
+
 
         setErro("");
 
 
         try {
 
-            console.log(
-                "ENVIANDO DELETE:",
-                {
-                    action: "delete",
-                    id:
-                        usuarioSelecionado.id
-                }
-            );
-
-
             const {
                 data,
                 error
-            } = await supabase.functions.invoke(
-                "admin-users",
-                {
-                    body: {
+            } =
+                await supabase
+                    .functions
+                    .invoke(
+                        "admin-users",
+                        {
+                            body: {
 
-                        action: "delete",
+                                action:
+                                    "delete",
 
-                        /*
-                        IMPORTANTE:
-                        A Edge Function espera "id".
-                        */
+                                id:
+                                    usuarioSelecionado.id
 
-                        id:
-                            usuarioSelecionado.id
-
-                    }
-                }
-            );
-
-
-            console.log(
-                "RESPOSTA DELETE:",
-                data,
-                error
-            );
+                            }
+                        }
+                    );
 
 
             if (error) {
@@ -912,9 +1120,15 @@ export default function Usuarios() {
             }
 
 
-            setModalExcluir(false);
+            setModalExcluir(
+                false
+            );
 
-            setUsuarioSelecionado(null);
+
+            setUsuarioSelecionado(
+                null
+            );
+
 
             await carregarUsuarios();
 
@@ -927,16 +1141,22 @@ export default function Usuarios() {
                 err
             );
 
+
             setErro(
+
                 err?.message ||
+
                 "Não foi possível excluir o usuário."
+
             );
 
         }
 
         finally {
 
-            setSalvando(false);
+            setSalvando(
+                false
+            );
 
         }
 
@@ -949,9 +1169,13 @@ export default function Usuarios() {
     =====================================================
     */
 
-    function nomeRole(usuario) {
+    function nomeRole(
+        usuario
+    ) {
 
-        if (usuario.role) {
+        if (
+            usuario.role
+        ) {
 
             return usuario.role;
 
@@ -980,18 +1204,28 @@ export default function Usuarios() {
     =====================================================
     */
 
-    function formatarData(data) {
+    function formatarData(
+        data
+    ) {
 
-        if (!data) return "-";
+        if (!data) {
+
+            return "-";
+
+        }
 
 
         const dataObj =
-            new Date(data);
+            new Date(
+                data
+            );
 
 
-        if (Number.isNaN(
-            dataObj.getTime()
-        )) {
+        if (
+            Number.isNaN(
+                dataObj.getTime()
+            )
+        ) {
 
             return "-";
 
@@ -1002,6 +1236,25 @@ export default function Usuarios() {
             .toLocaleDateString(
                 "pt-BR"
             );
+
+    }
+
+
+    /*
+    =====================================================
+    TEXTO PERMISSÃO
+    =====================================================
+    */
+
+    function textoPermissaoObras(
+        usuario
+    ) {
+
+        return usuario?.pode_ver_todas_obras === true
+
+            ? "Todas as obras"
+
+            : "Somente relacionadas";
 
     }
 
@@ -1023,19 +1276,22 @@ export default function Usuarios() {
 
             <div className="usuarios-header">
 
+
                 <div>
 
                     <span>
                         PAINEL ADMINISTRATIVO
                     </span>
 
+
                     <h1>
                         Usuários
                     </h1>
 
+
                     <p>
-                        Gerencie os usuários, perfis de acesso
-                        e senhas do sistema.
+                        Gerencie os usuários, perfis de acesso,
+                        permissões e senhas do sistema.
                     </p>
 
                 </div>
@@ -1043,18 +1299,31 @@ export default function Usuarios() {
 
                 <div className="usuarios-header-actions">
 
+
                     <button
+
+                        type="button"
+
                         className="usuarios-btn-refresh"
-                        onClick={carregarUsuarios}
-                        disabled={loading}
+
+                        onClick={
+                            carregarUsuarios
+                        }
+
+                        disabled={
+                            loading
+                        }
+
                     >
 
                         <FiRefreshCw
+
                             className={
                                 loading
                                     ? "girando"
                                     : ""
                             }
+
                         />
 
                         Atualizar
@@ -1063,8 +1332,15 @@ export default function Usuarios() {
 
 
                     <button
+
+                        type="button"
+
                         className="usuarios-btn-add"
-                        onClick={abrirNovoUsuario}
+
+                        onClick={
+                            abrirNovoUsuario
+                        }
+
                     >
 
                         <FiPlus />
@@ -1072,6 +1348,7 @@ export default function Usuarios() {
                         Novo usuário
 
                     </button>
+
 
                 </div>
 
@@ -1083,10 +1360,15 @@ export default function Usuarios() {
             ================================================= */}
 
             {
+
                 erro &&
+
                 !modal &&
+
                 !modalSenha &&
+
                 !modalExcluir &&
+
                 (
 
                     <div className="usuarios-error">
@@ -1096,14 +1378,16 @@ export default function Usuarios() {
                     </div>
 
                 )
+
             }
 
 
             {/* =================================================
-                RESUMO
+                SUMMARY
             ================================================= */}
 
             <div className="usuarios-summary">
+
 
                 <div>
 
@@ -1111,8 +1395,11 @@ export default function Usuarios() {
                         USUÁRIOS
                     </span>
 
+
                     <strong>
-                        {usuarios.length}
+                        {
+                            usuarios.length
+                        }
                     </strong>
 
                 </div>
@@ -1124,11 +1411,36 @@ export default function Usuarios() {
                         PERFIS
                     </span>
 
+
                     <strong>
-                        {roles.length}
+                        {
+                            roles.length
+                        }
                     </strong>
 
                 </div>
+
+
+                <div>
+
+                    <span>
+                        ACESSO A TODAS AS OBRAS
+                    </span>
+
+
+                    <strong>
+
+                        {
+                            usuarios.filter(
+                                usuario =>
+                                    usuario.pode_ver_todas_obras === true
+                            ).length
+                        }
+
+                    </strong>
+
+                </div>
+
 
             </div>
 
@@ -1139,7 +1451,9 @@ export default function Usuarios() {
 
             <section className="usuarios-content">
 
+
                 <div className="usuarios-section-title">
+
 
                     <div>
 
@@ -1147,284 +1461,383 @@ export default function Usuarios() {
                             ACESSOS
                         </span>
 
+
                         <h2>
                             Usuários cadastrados
                         </h2>
 
                     </div>
 
+
                 </div>
 
 
                 {
+
                     loading
 
-                    ?
+                        ?
 
-                    (
+                        (
 
-                        <div className="usuarios-loading">
+                            <div className="usuarios-loading">
 
-                            <FiRefreshCw />
+                                <FiRefreshCw />
 
-                            Carregando usuários...
+                                Carregando usuários...
 
-                        </div>
+                            </div>
 
-                    )
+                        )
 
-                    :
+                        :
 
-                    (
+                        (
 
-                        <div className="usuarios-table-wrapper">
+                            <div className="usuarios-table-wrapper">
 
-                            <table className="usuarios-table">
+                                <table className="usuarios-table">
 
-                                <thead>
 
-                                    <tr>
+                                    <thead>
 
-                                        <th>
-                                            Usuário
-                                        </th>
+                                        <tr>
 
-                                        <th>
-                                            E-mail
-                                        </th>
+                                            <th>
+                                                Usuário
+                                            </th>
 
-                                        <th>
-                                            Username
-                                        </th>
+                                            <th>
+                                                E-mail
+                                            </th>
 
-                                        <th>
-                                            Perfil
-                                        </th>
+                                            <th>
+                                                Username
+                                            </th>
 
-                                        <th>
-                                            Criado em
-                                        </th>
+                                            <th>
+                                                Perfil
+                                            </th>
 
-                                        <th>
-                                            Ações
-                                        </th>
+                                            <th>
+                                                Visualização de obras
+                                            </th>
 
-                                    </tr>
+                                            <th>
+                                                Criado em
+                                            </th>
 
-                                </thead>
+                                            <th>
+                                                Ações
+                                            </th>
 
+                                        </tr>
 
-                                <tbody>
+                                    </thead>
 
-                                    {
-                                        usuarios.length === 0
 
-                                        ?
+                                    <tbody>
 
-                                        (
 
-                                            <tr>
+                                        {
 
-                                                <td
-                                                    colSpan="6"
-                                                    className="usuarios-empty"
-                                                >
+                                            usuarios.length === 0
 
-                                                    Nenhum usuário cadastrado.
+                                                ?
 
-                                                </td>
+                                                (
 
-                                            </tr>
+                                                    <tr>
 
-                                        )
+                                                        <td
 
-                                        :
+                                                            colSpan="7"
 
-                                        (
+                                                            className="usuarios-empty"
 
-                                            usuarios.map(
-                                                usuario => (
+                                                        >
 
-                                                    <tr
-                                                        key={
-                                                            usuario.id
-                                                        }
-                                                    >
-
-                                                        <td>
-
-                                                            <div className="usuario-identidade">
-
-                                                                <div className="usuario-avatar">
-
-                                                                    {
-                                                                        (
-                                                                            usuario.nome ||
-                                                                            usuario.email ||
-                                                                            "U"
-                                                                        )
-                                                                            .charAt(0)
-                                                                            .toUpperCase()
-                                                                    }
-
-                                                                </div>
-
-
-                                                                <div>
-
-                                                                    <strong>
-
-                                                                        {
-                                                                            usuario.nome ||
-                                                                            "Sem nome"
-                                                                        }
-
-                                                                    </strong>
-
-                                                                    <small>
-
-                                                                        {
-                                                                            usuario.id
-                                                                        }
-
-                                                                    </small>
-
-                                                                </div>
-
-                                                            </div>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                usuario.email ||
-                                                                "-"
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                usuario.username ||
-                                                                "-"
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <span className="usuario-role">
-
-                                                                {
-                                                                    nomeRole(
-                                                                        usuario
-                                                                    )
-                                                                }
-
-                                                            </span>
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            {
-                                                                formatarData(
-                                                                    usuario.created_at
-                                                                )
-                                                            }
-
-                                                        </td>
-
-
-                                                        <td>
-
-                                                            <div className="usuario-acoes">
-
-
-                                                                <button
-
-                                                                    className="usuario-action edit"
-
-                                                                    title="Editar usuário"
-
-                                                                    onClick={() =>
-                                                                        abrirEdicao(
-                                                                            usuario
-                                                                        )
-                                                                    }
-
-                                                                >
-
-                                                                    <FiEdit2 />
-
-                                                                </button>
-
-
-                                                                <button
-
-                                                                    className="usuario-action password"
-
-                                                                    title="Alterar senha"
-
-                                                                    onClick={() =>
-                                                                        abrirSenha(
-                                                                            usuario
-                                                                        )
-                                                                    }
-
-                                                                >
-
-                                                                    <FiKey />
-
-                                                                </button>
-
-
-                                                                <button
-
-                                                                    className="usuario-action delete"
-
-                                                                    title="Excluir usuário"
-
-                                                                    onClick={() =>
-                                                                        abrirExclusao(
-                                                                            usuario
-                                                                        )
-                                                                    }
-
-                                                                >
-
-                                                                    <FiTrash2 />
-
-                                                                </button>
-
-
-                                                            </div>
+                                                            Nenhum usuário cadastrado.
 
                                                         </td>
 
                                                     </tr>
 
                                                 )
-                                            )
 
-                                        )
-                                    }
+                                                :
 
-                                </tbody>
+                                                (
 
-                            </table>
+                                                    usuarios.map(
 
-                        </div>
+                                                        usuario => (
 
-                    )
+                                                            <tr
+
+                                                                key={
+                                                                    usuario.id
+                                                                }
+
+                                                            >
+
+
+                                                                <td>
+
+                                                                    <div className="usuario-identidade">
+
+
+                                                                        <div className="usuario-avatar">
+
+                                                                            {
+
+                                                                                (
+
+                                                                                    usuario.nome ||
+
+                                                                                    usuario.email ||
+
+                                                                                    "U"
+
+                                                                                )
+
+                                                                                    .charAt(0)
+
+                                                                                    .toUpperCase()
+
+                                                                            }
+
+                                                                        </div>
+
+
+                                                                        <div>
+
+                                                                            <strong>
+
+                                                                                {
+
+                                                                                    usuario.nome ||
+
+                                                                                    "Sem nome"
+
+                                                                                }
+
+                                                                            </strong>
+
+
+                                                                            <small>
+
+                                                                                {
+
+                                                                                    usuario.id
+
+                                                                                }
+
+                                                                            </small>
+
+                                                                        </div>
+
+
+                                                                    </div>
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    {
+
+                                                                        usuario.email ||
+
+                                                                        "-"
+
+                                                                    }
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    {
+
+                                                                        usuario.username ||
+
+                                                                        "-"
+
+                                                                    }
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    <span className="usuario-role">
+
+                                                                        {
+
+                                                                            nomeRole(
+                                                                                usuario
+                                                                            )
+
+                                                                        }
+
+                                                                    </span>
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    <span
+
+                                                                        className={
+
+                                                                            usuario.pode_ver_todas_obras === true
+
+                                                                                ? "usuario-permissao liberado"
+
+                                                                                : "usuario-permissao restrito"
+
+                                                                        }
+
+                                                                    >
+
+                                                                        {
+
+                                                                            usuario.pode_ver_todas_obras === true
+
+                                                                                ? (
+
+                                                                                    <FiEye />
+
+                                                                                )
+
+                                                                                : null
+
+                                                                        }
+
+
+                                                                        {
+
+                                                                            textoPermissaoObras(
+                                                                                usuario
+                                                                            )
+
+                                                                        }
+
+                                                                    </span>
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    {
+
+                                                                        formatarData(
+                                                                            usuario.created_at
+                                                                        )
+
+                                                                    }
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    <div className="usuario-acoes">
+
+
+                                                                        <button
+
+                                                                            type="button"
+
+                                                                            className="usuario-action edit"
+
+                                                                            title="Editar usuário"
+
+                                                                            onClick={() =>
+                                                                                abrirEdicao(
+                                                                                    usuario
+                                                                                )
+                                                                            }
+
+                                                                        >
+
+                                                                            <FiEdit2 />
+
+                                                                        </button>
+
+
+                                                                        <button
+
+                                                                            type="button"
+
+                                                                            className="usuario-action password"
+
+                                                                            title="Alterar senha"
+
+                                                                            onClick={() =>
+                                                                                abrirSenha(
+                                                                                    usuario
+                                                                                )
+                                                                            }
+
+                                                                        >
+
+                                                                            <FiKey />
+
+                                                                        </button>
+
+
+                                                                        <button
+
+                                                                            type="button"
+
+                                                                            className="usuario-action delete"
+
+                                                                            title="Excluir usuário"
+
+                                                                            onClick={() =>
+                                                                                abrirExclusao(
+                                                                                    usuario
+                                                                                )
+                                                                            }
+
+                                                                        >
+
+                                                                            <FiTrash2 />
+
+                                                                        </button>
+
+
+                                                                    </div>
+
+                                                                </td>
+
+
+                                                            </tr>
+
+                                                        )
+
+                                                    )
+
+                                                )
+
+                                        }
+
+
+                                    </tbody>
+
+
+                                </table>
+
+                            </div>
+
+                        )
 
                 }
+
 
             </section>
 
@@ -1434,43 +1847,62 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-                modal && (
+
+                modal &&
+
+                (
 
                     <div className="usuarios-modal-overlay">
+
 
                         <div className="usuarios-modal">
 
 
                             <header className="usuarios-modal-header">
 
+
                                 <div>
 
                                     <span>
 
                                         {
+
                                             editando
+
                                                 ? "EDITAR USUÁRIO"
+
                                                 : "NOVO USUÁRIO"
+
                                         }
 
                                     </span>
 
+
                                     <h2>
 
                                         {
+
                                             editando
+
                                                 ? "Editar usuário"
+
                                                 : "Cadastrar usuário"
+
                                         }
 
                                     </h2>
 
+
                                     <p>
 
                                         {
+
                                             editando
-                                                ? "Atualize os dados e o perfil de acesso."
+
+                                                ? "Atualize os dados, perfil e permissões do usuário."
+
                                                 : "Preencha os dados para criar um novo acesso."
+
                                         }
 
                                     </p>
@@ -1479,29 +1911,47 @@ export default function Usuarios() {
 
 
                                 <button
+
                                     type="button"
+
                                     className="usuarios-modal-close"
-                                    onClick={fecharModal}
-                                    disabled={salvando}
+
+                                    onClick={
+                                        fecharModal
+                                    }
+
+                                    disabled={
+                                        salvando
+                                    }
+
                                 >
 
                                     <FiX />
 
                                 </button>
 
+
                             </header>
 
 
                             <form
+
                                 className="usuarios-form"
-                                onSubmit={salvarUsuario}
+
+                                onSubmit={
+                                    salvarUsuario
+                                }
+
                             >
 
 
                                 <div className="usuarios-form-grid">
 
 
+                                    {/* NOME */}
+
                                     <div className="usuarios-form-group">
+
 
                                         <label>
 
@@ -1513,40 +1963,73 @@ export default function Usuarios() {
 
                                         </label>
 
+
                                         <input
+
                                             type="text"
+
                                             name="nome"
-                                            value={form.nome}
-                                            onChange={alterarCampo}
+
+                                            value={
+                                                form.nome
+                                            }
+
+                                            onChange={
+                                                alterarCampo
+                                            }
+
                                             placeholder="Nome completo"
+
                                             autoComplete="off"
+
                                         />
 
                                     </div>
 
+
+                                    {/* USERNAME */}
 
                                     <div className="usuarios-form-group">
 
+
                                         <label>
+
                                             Username
+
                                             <span>
                                                 *
                                             </span>
+
                                         </label>
 
+
                                         <input
+
                                             type="text"
+
                                             name="username"
-                                            value={form.username}
-                                            onChange={alterarCampo}
+
+                                            value={
+                                                form.username
+                                            }
+
+                                            onChange={
+                                                alterarCampo
+                                            }
+
                                             placeholder="Ex.: joao.silva"
+
                                             autoComplete="off"
+
                                         />
 
                                     </div>
 
 
+                                    {/* E-MAIL */}
+
                                     <div className="usuarios-form-group full">
+
 
                                         <label>
 
@@ -1558,19 +2041,34 @@ export default function Usuarios() {
 
                                         </label>
 
+
                                         <input
+
                                             type="email"
+
                                             name="email"
-                                            value={form.email}
-                                            onChange={alterarCampo}
+
+                                            value={
+                                                form.email
+                                            }
+
+                                            onChange={
+                                                alterarCampo
+                                            }
+
                                             placeholder="usuario@alme.com.br"
+
                                             autoComplete="off"
+
                                         />
 
                                     </div>
 
 
+                                    {/* ROLE */}
+
                                     <div className="usuarios-form-group">
+
 
                                         <label>
 
@@ -1582,48 +2080,76 @@ export default function Usuarios() {
 
                                         </label>
 
+
                                         <select
+
                                             name="role_id"
-                                            value={form.role_id}
-                                            onChange={alterarCampo}
+
+                                            value={
+                                                form.role_id
+                                            }
+
+                                            onChange={
+                                                alterarCampo
+                                            }
+
                                         >
 
                                             <option value="">
+
                                                 Selecione um perfil
+
                                             </option>
 
+
                                             {
+
                                                 roles.map(
+
                                                     role => (
 
                                                         <option
+
                                                             key={
                                                                 role.id
                                                             }
+
                                                             value={
                                                                 role.id
                                                             }
+
                                                         >
 
                                                             {
+
                                                                 role.nome
+
                                                             }
 
                                                         </option>
 
                                                     )
+
                                                 )
+
                                             }
 
                                         </select>
 
+
                                     </div>
 
 
+                                    {/* SENHA */}
+
                                     {
-                                        !editando && (
+
+                                        !editando &&
+
+                                        (
 
                                             <div className="usuarios-form-group">
+
 
                                                 <label>
 
@@ -1635,44 +2161,158 @@ export default function Usuarios() {
 
                                                 </label>
 
+
                                                 <input
+
                                                     type="password"
+
                                                     name="senha"
-                                                    value={form.senha}
-                                                    onChange={alterarCampo}
+
+                                                    value={
+                                                        form.senha
+                                                    }
+
+                                                    onChange={
+                                                        alterarCampo
+                                                    }
+
                                                     placeholder="Mínimo 6 caracteres"
+
                                                     autoComplete="new-password"
+
                                                 />
 
                                             </div>
 
                                         )
+
                                     }
+
+
+                                    {/* =================================================
+                                        PERMISSÃO DE OBRAS
+                                    ================================================= */}
+
+                                    <div className="usuarios-permissao-box full">
+
+
+                                        <div className="usuarios-permissao-texto">
+
+
+                                            <strong>
+
+                                                Visualização das obras
+
+                                            </strong>
+
+
+                                            <span>
+
+                                                Usuários sem esta permissão visualizam
+                                                somente as obras em que o próprio username
+                                                está cadastrado como RDO, marceneiro ou projetista.
+
+                                            </span>
+
+
+                                        </div>
+
+
+                                        <label className="usuarios-switch">
+
+
+                                            <input
+
+                                                type="checkbox"
+
+                                                name="pode_ver_todas_obras"
+
+                                                checked={
+                                                    form.pode_ver_todas_obras === true
+                                                }
+
+                                                onChange={
+                                                    alterarCampo
+                                                }
+
+                                            />
+
+
+                                            <span className="usuarios-switch-slider"></span>
+
+
+                                        </label>
+
+
+                                    </div>
+
+
+                                    <div
+
+                                        className={
+
+                                            form.pode_ver_todas_obras
+
+                                                ? "usuarios-permissao-status liberado"
+
+                                                : "usuarios-permissao-status restrito"
+
+                                        }
+
+                                    >
+
+                                        {
+
+                                            form.pode_ver_todas_obras
+
+                                                ? "Este usuário poderá visualizar todas as obras."
+
+                                                : "Este usuário visualizará apenas as obras relacionadas ao próprio username."
+
+                                        }
+
+                                    </div>
 
 
                                 </div>
 
 
                                 {
-                                    erro && (
+
+                                    erro &&
+
+                                    (
 
                                         <div className="usuarios-form-error">
 
-                                            {erro}
+                                            {
+                                                erro
+                                            }
 
                                         </div>
 
                                     )
+
                                 }
 
 
                                 <footer className="usuarios-modal-footer">
 
+
                                     <button
+
                                         type="button"
+
                                         className="usuarios-btn-cancel"
-                                        onClick={fecharModal}
-                                        disabled={salvando}
+
+                                        onClick={
+                                            fecharModal
+                                        }
+
+                                        disabled={
+                                            salvando
+                                        }
+
                                     >
 
                                         Cancelar
@@ -1681,31 +2321,47 @@ export default function Usuarios() {
 
 
                                     <button
+
                                         type="submit"
+
                                         className="usuarios-btn-save"
-                                        disabled={salvando}
+
+                                        disabled={
+                                            salvando
+                                        }
+
                                     >
 
                                         {
+
                                             salvando
+
                                                 ? "Salvando..."
+
                                                 : editando
+
                                                     ? "Salvar alterações"
+
                                                     : "Criar usuário"
+
                                         }
 
                                     </button>
+
 
                                 </footer>
 
 
                             </form>
 
+
                         </div>
+
 
                     </div>
 
                 )
+
             }
 
 
@@ -1714,14 +2370,19 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-                modalSenha && (
+
+                modalSenha &&
+
+                (
 
                     <div className="usuarios-modal-overlay">
+
 
                         <div className="usuarios-modal usuarios-modal-small">
 
 
                             <header className="usuarios-modal-header">
+
 
                                 <div>
 
@@ -1729,9 +2390,11 @@ export default function Usuarios() {
                                         SEGURANÇA
                                     </span>
 
+
                                     <h2>
                                         Alterar senha
                                     </h2>
+
 
                                     <p>
 
@@ -1740,8 +2403,11 @@ export default function Usuarios() {
                                         <strong>
 
                                             {
+
                                                 usuarioSelecionado?.nome ||
+
                                                 usuarioSelecionado?.email
+
                                             }
 
                                         </strong>
@@ -1752,25 +2418,42 @@ export default function Usuarios() {
 
 
                                 <button
+
                                     type="button"
+
                                     className="usuarios-modal-close"
-                                    onClick={fecharSenha}
-                                    disabled={salvando}
+
+                                    onClick={
+                                        fecharSenha
+                                    }
+
+                                    disabled={
+                                        salvando
+                                    }
+
                                 >
 
                                     <FiX />
 
                                 </button>
 
+
                             </header>
 
 
                             <form
+
                                 className="usuarios-form"
-                                onSubmit={salvarSenha}
+
+                                onSubmit={
+                                    salvarSenha
+                                }
+
                             >
 
+
                                 <div className="usuarios-form-group">
+
 
                                     <label>
 
@@ -1782,42 +2465,69 @@ export default function Usuarios() {
 
                                     </label>
 
+
                                     <input
+
                                         type="password"
-                                        value={novaSenha}
-                                        onChange={e =>
-                                            setNovaSenha(
-                                                e.target.value
-                                            )
+
+                                        value={
+                                            novaSenha
                                         }
+
+                                        onChange={
+                                            e =>
+                                                setNovaSenha(
+                                                    e.target.value
+                                                )
+                                        }
+
                                         placeholder="Mínimo 6 caracteres"
+
                                         autoComplete="new-password"
+
                                         autoFocus
+
                                     />
 
                                 </div>
 
 
                                 {
-                                    erro && (
+
+                                    erro &&
+
+                                    (
 
                                         <div className="usuarios-form-error">
 
-                                            {erro}
+                                            {
+                                                erro
+                                            }
 
                                         </div>
 
                                     )
+
                                 }
 
 
                                 <footer className="usuarios-modal-footer">
 
+
                                     <button
+
                                         type="button"
+
                                         className="usuarios-btn-cancel"
-                                        onClick={fecharSenha}
-                                        disabled={salvando}
+
+                                        onClick={
+                                            fecharSenha
+                                        }
+
+                                        disabled={
+                                            salvando
+                                        }
+
                                     >
 
                                         Cancelar
@@ -1826,28 +2536,43 @@ export default function Usuarios() {
 
 
                                     <button
+
                                         type="submit"
+
                                         className="usuarios-btn-save"
-                                        disabled={salvando}
+
+                                        disabled={
+                                            salvando
+                                        }
+
                                     >
 
                                         {
+
                                             salvando
+
                                                 ? "Salvando..."
+
                                                 : "Alterar senha"
+
                                         }
 
                                     </button>
 
+
                                 </footer>
+
 
                             </form>
 
+
                         </div>
+
 
                     </div>
 
                 )
+
             }
 
 
@@ -1856,14 +2581,19 @@ export default function Usuarios() {
             ================================================= */}
 
             {
-                modalExcluir && (
+
+                modalExcluir &&
+
+                (
 
                     <div className="usuarios-modal-overlay">
+
 
                         <div className="usuarios-modal usuarios-modal-small">
 
 
                             <header className="usuarios-modal-header">
+
 
                                 <div>
 
@@ -1871,9 +2601,11 @@ export default function Usuarios() {
                                         ATENÇÃO
                                     </span>
 
+
                                     <h2>
                                         Excluir usuário?
                                     </h2>
+
 
                                     <p>
 
@@ -1882,8 +2614,11 @@ export default function Usuarios() {
                                         <strong>
 
                                             {
+
                                                 usuarioSelecionado?.nome ||
+
                                                 usuarioSelecionado?.email
+
                                             }
 
                                         </strong>
@@ -1896,43 +2631,85 @@ export default function Usuarios() {
 
 
                                 <button
+
                                     type="button"
+
                                     className="usuarios-modal-close"
-                                    onClick={() =>
-                                        setModalExcluir(false)
+
+                                    onClick={() => {
+
+                                        if (!salvando) {
+
+                                            setModalExcluir(false);
+
+                                            setUsuarioSelecionado(null);
+
+                                            setErro("");
+
+                                        }
+
+                                    }}
+
+                                    disabled={
+                                        salvando
                                     }
-                                    disabled={salvando}
+
                                 >
 
                                     <FiX />
 
                                 </button>
 
+
                             </header>
 
 
                             {
-                                erro && (
+
+                                erro &&
+
+                                (
 
                                     <div className="usuarios-form-error usuarios-delete-error">
 
-                                        {erro}
+                                        {
+                                            erro
+                                        }
 
                                     </div>
 
                                 )
+
                             }
 
 
                             <footer className="usuarios-modal-footer">
 
+
                                 <button
+
                                     type="button"
+
                                     className="usuarios-btn-cancel"
-                                    onClick={() =>
-                                        setModalExcluir(false)
+
+                                    onClick={() => {
+
+                                        if (!salvando) {
+
+                                            setModalExcluir(false);
+
+                                            setUsuarioSelecionado(null);
+
+                                            setErro("");
+
+                                        }
+
+                                    }}
+
+                                    disabled={
+                                        salvando
                                     }
-                                    disabled={salvando}
+
                                 >
 
                                     Cancelar
@@ -1941,28 +2718,44 @@ export default function Usuarios() {
 
 
                                 <button
+
                                     type="button"
+
                                     className="usuarios-btn-delete"
-                                    onClick={excluirUsuario}
-                                    disabled={salvando}
+
+                                    onClick={
+                                        excluirUsuario
+                                    }
+
+                                    disabled={
+                                        salvando
+                                    }
+
                                 >
 
                                     {
+
                                         salvando
+
                                             ? "Excluindo..."
+
                                             : "Excluir usuário"
+
                                     }
 
                                 </button>
+
 
                             </footer>
 
 
                         </div>
 
+
                     </div>
 
                 )
+
             }
 
 

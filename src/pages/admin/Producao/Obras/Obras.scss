@@ -1,0 +1,980 @@
+.obras-page {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/*
+=====================================================
+HEADER
+=====================================================
+*/
+
+.obras-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 35px;
+}
+
+.obras-header-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.obras-back {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 25px;
+    border: none;
+    border-radius: 10px;
+    background: #eee8e2;
+    color: #4b2108;
+    font-size: 18px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.obras-back:hover {
+    background: #e2d8cf;
+}
+
+.obras-header span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: #d38a17;
+}
+
+.obras-header h1 {
+    margin: 0;
+    color: #4b2108;
+    font-size: 40px;
+    font-weight: 500;
+}
+
+.obras-header p {
+    margin: 10px 0 0;
+    color: #777;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.obras-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 25px;
+}
+
+
+/*
+=====================================================
+BOTÕES HEADER
+=====================================================
+*/
+
+.obras-btn-refresh,
+.obras-btn-add {
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.obras-btn-refresh {
+    background: #eee8e2;
+    color: #4b2108;
+}
+
+.obras-btn-refresh:hover {
+    background: #e2d8cf;
+}
+
+.obras-btn-add {
+    background: #d38a17;
+    color: #fff;
+}
+
+.obras-btn-add:hover {
+    background: #b8740f;
+}
+
+.obras-btn-refresh:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+.obras-btn-add svg,
+.obras-btn-refresh svg {
+    font-size: 17px;
+}
+
+
+/*
+=====================================================
+SPINNER
+=====================================================
+*/
+
+.girando {
+    animation: obras-spin 1s linear infinite;
+}
+
+@keyframes obras-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/*
+=====================================================
+ERRO
+=====================================================
+*/
+
+.obras-error {
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    border: 1px solid #e8caca;
+    border-radius: 9px;
+    background: #fff4f4;
+    color: #a33;
+    font-size: 14px;
+}
+
+
+/*
+=====================================================
+RESUMO
+=====================================================
+*/
+
+.obras-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.obras-summary > div {
+    min-width: 180px;
+    padding: 20px 22px;
+    border: 1px solid #e5dfd9;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.obras-summary span {
+    display: block;
+    margin-bottom: 5px;
+    color: #999;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+}
+
+.obras-summary strong {
+    color: #4b2108;
+    font-size: 28px;
+    font-weight: 500;
+}
+
+
+/*
+=====================================================
+FILTROS
+=====================================================
+*/
+
+.obras-filtros {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.obras-filtro-busca {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.obras-filtro-busca > svg {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9b9189;
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.obras-filtro-busca input {
+    width: 100%;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 0 45px;
+    border: 1px solid #ddd5ce;
+    border-radius: 9px;
+    outline: none;
+    background: #fff;
+    color: #43382f;
+    font-family: inherit;
+    font-size: 13px;
+    transition: .2s;
+}
+
+.obras-filtro-busca input:focus {
+    border-color: #d38a17;
+    box-shadow:
+        0 0 0 3px rgba(
+            211,
+            138,
+            23,
+            .10
+        );
+}
+
+.obras-filtro-busca input::placeholder {
+    color: #b6aea7;
+}
+
+.obras-filtro-limpar {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: #f2eeea;
+    color: #6f6258;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.obras-filtro-limpar:hover {
+    background: #e7dfd8;
+}
+
+
+/*
+=====================================================
+SELECT RESPONSÁVEL
+=====================================================
+*/
+
+.obras-filtro-responsavel {
+    position: relative;
+    width: 300px;
+    flex-shrink: 0;
+}
+
+.obras-filtro-responsavel > svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    color: #8f837a;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.obras-filtro-responsavel select {
+    width: 100%;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 0 40px 0 42px;
+    appearance: none;
+    border: 1px solid #ddd5ce;
+    border-radius: 9px;
+    outline: none;
+    background:
+        #fff
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238f837a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
+        no-repeat
+        right 14px
+        center;
+    color: #43382f;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.obras-filtro-responsavel select:focus {
+    border-color: #d38a17;
+    box-shadow:
+        0 0 0 3px rgba(
+            211,
+            138,
+            23,
+            .10
+        );
+}
+
+.obras-filtro-responsavel select:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+
+/*
+=====================================================
+STATUS VISUALIZAÇÃO
+=====================================================
+*/
+
+.obras-filtro-info {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 180px;
+    padding: 0 16px;
+    border: 1px solid #e5dfd9;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.obras-filtro-info span {
+    color: #999;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.obras-filtro-info strong {
+    color: #4b2108;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/*
+=====================================================
+BOTÃO LIMPAR FILTROS
+=====================================================
+*/
+
+.obras-filtros-clear {
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 15px;
+    border: 1px solid #ddd5ce;
+    border-radius: 9px;
+    background: #fff;
+    color: #6f6258;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: .2s;
+    white-space: nowrap;
+}
+
+.obras-filtros-clear:hover {
+    background: #f5f1ed;
+    border-color: #cfc4bb;
+}
+
+
+/*
+=====================================================
+CONTEÚDO
+=====================================================
+*/
+
+.obras-content {
+    overflow: hidden;
+    padding: 28px;
+    border: 1px solid #e4ddd5;
+    border-radius: 15px;
+    background: #fff;
+}
+
+.obras-section-title {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.obras-section-title span {
+    display: block;
+    margin-bottom: 6px;
+    color: #d38a17;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.7px;
+}
+
+.obras-section-title h2 {
+    margin: 0;
+    color: #4b2108;
+    font-size: 23px;
+    font-weight: 500;
+}
+
+.obras-section-counter {
+    color: #999;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+
+/*
+=====================================================
+TABELA
+=====================================================
+*/
+
+.obras-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.obras-table {
+    width: 100%;
+    min-width: 1500px;
+    border-collapse: collapse;
+}
+
+.obras-table thead th {
+    padding: 14px 14px;
+    border-bottom: 1px solid #e5dfd9;
+    color: #8c8177;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.obras-table tbody td {
+    padding: 17px 14px;
+    border-bottom: 1px solid #f0ece8;
+    color: #5f5750;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.obras-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.obras-table tbody tr {
+    transition: .2s;
+}
+
+.obras-table tbody tr:hover {
+    background: #fcfaf8;
+}
+
+
+/*
+=====================================================
+NOME DA OBRA
+=====================================================
+*/
+
+.obra-nome {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 170px;
+}
+
+.obra-nome strong {
+    color: #4b2108;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.obra-nome small {
+    color: #aaa;
+    font-size: 10px;
+}
+
+
+/*
+=====================================================
+AÇÕES
+=====================================================
+*/
+
+.obra-acoes {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.obra-action {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.obra-action.edit {
+    background: #f3e5d2;
+    color: #4b2108;
+}
+
+.obra-action.edit:hover {
+    background: #e8d5bd;
+}
+
+.obra-action.delete {
+    background: #f8e3e3;
+    color: #a04444;
+}
+
+.obra-action.delete:hover {
+    background: #f0cece;
+}
+
+
+/*
+=====================================================
+VAZIO / LOADING
+=====================================================
+*/
+
+.obras-empty {
+    padding: 55px !important;
+    color: #999 !important;
+    text-align: center !important;
+}
+
+.obras-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 220px;
+    color: #777;
+    font-size: 14px;
+}
+
+.obras-loading svg {
+    animation:
+        obras-spin 1s linear infinite;
+}
+
+
+/*
+=====================================================
+MODAL
+=====================================================
+*/
+
+.obras-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    background: rgba(
+        28,
+        17,
+        9,
+        .48
+    );
+    backdrop-filter: blur(3px);
+}
+
+.obras-modal {
+    width: 100%;
+    max-width: 850px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow:
+        0 30px 80px rgba(
+            0,
+            0,
+            0,
+            .20
+        );
+}
+
+.obras-modal-small {
+    max-width: 550px;
+}
+
+.obras-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 30px 32px 24px;
+    border-bottom: 1px solid #eee8e2;
+}
+
+.obras-modal-header span {
+    display: block;
+    margin-bottom: 7px;
+    color: #d38a17;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.7px;
+}
+
+.obras-modal-header h2 {
+    margin: 0;
+    color: #4b2108;
+    font-size: 25px;
+    font-weight: 500;
+}
+
+.obras-modal-header p {
+    margin: 8px 0 0;
+    color: #777;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.obras-modal-close {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 9px;
+    background: #f2eeea;
+    color: #4b2108;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.obras-modal-close:hover {
+    background: #e9e1da;
+}
+
+
+/*
+=====================================================
+FORM
+=====================================================
+*/
+
+.obras-form {
+    padding: 28px 32px 32px;
+}
+
+.obras-form-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(
+                0,
+                1fr
+            )
+        );
+    gap: 20px 18px;
+}
+
+.obras-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.obras-form-group.full {
+    grid-column: 1 / -1;
+}
+
+.obras-form-group label {
+    color: #5d5148;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.obras-form-group label span {
+    margin-left: 4px;
+    color: #c35454;
+}
+
+.obras-form-group input,
+.obras-form-group select {
+    width: 100%;
+    height: 46px;
+    box-sizing: border-box;
+    padding: 0 13px;
+    border: 1px solid #ddd5ce;
+    border-radius: 8px;
+    outline: none;
+    background: #fff;
+    color: #43382f;
+    font-family: inherit;
+    font-size: 13px;
+    transition: .2s;
+}
+
+.obras-form-group select {
+    cursor: pointer;
+    appearance: none;
+    padding-right: 38px;
+    background:
+        #fff
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238f837a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")
+        no-repeat
+        right 14px
+        center;
+}
+
+.obras-form-group input:focus,
+.obras-form-group select:focus {
+    border-color: #d38a17;
+    box-shadow:
+        0 0 0 3px rgba(
+            211,
+            138,
+            23,
+            .10
+        );
+}
+
+.obras-form-group input::placeholder {
+    color: #b6aea7;
+}
+
+.obras-form-group select:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+
+/*
+=====================================================
+ERRO DO FORMULÁRIO
+=====================================================
+*/
+
+.obras-form-error {
+    margin-top: 20px;
+    padding: 13px 15px;
+    border-radius: 8px;
+    background: #fff1f1;
+    color: #a04444;
+    font-size: 13px;
+}
+
+
+/*
+=====================================================
+FOOTER MODAL
+=====================================================
+*/
+
+.obras-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.obras-btn-cancel,
+.obras-btn-save,
+.obras-btn-delete {
+    height: 44px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.obras-btn-cancel {
+    background: #eee8e2;
+    color: #4b2108;
+}
+
+.obras-btn-cancel:hover {
+    background: #e3dad2;
+}
+
+.obras-btn-save {
+    background: #d38a17;
+    color: #fff;
+}
+
+.obras-btn-save:hover {
+    background: #b8740f;
+}
+
+.obras-btn-delete {
+    background: #a04444;
+    color: #fff;
+}
+
+.obras-btn-delete:hover {
+    background: #843838;
+}
+
+.obras-btn-cancel:disabled,
+.obras-btn-save:disabled,
+.obras-btn-delete:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+
+/*
+=====================================================
+RESPONSIVO
+=====================================================
+*/
+
+@media (max-width: 1100px) {
+
+    .obras-filtros {
+        flex-wrap: wrap;
+    }
+
+    .obras-filtro-busca {
+        flex-basis: 100%;
+    }
+
+    .obras-filtro-responsavel {
+        width: 300px;
+    }
+
+}
+
+
+@media (max-width: 1000px) {
+
+    .obras-filtros {
+        flex-direction: column;
+    }
+
+    .obras-filtro-responsavel {
+        width: 100%;
+    }
+
+    .obras-filtro-info {
+        min-height: 46px;
+        box-sizing: border-box;
+    }
+
+    .obras-filtros-clear {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 900px) {
+
+    .obras-header {
+        flex-direction: column;
+    }
+
+    .obras-header-actions {
+        width: 100%;
+        padding-top: 0;
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .obras-content {
+        padding: 20px;
+    }
+
+    .obras-header {
+        margin-bottom: 25px;
+    }
+
+    .obras-header h1 {
+        font-size: 32px;
+    }
+
+    .obras-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .obras-form-group.full {
+        grid-column: auto;
+    }
+
+    .obras-modal-overlay {
+        padding: 12px;
+    }
+
+    .obras-modal-header {
+        padding: 24px 20px 20px;
+    }
+
+    .obras-form {
+        padding: 22px 20px 25px;
+    }
+
+    .obras-header-actions {
+        width: 100%;
+    }
+
+    .obras-btn-refresh,
+    .obras-btn-add {
+        flex: 1;
+    }
+
+    .obras-summary > div {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .obras-section-title {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}

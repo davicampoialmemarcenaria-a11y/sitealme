@@ -56,6 +56,10 @@ import Estoque from "../pages/admin/Estoque/Estoque";
 
 import Usuarios from "../pages/admin/Usuarios/Usuarios";
 
+import Producao from "../pages/admin/Producao/Producao";
+
+import Obras from "../pages/admin/Producao/Obras/Obras";
+
 
 /*
 =====================================================
@@ -102,16 +106,17 @@ import ScrollToTop from "../components/ScrollToTop/ScrollToTop";
 INÍCIO DO ADMIN
 =====================================================
 
-Quando o usuário acessar:
+Quando o usuário acessa:
 
 /admin
 
-direcionamos cada perfil para sua própria área.
+cada perfil é direcionado para sua
+respectiva área.
 
 Administrativo Geral → Dashboard
 Comercial            → Comercial
-Produção              → Produção
-Financeiro            → Financeiro
+Produção             → Produção
+Financeiro           → Financeiro
 
 =====================================================
 */
@@ -136,7 +141,6 @@ function AdminInicio() {
         return (
             <Dashboard />
         );
-
     }
 
 
@@ -156,7 +160,6 @@ function AdminInicio() {
                 replace
             />
         );
-
     }
 
 
@@ -176,7 +179,6 @@ function AdminInicio() {
                 replace
             />
         );
-
     }
 
 
@@ -196,7 +198,6 @@ function AdminInicio() {
                 replace
             />
         );
-
     }
 
 
@@ -243,14 +244,12 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/sobre"
                     element={
                         <Sobre />
                     }
                 />
-
 
                 <Route
                     path="/contato"
@@ -259,14 +258,12 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/eua"
                     element={
                         <Eua />
                     }
                 />
-
 
                 <Route
                     path="/duvidas"
@@ -275,7 +272,6 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/marceneiro"
                     element={
@@ -283,14 +279,12 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/login"
                     element={
                         <Login />
                     }
                 />
-
 
 
                 {/* =====================================================
@@ -304,14 +298,12 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/news/:id"
                     element={
                         <NewsPage />
                     }
                 />
-
 
 
                 {/* =====================================================
@@ -325,14 +317,12 @@ export default function Router() {
                     }
                 />
 
-
                 <Route
                     path="/projetos/:id"
                     element={
                         <ProjetosPage />
                     }
                 />
-
 
 
                 {/* =====================================================
@@ -380,11 +370,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         COMERCIAL
+                    =================================================
 
-                        Administrativo Geral + Comercial
+                    Administrativo Geral + Comercial
                     ================================================= */}
 
                     <Route
@@ -417,11 +407,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         PRODUÇÃO
+                    =================================================
 
-                        Administrativo Geral + Produção
+                    Administrativo Geral + Produção
                     ================================================= */}
 
                     <Route
@@ -439,13 +429,7 @@ export default function Router() {
 
                             >
 
-                                <div>
-
-                                    <h1>
-                                        Produção
-                                    </h1>
-
-                                </div>
+                                <Producao />
 
                             </ProtectedRoute>
 
@@ -454,11 +438,42 @@ export default function Router() {
                     />
 
 
+                    {/* =================================================
+                        OBRAS
+                    =================================================
+
+                    SOMENTE PRODUÇÃO
+                    ================================================= */}
+
+                    <Route
+
+                        path="obras"
+
+                        element={
+
+                            <ProtectedRoute
+
+                                allowedRoles={[
+                                   "Administrativo Geral",
+                                    "producao"
+                                ]}
+
+                            >
+
+                                <Obras />
+
+                            </ProtectedRoute>
+
+                        }
+
+                    />
+
 
                     {/* =================================================
                         FINANCEIRO
+                    =================================================
 
-                        Administrativo Geral + Financeiro
+                    Administrativo Geral + Financeiro
                     ================================================= */}
 
                     <Route
@@ -491,11 +506,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         ESTOQUE
+                    =================================================
 
-                        Administrativo Geral + Financeiro
+                    Administrativo Geral + Financeiro
                     ================================================= */}
 
                     <Route
@@ -522,11 +537,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         NEWS
+                    =================================================
 
-                        Somente Administrativo Geral
+                    SOMENTE ADMINISTRATIVO GERAL
                     ================================================= */}
 
                     <Route
@@ -552,11 +567,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         PROJETOS
+                    =================================================
 
-                        Somente Administrativo Geral
+                    SOMENTE ADMINISTRATIVO GERAL
                     ================================================= */}
 
                     <Route
@@ -582,11 +597,11 @@ export default function Router() {
                     />
 
 
-
                     {/* =================================================
                         USUÁRIOS
+                    =================================================
 
-                        Somente Administrativo Geral
+                    SOMENTE ADMINISTRATIVO GERAL
                     ================================================= */}
 
                     <Route
@@ -624,10 +639,12 @@ export default function Router() {
                     path="*"
 
                     element={
+
                         <Navigate
                             to="/"
                             replace
                         />
+
                     }
 
                 />

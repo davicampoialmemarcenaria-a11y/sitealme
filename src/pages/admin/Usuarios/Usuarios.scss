@@ -1,6 +1,7 @@
 .usuarios-page {
 
     width: 100%;
+
     min-height: 100%;
 
     padding: 42px 52px 60px;
@@ -14,9 +15,11 @@
 }
 
 
-/* =====================================================
-   HEADER
-===================================================== */
+/*
+=====================================================
+HEADER
+=====================================================
+*/
 
 .usuarios-header {
 
@@ -80,9 +83,11 @@
 }
 
 
-/* =====================================================
-   HEADER ACTIONS
-===================================================== */
+/*
+=====================================================
+HEADER ACTIONS
+=====================================================
+*/
 
 .usuarios-header-actions {
 
@@ -96,6 +101,7 @@
 
 
 .usuarios-btn-refresh,
+
 .usuarios-btn-add {
 
     height: 44px;
@@ -173,6 +179,7 @@
 
 
 .usuarios-btn-add svg,
+
 .usuarios-btn-refresh svg {
 
     width: 16px;
@@ -182,9 +189,43 @@
 }
 
 
-/* =====================================================
-   ERRO
-===================================================== */
+/*
+=====================================================
+SPINNER
+=====================================================
+*/
+
+.girando {
+
+    animation:
+
+        usuarios-girar 1s linear infinite;
+
+}
+
+
+@keyframes usuarios-girar {
+
+    from {
+
+        transform: rotate(0deg);
+
+    }
+
+    to {
+
+        transform: rotate(360deg);
+
+    }
+
+}
+
+
+/*
+=====================================================
+ERRO
+=====================================================
+*/
 
 .usuarios-error {
 
@@ -205,15 +246,31 @@
 }
 
 
-/* =====================================================
-   SUMMARY
-===================================================== */
+/*
+=====================================================
+SUMMARY
+=====================================================
+*/
 
 .usuarios-summary {
 
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(180px, 260px));
+    grid-template-columns:
+
+        repeat(
+
+            3,
+
+            minmax(
+
+                180px,
+
+                260px
+
+            )
+
+        );
 
     gap: 14px;
 
@@ -265,9 +322,11 @@
 }
 
 
-/* =====================================================
-   CONTENT
-===================================================== */
+/*
+=====================================================
+CONTENT
+=====================================================
+*/
 
 .usuarios-content {
 
@@ -321,9 +380,11 @@
 }
 
 
-/* =====================================================
-   LOADING
-===================================================== */
+/*
+=====================================================
+LOADING
+=====================================================
+*/
 
 .usuarios-loading {
 
@@ -346,34 +407,18 @@
 
 .usuarios-loading svg {
 
-    animation: usuarios-girar 1s linear infinite;
+    animation:
+
+        usuarios-girar 1s linear infinite;
 
 }
 
 
-.girando {
-
-    animation: usuarios-girar 1s linear infinite;
-
-}
-
-
-@keyframes usuarios-girar {
-
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-
-}
-
-
-/* =====================================================
-   TABLE
-===================================================== */
+/*
+=====================================================
+TABLE
+=====================================================
+*/
 
 .usuarios-table-wrapper {
 
@@ -390,7 +435,7 @@
 
     border-collapse: collapse;
 
-    min-width: 850px;
+    min-width: 1150px;
 
 }
 
@@ -461,9 +506,11 @@
 }
 
 
-/* =====================================================
-   IDENTIDADE
-===================================================== */
+/*
+=====================================================
+IDENTIDADE
+=====================================================
+*/
 
 .usuario-identidade {
 
@@ -542,9 +589,11 @@
 }
 
 
-/* =====================================================
-   ROLE
-===================================================== */
+/*
+=====================================================
+ROLE
+=====================================================
+*/
 
 .usuario-role {
 
@@ -567,9 +616,65 @@
 }
 
 
-/* =====================================================
-   ACTIONS
-===================================================== */
+/*
+=====================================================
+PERMISSÃO DE OBRAS - TABELA
+=====================================================
+*/
+
+.usuario-permissao {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 6px 10px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+}
+
+
+.usuario-permissao.liberado {
+
+    background: #e5f4e8;
+
+    color: #357144;
+
+}
+
+
+.usuario-permissao.restrito {
+
+    background: #f1eeeb;
+
+    color: #756b63;
+
+}
+
+
+.usuario-permissao svg {
+
+    width: 13px;
+
+    height: 13px;
+
+}
+
+
+/*
+=====================================================
+ACTIONS
+=====================================================
+*/
 
 .usuario-acoes {
 
@@ -664,9 +769,11 @@
 }
 
 
-/* =====================================================
-   EMPTY
-===================================================== */
+/*
+=====================================================
+EMPTY
+=====================================================
+*/
 
 .usuarios-empty {
 
@@ -679,9 +786,11 @@
 }
 
 
-/* =====================================================
-   MODAL OVERLAY
-===================================================== */
+/*
+=====================================================
+MODAL OVERLAY
+=====================================================
+*/
 
 .usuarios-modal-overlay {
 
@@ -699,22 +808,35 @@
 
     padding: 30px;
 
-    background: rgba(40, 24, 13, .48);
+    background: rgba(
+        40,
+        24,
+        13,
+        .48
+    );
 
     backdrop-filter: blur(3px);
 
 }
 
 
-/* =====================================================
-   MODAL
-===================================================== */
+/*
+=====================================================
+MODAL
+=====================================================
+*/
 
 .usuarios-modal {
 
-    width: min(650px, 100%);
+    width: min(
+        700px,
+        100%
+    );
 
-    max-height: calc(100vh - 60px);
+    max-height:
+        calc(
+            100vh - 60px
+        );
 
     overflow-y: auto;
 
@@ -722,21 +844,33 @@
 
     border-radius: 10px;
 
-    box-shadow: 0 25px 70px rgba(0, 0, 0, .22);
+    box-shadow:
+        0 25px 70px
+        rgba(
+            0,
+            0,
+            0,
+            .22
+        );
 
 }
 
 
 .usuarios-modal-small {
 
-    width: min(520px, 100%);
+    width: min(
+        520px,
+        100%
+    );
 
 }
 
 
-/* =====================================================
-   MODAL HEADER
-===================================================== */
+/*
+=====================================================
+MODAL HEADER
+=====================================================
+*/
 
 .usuarios-modal-header {
 
@@ -748,9 +882,14 @@
 
     gap: 20px;
 
-    padding: 26px 28px 22px;
+    padding:
+        26px
+        28px
+        22px;
 
-    border-bottom: 1px solid #ebe6e1;
+    border-bottom:
+        1px solid
+        #ebe6e1;
 
 }
 
@@ -805,6 +944,12 @@
 }
 
 
+/*
+=====================================================
+BOTÃO FECHAR
+=====================================================
+*/
+
 .usuarios-modal-close {
 
     width: 34px;
@@ -819,7 +964,9 @@
 
     justify-content: center;
 
-    border: 1px solid #e0dad4;
+    border:
+        1px solid
+        #e0dad4;
 
     border-radius: 6px;
 
@@ -841,13 +988,18 @@
 }
 
 
-/* =====================================================
-   FORM
-===================================================== */
+/*
+=====================================================
+FORM
+=====================================================
+*/
 
 .usuarios-form {
 
-    padding: 26px 28px 28px;
+    padding:
+        26px
+        28px
+        28px;
 
 }
 
@@ -856,7 +1008,14 @@
 
     display: grid;
 
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(
+                0,
+                1fr
+            )
+        );
 
     gap: 19px;
 
@@ -876,7 +1035,8 @@
 
 .usuarios-form-group.full {
 
-    grid-column: 1 / -1;
+    grid-column:
+        1 / -1;
 
 }
 
@@ -902,17 +1062,22 @@
 
 
 .usuarios-form-group input,
+
 .usuarios-form-group select {
 
     width: 100%;
 
     height: 43px;
 
-    padding: 0 13px;
+    padding:
+        0
+        13px;
 
     box-sizing: border-box;
 
-    border: 1px solid #dcd6d0;
+    border:
+        1px solid
+        #dcd6d0;
 
     border-radius: 6px;
 
@@ -926,7 +1091,9 @@
 
     font-size: 13px;
 
-    transition: border-color .2s ease, box-shadow .2s ease;
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
 
 }
 
@@ -939,22 +1106,257 @@
 
 
 .usuarios-form-group input:focus,
+
 .usuarios-form-group select:focus {
 
     border-color: #c27b1c;
 
-    box-shadow: 0 0 0 3px rgba(212, 136, 33, .10);
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            212,
+            136,
+            33,
+            .10
+        );
 
 }
 
+
+/*
+=====================================================
+PERMISSÃO - BOX
+=====================================================
+*/
+
+.usuarios-permissao-box {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 25px;
+
+    padding: 18px 20px;
+
+    border:
+        1px solid
+        #e4ddd5;
+
+    border-radius: 8px;
+
+    background:
+        #fbfaf8;
+
+}
+
+
+.usuarios-permissao-texto {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+}
+
+
+.usuarios-permissao-texto strong {
+
+    color: #431c01;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+.usuarios-permissao-texto span {
+
+    max-width: 520px;
+
+    color: #7d746d;
+
+    font-size: 11px;
+
+    line-height: 1.55;
+
+}
+
+
+/*
+=====================================================
+SWITCH
+=====================================================
+*/
+
+.usuarios-switch {
+
+    position: relative;
+
+    width: 48px;
+
+    height: 26px;
+
+    flex-shrink: 0;
+
+    cursor: pointer;
+
+}
+
+
+.usuarios-switch input {
+
+    position: absolute;
+
+    width: 0;
+
+    height: 0;
+
+    opacity: 0;
+
+}
+
+
+.usuarios-switch-slider {
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: 999px;
+
+    background: #d8d1ca;
+
+    transition: .2s;
+
+}
+
+
+.usuarios-switch-slider::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 20px;
+
+    height: 20px;
+
+    left: 3px;
+
+    top: 3px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        0 2px 5px
+        rgba(
+            0,
+            0,
+            0,
+            .18
+        );
+
+    transition: .2s;
+
+}
+
+
+.usuarios-switch input:checked
+    + .usuarios-switch-slider {
+
+    background: #d48821;
+
+}
+
+
+.usuarios-switch input:checked
+    + .usuarios-switch-slider::before {
+
+    transform:
+        translateX(
+            22px
+        );
+
+}
+
+
+/*
+=====================================================
+STATUS DA PERMISSÃO
+=====================================================
+*/
+
+.usuarios-permissao-status {
+
+    grid-column:
+        1 / -1;
+
+    margin-top: -7px;
+
+    padding:
+        10px
+        13px;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+
+}
+
+
+.usuarios-permissao-status.liberado {
+
+    background: #edf7ef;
+
+    color: #397248;
+
+    border:
+        1px solid
+        #d2e9d6;
+
+}
+
+
+.usuarios-permissao-status.restrito {
+
+    background: #f5f2ef;
+
+    color: #71675f;
+
+    border:
+        1px solid
+        #e5dfd9;
+
+}
+
+
+/*
+=====================================================
+ERRO DO FORM
+=====================================================
+*/
 
 .usuarios-form-error {
 
     margin-top: 20px;
 
-    padding: 12px 14px;
+    padding:
+        12px
+        14px;
 
-    border: 1px solid #e2b9b5;
+    border:
+        1px solid
+        #e2b9b5;
 
     border-radius: 6px;
 
@@ -971,14 +1373,18 @@
 
 .usuarios-delete-error {
 
-    margin: 0 28px;
+    margin:
+        0
+        28px;
 
 }
 
 
-/* =====================================================
-   MODAL FOOTER
-===================================================== */
+/*
+=====================================================
+MODAL FOOTER
+=====================================================
+*/
 
 .usuarios-modal-footer {
 
@@ -996,12 +1402,16 @@
 
 
 .usuarios-btn-cancel,
+
 .usuarios-btn-save,
+
 .usuarios-btn-delete {
 
     height: 42px;
 
-    padding: 0 17px;
+    padding:
+        0
+        17px;
 
     border-radius: 6px;
 
@@ -1013,7 +1423,8 @@
 
     cursor: pointer;
 
-    transition: all .2s ease;
+    transition:
+        all .2s ease;
 
 }
 
@@ -1022,7 +1433,9 @@
 
     background: #fff;
 
-    border: 1px solid #dcd6d0;
+    border:
+        1px solid
+        #dcd6d0;
 
     color: #665c55;
 
@@ -1040,7 +1453,9 @@
 
     background: #d48821;
 
-    border: 1px solid #d48821;
+    border:
+        1px solid
+        #d48821;
 
     color: #fff;
 
@@ -1060,7 +1475,9 @@
 
     background: #a7443c;
 
-    border: 1px solid #a7443c;
+    border:
+        1px solid
+        #a7443c;
 
     color: #fff;
 
@@ -1077,7 +1494,9 @@
 
 
 .usuarios-btn-cancel:disabled,
+
 .usuarios-btn-save:disabled,
+
 .usuarios-btn-delete:disabled {
 
     opacity: .6;
@@ -1087,15 +1506,38 @@
 }
 
 
-/* =====================================================
-   RESPONSIVO
-===================================================== */
+/*
+=====================================================
+RESPONSIVO
+=====================================================
+*/
+
+@media (max-width: 1100px) {
+
+    .usuarios-summary {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    180px,
+                    260px
+                )
+            );
+
+    }
+
+}
+
 
 @media (max-width: 900px) {
 
     .usuarios-page {
 
-        padding: 30px 25px 50px;
+        padding:
+            30px
+            25px
+            50px;
 
     }
 
@@ -1117,9 +1559,21 @@
 
 
     .usuarios-btn-refresh,
+
     .usuarios-btn-add {
 
         flex: 1;
+
+    }
+
+
+    .usuarios-summary {
+
+        grid-template-columns:
+            repeat(
+                2,
+                1fr
+            );
 
     }
 
@@ -1130,12 +1584,17 @@
 
     .usuarios-page {
 
-        padding: 25px 16px 40px;
+        padding:
+            25px
+            16px
+            40px;
 
     }
 
 
-    .usuarios-header > div:first-child h1 {
+    .usuarios-header
+        > div:first-child
+        h1 {
 
         font-size: 34px;
 
@@ -1144,14 +1603,16 @@
 
     .usuarios-summary {
 
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns:
+            1fr;
 
     }
 
 
     .usuarios-form-grid {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
 
     }
 
@@ -1159,6 +1620,15 @@
     .usuarios-form-group.full {
 
         grid-column: auto;
+
+    }
+
+
+    .usuarios-permissao-box {
+
+        align-items: flex-start;
+
+        flex-direction: column;
 
     }
 
@@ -1171,6 +1641,7 @@
 
 
     .usuarios-modal-header,
+
     .usuarios-form {
 
         padding-left: 20px;
@@ -1182,7 +1653,8 @@
 
     .usuarios-modal-footer {
 
-        flex-direction: column-reverse;
+        flex-direction:
+            column-reverse;
 
         align-items: stretch;
 
@@ -1190,7 +1662,9 @@
 
 
     .usuarios-btn-cancel,
+
     .usuarios-btn-save,
+
     .usuarios-btn-delete {
 
         width: 100%;

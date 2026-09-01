@@ -1,12 +1,30 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+
+/*
+=====================================================
+CORS
+=====================================================
+*/
+
 const corsHeaders = {
+
     "Access-Control-Allow-Origin": "*",
+
     "Access-Control-Allow-Headers":
         "authorization, x-client-info, apikey, content-type",
+
     "Access-Control-Allow-Methods":
         "GET, POST, PUT, DELETE, OPTIONS",
+
 };
+
+
+/*
+=====================================================
+VARIÁVEIS SUPABASE
+=====================================================
+*/
 
 const supabaseUrl =
     Deno.env.get("SUPABASE_URL")!;
@@ -18,91 +36,168 @@ const supabaseServiceRoleKey =
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 
-/**
- * =====================================================
- * CLIENTE NORMAL
- * Usado para identificar o usuário da requisição
- * =====================================================
- */
-const supabaseAuth = createClient(
-    supabaseUrl,
-    supabaseAnonKey
-);
+/*
+=====================================================
+CLIENTE NORMAL
+=====================================================
+*/
+
+const supabaseAuth =
+    createClient(
+        supabaseUrl,
+        supabaseAnonKey
+    );
 
 
-/**
- * =====================================================
- * CLIENTE ADMIN
- * Service Role somente dentro da Edge Function
- * =====================================================
- */
-const supabaseAdmin = createClient(
-    supabaseUrl,
-    supabaseServiceRoleKey
-);
+/*
+=====================================================
+CLIENTE ADMIN
+=====================================================
+
+Service Role somente dentro da Edge Function.
+
+NUNCA colocar esta chave no React.
+
+=====================================================
+*/
+
+const supabaseAdmin =
+    createClient(
+        supabaseUrl,
+        supabaseServiceRoleKey
+    );
 
 
-/**
- * =====================================================
- * RESPOSTA JSON
- * =====================================================
- */
+/*
+=====================================================
+RESPOSTA JSON
+=====================================================
+*/
+
 function jsonResponse(
     data: unknown,
     status = 200
 ) {
+
     return new Response(
+
         JSON.stringify(data),
+
         {
+
             status,
+
             headers: {
+
                 ...corsHeaders,
-                "Content-Type": "application/json",
-            },
+
+                "Content-Type":
+                    "application/json"
+
+            }
+
         }
+
     );
+
 }
 
 
-/**
- * =====================================================
- * VERIFICAR ADMINISTRADOR
- * =====================================================
- */
+/*
+=====================================================
+NORMALIZAR PERMISSÃO DE OBRAS
+=====================================================
+*/
+
+function normalizarPermissaoObras(
+    valor: unknown
+) {
+
+    return (
+
+        valor === true ||
+
+        valor === "true" ||
+
+        valor === 1 ||
+
+        valor === "1"
+
+    );
+
+}
+
+
+/*
+=====================================================
+VERIFICAR ADMINISTRADOR
+=====================================================
+*/
+
 async function verificarAdministrador(
     req: Request
 ) {
+
     const authHeader =
-        req.headers.get("Authorization");
+        req.headers.get(
+            "Authorization"
+        );
+
 
     if (!authHeader) {
+
         throw new Error(
             "Usuário não autenticado."
         );
+
     }
+
 
     const token =
         authHeader
-            .replace(/^Bearer\s+/i, "")
+            .replace(
+                /^Bearer\s+/i,
+                ""
+            )
             .trim();
 
+
     if (!token) {
+
         throw new Error(
             "Token de autenticação não encontrado."
         );
+
     }
 
+
+    /*
+    =============================================
+    VALIDAR TOKEN
+    =============================================
+    */
+
     const {
+
         data: {
             user
         },
-        error
-    } =
-        await supabaseAuth.auth.getUser(
-            token
-        );
 
-    if (error || !user) {
+        error
+
+    } =
+        await supabaseAuth
+            .auth
+            .getUser(
+                token
+            );
+
+
+    if (
+        error ||
+        !user
+    ) {
+
         console.error(
             "Erro ao validar usuário:",
             error
@@ -111,17 +206,22 @@ async function verificarAdministrador(
         throw new Error(
             "Sessão inválida ou expirada."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * BUSCAR ROLE
-     * =================================================
-     */
+    /*
+    =============================================
+    BUSCAR ROLE
+    =============================================
+    */
+
     const {
+
         data: userRole,
+
         error: roleError
+
     } =
         await supabaseAdmin
             .from("user_roles")
@@ -138,7 +238,9 @@ async function verificarAdministrador(
             )
             .maybeSingle();
 
+
     if (roleError) {
+
         console.error(
             "Erro ao verificar role:",
             roleError
@@ -147,82 +249,128 @@ async function verificarAdministrador(
         throw new Error(
             "Não foi possível verificar as permissões."
         );
+
     }
 
+
     const roleNome =
-        Array.isArray(userRole?.roles)
+
+        Array.isArray(
+            userRole?.roles
+        )
+
             ? userRole?.roles?.[0]?.nome
+
             : userRole?.roles?.nome;
 
-  if (
-    roleNome !==
-    "Administrativo Geral"
-) {
-    throw new Error(
-        "Apenas administradores podem gerenciar usuários."
-    );
-}
+
+    /*
+    =============================================
+    SOMENTE ADMINISTRATIVO GERAL
+    =============================================
+    */
+
+    if (
+        roleNome !==
+        "Administrativo Geral"
+    ) {
+
+        throw new Error(
+            "Apenas administradores podem gerenciar usuários."
+        );
+
+    }
+
+
     return user;
+
 }
 
 
-/**
- * =====================================================
- * NORMALIZAR BODY
- * =====================================================
- */
+/*
+=====================================================
+NORMALIZAR BODY
+=====================================================
+*/
+
 function normalizarBody(
     body: any
 ) {
-
-    /**
-     * Aceita diferentes formatos enviados pelo frontend.
-     */
 
     if (
         body &&
         typeof body === "object"
     ) {
 
+        /*
+        =============================================
+        BODY.DATA
+        =============================================
+        */
+
         if (
             body.data &&
             typeof body.data === "object"
         ) {
+
             return {
+
                 ...body.data,
+
                 action:
                     body.action ??
                     body.data.action
+
             };
+
         }
+
+
+        /*
+        =============================================
+        BODY.USER
+        =============================================
+        */
 
         if (
             body.user &&
             typeof body.user === "object"
         ) {
+
             return {
+
                 ...body.user,
+
                 action:
                     body.action ??
                     body.user.action
+
             };
+
         }
+
     }
 
+
     return body || {};
+
 }
 
 
-/**
- * =====================================================
- * LISTAR ROLES
- * =====================================================
- */
+/*
+=====================================================
+LISTAR ROLES
+=====================================================
+*/
+
 async function listarRoles() {
 
     const {
+
         data,
+
         error
+
     } =
         await supabaseAdmin
             .from("roles")
@@ -236,7 +384,9 @@ async function listarRoles() {
                 }
             );
 
+
     if (error) {
+
         console.error(
             "Erro ao listar perfis:",
             error
@@ -245,22 +395,29 @@ async function listarRoles() {
         throw new Error(
             error.message
         );
+
     }
 
+
     return data || [];
+
 }
 
 
-/**
- * =====================================================
- * LISTAR USUÁRIOS
- * =====================================================
- */
+/*
+=====================================================
+LISTAR USUÁRIOS
+=====================================================
+*/
+
 async function listarUsuarios() {
 
     const {
+
         data,
+
         error
+
     } =
         await supabaseAdmin
             .from("profiles")
@@ -270,6 +427,7 @@ async function listarUsuarios() {
                 username,
                 email,
                 created_at,
+                pode_ver_todas_obras,
                 user_roles (
                     role_id,
                     roles (
@@ -285,7 +443,9 @@ async function listarUsuarios() {
                 }
             );
 
+
     if (error) {
+
         console.error(
             "Erro ao listar usuários:",
             error
@@ -294,82 +454,107 @@ async function listarUsuarios() {
         throw new Error(
             error.message
         );
+
     }
 
 
     const usuarios =
-        (data || []).map(
-            (usuario: any) => {
 
-                const userRole =
-                    Array.isArray(
-                        usuario.user_roles
-                    )
-                        ? usuario.user_roles[0]
-                        : usuario.user_roles;
+        (data || [])
 
-                const role =
-                    Array.isArray(
-                        userRole?.roles
-                    )
-                        ? userRole?.roles?.[0]
-                        : userRole?.roles;
+            .map(
+                (usuario: any) => {
 
-                return {
-                    id:
-                        usuario.id,
+                    const userRole =
 
-                    nome:
-                        usuario.nome || "",
+                        Array.isArray(
+                            usuario.user_roles
+                        )
 
-                    username:
-                        usuario.username || "",
+                            ? usuario.user_roles[0]
 
-                    email:
-                        usuario.email || "",
+                            : usuario.user_roles;
 
-                    created_at:
-                        usuario.created_at,
 
-                    role_id:
-                        userRole?.role_id || null,
+                    const role =
 
-                    role:
-                        role?.nome || null,
+                        Array.isArray(
+                            userRole?.roles
+                        )
 
-                    role_name:
-                        role?.nome || null,
-                };
-            }
-        );
+                            ? userRole?.roles?.[0]
+
+                            : userRole?.roles;
+
+
+                    return {
+
+                        id:
+                            usuario.id,
+
+                        nome:
+                            usuario.nome ||
+                            "",
+
+                        username:
+                            usuario.username ||
+                            "",
+
+                        email:
+                            usuario.email ||
+                            "",
+
+                        created_at:
+                            usuario.created_at ||
+                            null,
+
+                        role_id:
+                            userRole?.role_id ??
+                            null,
+
+                        role:
+                            role?.nome ||
+                            null,
+
+                        role_name:
+                            role?.nome ||
+                            null,
+
+                        pode_ver_todas_obras:
+                            usuario.pode_ver_todas_obras === true
+
+                    };
+
+                }
+
+            );
+
 
     return usuarios;
+
 }
 
 
-/**
- * =====================================================
- * LISTAR DADOS DA TELA
- *
- * Pode ser chamado por:
- *
- * GET
- *
- * ou
- *
- * POST { action: "list" }
- * =====================================================
- */
+/*
+=====================================================
+LISTAR DADOS DA TELA
+=====================================================
+*/
+
 async function listarDados() {
 
     const usuarios =
         await listarUsuarios();
 
+
     const roles =
         await listarRoles();
 
+
     return {
-        success: true,
+
+        success:
+            true,
 
         usuarios,
 
@@ -377,128 +562,73 @@ async function listarDados() {
             usuarios,
 
         roles
+
     };
+
 }
 
 
-/**
- * =====================================================
- * CRIAR USUÁRIO
- * =====================================================
- */
+/*
+=====================================================
+CRIAR USUÁRIO
+=====================================================
+*/
+
 async function criarUsuario(
     body: any
 ) {
 
-    console.log(
-        "========== DEBUG CREATE =========="
-    );
-
-    console.log(
-        "METHOD:",
-        "POST"
-    );
-
-    console.log(
-        "BODY:",
-        JSON.stringify(body)
-    );
-
-    console.log(
-        "NOME:",
-        body?.nome
-    );
-
-    console.log(
-        "USERNAME:",
-        body?.username
-    );
-
-    console.log(
-        "EMAIL:",
-        body?.email
-    );
-
-    console.log(
-        "PASSWORD:",
-        body?.password
-            ? "TEM SENHA"
-            : "SEM SENHA"
-    );
-
-    console.log(
-        "ROLE_ID:",
-        body?.role_id
-    );
-
-    console.log(
-        "=================================="
-    );
-
-
-    /**
-     * =================================================
-     * NORMALIZAR DADOS
-     * =================================================
-     */
+    /*
+    =============================================
+    DADOS
+    =============================================
+    */
 
     const nome =
         String(
+
             body?.nome ??
             body?.name ??
             body?.fullName ??
             body?.full_name ??
             ""
+
         ).trim();
 
 
     const email =
         String(
+
             body?.email ??
             body?.e_mail ??
             ""
+
         )
             .trim()
             .toLowerCase();
 
 
-    /**
-     * =================================================
-     * USERNAME
-     *
-     * Não obrigatório.
-     * =================================================
-     */
-
     let username =
         String(
+
             body?.username ??
             body?.user_name ??
             body?.usuario ??
             ""
+
         ).trim();
 
 
-    /**
-     * =================================================
-     * SENHA
-     * =================================================
-     */
-
     const password =
         String(
+
             body?.password ??
             body?.senha ??
             body?.pass ??
             ""
+
         );
 
-
-    /**
-     * =================================================
-     * PERFIL / ROLE
-     * =================================================
-     */
 
     const roleIdRaw =
         body?.role_id ??
@@ -509,141 +639,106 @@ async function criarUsuario(
         body?.role ??
         null;
 
+
     let role_id:
         number | null;
 
 
     if (
+
         roleIdRaw === null ||
+
         roleIdRaw === undefined ||
+
         roleIdRaw === ""
+
     ) {
 
         role_id = null;
 
-    } else {
+    }
+    else {
 
         role_id =
-            Number(roleIdRaw);
+            Number(
+                roleIdRaw
+            );
+
     }
 
 
-    /**
-     * =================================================
-     * LOG DE DIAGNÓSTICO
-     * =================================================
-     */
+    /*
+    =============================================
+    PERMISSÃO PARA VER TODAS AS OBRAS
+    =============================================
+    */
 
-    console.log(
-        "========================================"
-    );
-
-    console.log(
-        "CRIAR USUÁRIO - DADOS RECEBIDOS"
-    );
-
-    console.log(
-        "Body original:",
-        JSON.stringify(body)
-    );
-
-    console.log(
-        "Nome:",
-        nome
-    );
-
-    console.log(
-        "Username recebido:",
-        username
-    );
-
-    console.log(
-        "Email:",
-        email
-    );
-
-    console.log(
-        "Senha recebida:",
-        password
-            ? "SIM"
-            : "NÃO"
-    );
-
-    console.log(
-        "Role recebida:",
-        roleIdRaw
-    );
-
-    console.log(
-        "Role convertida:",
-        role_id
-    );
-
-    console.log(
-        "========================================"
-    );
+    const pode_ver_todas_obras =
+        normalizarPermissaoObras(
+            body?.pode_ver_todas_obras
+        );
 
 
-    /**
-     * =================================================
-     * VALIDAR NOME
-     * =================================================
-     */
+    /*
+    =============================================
+    VALIDAÇÕES
+    =============================================
+    */
 
     if (!nome) {
+
         throw new Error(
             "O nome do usuário é obrigatório."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * VALIDAR EMAIL
-     * =================================================
-     */
-
     if (!email) {
+
         throw new Error(
             "O e-mail do usuário é obrigatório."
         );
+
     }
+
 
     if (
         !email.includes("@")
     ) {
+
         throw new Error(
             "O e-mail informado é inválido."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * VALIDAR SENHA
-     * =================================================
-     */
-
     if (!password) {
+
         throw new Error(
             "A senha do usuário é obrigatória."
         );
+
     }
+
 
     if (
         password.length < 6
     ) {
+
         throw new Error(
             "A senha deve possuir pelo menos 6 caracteres."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * GERAR USERNAME AUTOMATICAMENTE
-     * =================================================
-     */
+    /*
+    =============================================
+    GERAR USERNAME
+    =============================================
+    */
 
     if (!username) {
 
@@ -651,6 +746,7 @@ async function criarUsuario(
             email
                 .split("@")[0]
                 .trim();
+
     }
 
 
@@ -672,42 +768,48 @@ async function criarUsuario(
                     /^_+|_+$/g,
                     ""
                 );
+
     }
 
 
     if (!username) {
+
         throw new Error(
             "Não foi possível gerar o username."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * VALIDAR ROLE
-     * =================================================
-     */
+    /*
+    =============================================
+    VALIDAR ROLE
+    =============================================
+    */
 
     if (
+
         role_id === null ||
-        !Number.isInteger(role_id)
+
+        !Number.isInteger(
+            role_id
+        )
+
     ) {
 
         throw new Error(
             "Selecione um perfil de acesso."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * BUSCAR ROLE
-     * =================================================
-     */
-
     const {
+
         data: role,
+
         error: roleError
+
     } =
         await supabaseAdmin
             .from("roles")
@@ -723,34 +825,35 @@ async function criarUsuario(
 
     if (roleError) {
 
-        console.error(
-            "Erro ao buscar perfil:",
-            roleError
-        );
-
         throw new Error(
             "Erro ao verificar o perfil: " +
             roleError.message
         );
+
     }
 
 
     if (!role) {
+
         throw new Error(
             "O perfil selecionado é inválido."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * VERIFICAR EMAIL EXISTENTE
-     * =================================================
-     */
+    /*
+    =============================================
+    VERIFICAR E-MAIL
+    =============================================
+    */
 
     const {
+
         data: profileExistente,
+
         error: profileBuscaError
+
     } =
         await supabaseAdmin
             .from("profiles")
@@ -766,14 +869,10 @@ async function criarUsuario(
 
     if (profileBuscaError) {
 
-        console.error(
-            "Erro ao verificar e-mail:",
-            profileBuscaError
-        );
-
         throw new Error(
             profileBuscaError.message
         );
+
     }
 
 
@@ -782,18 +881,22 @@ async function criarUsuario(
         throw new Error(
             "Já existe um usuário com este e-mail."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * VERIFICAR USERNAME EXISTENTE
-     * =================================================
-     */
+    /*
+    =============================================
+    VERIFICAR USERNAME
+    =============================================
+    */
 
     const {
+
         data: usernameExistente,
+
         error: usernameBuscaError
+
     } =
         await supabaseAdmin
             .from("profiles")
@@ -809,14 +912,10 @@ async function criarUsuario(
 
     if (usernameBuscaError) {
 
-        console.error(
-            "Erro ao verificar username:",
-            usernameBuscaError
-        );
-
         throw new Error(
             usernameBuscaError.message
         );
+
     }
 
 
@@ -835,8 +934,11 @@ async function criarUsuario(
         while (true) {
 
             const {
+
                 data: existente,
+
                 error: buscaError
+
             } =
                 await supabaseAdmin
                     .from("profiles")
@@ -852,14 +954,10 @@ async function criarUsuario(
 
             if (buscaError) {
 
-                console.error(
-                    "Erro ao verificar username alternativo:",
-                    buscaError
-                );
-
                 throw new Error(
                     buscaError.message
                 );
+
             }
 
 
@@ -869,6 +967,7 @@ async function criarUsuario(
                     novoUsername;
 
                 break;
+
             }
 
 
@@ -876,39 +975,46 @@ async function criarUsuario(
 
             novoUsername =
                 `${usernameBase}${contador}`;
+
         }
+
     }
 
 
-    /**
-     * =================================================
-     * CRIAR USUÁRIO NO AUTH
-     * =================================================
-     */
-
-    console.log(
-        "Criando usuário no Supabase Auth..."
-    );
-
+    /*
+    =============================================
+    CRIAR AUTH
+    =============================================
+    */
 
     const {
+
         data: authData,
+
         error: authError
+
     } =
-        await supabaseAdmin.auth.admin.createUser({
+        await supabaseAdmin
+            .auth
+            .admin
+            .createUser({
 
-            email,
+                email,
 
-            password,
+                password,
 
-            email_confirm:
-                true,
+                email_confirm:
+                    true,
 
-            user_metadata: {
-                nome,
-                username
-            }
-        });
+                user_metadata: {
+
+                    nome,
+
+                    username
+
+                }
+
+            });
 
 
     if (authError) {
@@ -921,6 +1027,7 @@ async function criarUsuario(
         throw new Error(
             authError.message
         );
+
     }
 
 
@@ -933,23 +1040,20 @@ async function criarUsuario(
         throw new Error(
             "O usuário não foi criado no Auth."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * CRIAR PROFILE
-     * =================================================
-     */
-
-    console.log(
-        "Criando profile:",
-        user.id
-    );
-
+    /*
+    =============================================
+    CRIAR PROFILE
+    =============================================
+    */
 
     const {
+
         error: profileError
+
     } =
         await supabaseAdmin
             .from("profiles")
@@ -962,7 +1066,10 @@ async function criarUsuario(
 
                 username,
 
-                email
+                email,
+
+                pode_ver_todas_obras
+
             });
 
 
@@ -973,10 +1080,6 @@ async function criarUsuario(
             profileError
         );
 
-
-        /**
-         * ROLLBACK AUTH
-         */
 
         await supabaseAdmin
             .auth
@@ -989,23 +1092,20 @@ async function criarUsuario(
         throw new Error(
             profileError.message
         );
+
     }
 
 
-    /**
-     * =================================================
-     * ATRIBUIR ROLE
-     * =================================================
-     */
-
-    console.log(
-        "Atribuindo role:",
-        role_id
-    );
-
+    /*
+    =============================================
+    ATRIBUIR ROLE
+    =============================================
+    */
 
     const {
+
         error: userRoleError
+
     } =
         await supabaseAdmin
             .from("user_roles")
@@ -1015,6 +1115,7 @@ async function criarUsuario(
                     user.id,
 
                 role_id
+
             });
 
 
@@ -1026,10 +1127,6 @@ async function criarUsuario(
         );
 
 
-        /**
-         * ROLLBACK PROFILE
-         */
-
         await supabaseAdmin
             .from("profiles")
             .delete()
@@ -1038,10 +1135,6 @@ async function criarUsuario(
                 user.id
             );
 
-
-        /**
-         * ROLLBACK AUTH
-         */
 
         await supabaseAdmin
             .auth
@@ -1054,20 +1147,15 @@ async function criarUsuario(
         throw new Error(
             userRoleError.message
         );
+
     }
 
 
-    /**
-     * =================================================
-     * SUCESSO
-     * =================================================
-     */
-
-    console.log(
-        "Usuário criado com sucesso:",
-        user.id
-    );
-
+    /*
+    =============================================
+    SUCESSO
+    =============================================
+    */
 
     return {
 
@@ -1083,16 +1171,21 @@ async function criarUsuario(
         role_id,
 
         role:
-            role.nome
+            role.nome,
+
+        pode_ver_todas_obras
+
     };
+
 }
 
 
-/**
- * =====================================================
- * EDITAR USUÁRIO
- * =====================================================
- */
+/*
+=====================================================
+EDITAR USUÁRIO
+=====================================================
+*/
+
 async function editarUsuario(
     body: any
 ) {
@@ -1103,78 +1196,182 @@ async function editarUsuario(
         body?.userId;
 
 
+    if (!id) {
+
+        throw new Error(
+            "ID do usuário é obrigatório."
+        );
+
+    }
+
+
     const nome =
+
         body?.nome !== undefined
+
             ? String(
                 body.nome
             ).trim()
+
             : undefined;
 
 
     const username =
+
         body?.username !== undefined
+
             ? String(
                 body.username
             ).trim()
+
             : undefined;
 
 
     const email =
+
         body?.email !== undefined
+
             ? String(
                 body.email
             )
                 .trim()
                 .toLowerCase()
+
             : undefined;
 
 
+    /*
+    =============================================
+    VERIFICAR SE ROLE FOI ENVIADA
+    =============================================
+    */
+
+    const roleIdFoiEnviada =
+
+        Object.prototype.hasOwnProperty.call(
+            body,
+            "role_id"
+        ) ||
+
+        Object.prototype.hasOwnProperty.call(
+            body,
+            "roleId"
+        ) ||
+
+        Object.prototype.hasOwnProperty.call(
+            body,
+            "perfil_id"
+        ) ||
+
+        Object.prototype.hasOwnProperty.call(
+            body,
+            "perfilId"
+        );
+
+
     const roleIdRaw =
+
         body?.role_id ??
+
         body?.roleId ??
+
         body?.perfil_id ??
+
         body?.perfilId;
 
 
-    const role_id =
+    let role_id:
+        number | null;
+
+
+    if (
+
         roleIdRaw === null ||
+
         roleIdRaw === undefined ||
+
         roleIdRaw === ""
-            ? null
-            : Number(roleIdRaw);
 
+    ) {
 
-    if (!id) {
-        throw new Error(
-            "ID do usuário é obrigatório."
-        );
+        role_id =
+            null;
+
+    }
+    else {
+
+        role_id =
+            Number(
+                roleIdRaw
+            );
+
     }
 
 
-    /**
-     * =================================================
-     * VALIDAR ROLE
-     * =================================================
-     */
+    /*
+    =============================================
+    PERMISSÃO DE OBRAS
+    =============================================
+    */
+
+    const permissaoRecebida =
+
+        Object.prototype.hasOwnProperty.call(
+            body,
+            "pode_ver_todas_obras"
+        );
+
+
+    const pode_ver_todas_obras =
+
+        permissaoRecebida
+
+            ? normalizarPermissaoObras(
+                body.pode_ver_todas_obras
+            )
+
+            : undefined;
+
+
+    /*
+    =============================================
+    VALIDAR ROLE
+    =============================================
+    */
 
     if (
+
+        roleIdFoiEnviada &&
+
         role_id !== null &&
-        !Number.isInteger(role_id)
+
+        !Number.isInteger(
+            role_id
+        )
+
     ) {
 
         throw new Error(
             "Perfil de acesso inválido."
         );
+
     }
 
 
     if (
+
+        roleIdFoiEnviada &&
+
         role_id !== null
+
     ) {
 
         const {
+
             data: role,
+
             error: roleError
+
         } =
             await supabaseAdmin
                 .from("roles")
@@ -1189,30 +1386,38 @@ async function editarUsuario(
 
 
         if (
+
             roleError ||
+
             !role
+
         ) {
 
             throw new Error(
                 "O perfil selecionado é inválido."
             );
+
         }
+
     }
 
 
-    /**
-     * =================================================
-     * ATUALIZAR AUTH
-     * =================================================
-     */
+    /*
+    =============================================
+    ATUALIZAR AUTH
+    =============================================
+    */
 
     const authUpdates: any = {};
 
 
-    if (email) {
+    if (
+        email !== undefined
+    ) {
 
         authUpdates.email =
             email;
+
     }
 
 
@@ -1225,6 +1430,7 @@ async function editarUsuario(
 
         metadata.nome =
             nome;
+
     }
 
 
@@ -1234,24 +1440,32 @@ async function editarUsuario(
 
         metadata.username =
             username;
+
     }
 
 
     if (
-        Object.keys(metadata).length > 0
+        Object.keys(
+            metadata
+        ).length > 0
     ) {
 
         authUpdates.user_metadata =
             metadata;
+
     }
 
 
     if (
-        Object.keys(authUpdates).length > 0
+        Object.keys(
+            authUpdates
+        ).length > 0
     ) {
 
         const {
+
             error
+
         } =
             await supabaseAdmin
                 .auth
@@ -1267,15 +1481,17 @@ async function editarUsuario(
             throw new Error(
                 error.message
             );
+
         }
+
     }
 
 
-    /**
-     * =================================================
-     * ATUALIZAR PROFILE
-     * =================================================
-     */
+    /*
+    =============================================
+    ATUALIZAR PROFILE
+    =============================================
+    */
 
     const profileUpdates: any = {};
 
@@ -1286,6 +1502,7 @@ async function editarUsuario(
 
         profileUpdates.nome =
             nome;
+
     }
 
 
@@ -1295,6 +1512,7 @@ async function editarUsuario(
 
         profileUpdates.username =
             username;
+
     }
 
 
@@ -1304,15 +1522,36 @@ async function editarUsuario(
 
         profileUpdates.email =
             email;
+
+    }
+
+
+    /*
+    =============================================
+    SALVAR PERMISSÃO DE OBRAS
+    =============================================
+    */
+
+    if (
+        permissaoRecebida
+    ) {
+
+        profileUpdates.pode_ver_todas_obras =
+            pode_ver_todas_obras;
+
     }
 
 
     if (
-        Object.keys(profileUpdates).length > 0
+        Object.keys(
+            profileUpdates
+        ).length > 0
     ) {
 
         const {
+
             error
+
         } =
             await supabaseAdmin
                 .from("profiles")
@@ -1330,75 +1569,113 @@ async function editarUsuario(
             throw new Error(
                 error.message
             );
+
         }
+
     }
 
 
-    /**
-     * =================================================
-     * ATUALIZAR ROLE
-     * =================================================
-     */
+    /*
+    =============================================
+    ATUALIZAR ROLE
+    =============================================
+
+    Não usamos upsert porque sua tabela
+    user_roles não possui UNIQUE(user_id).
+
+    Removemos a role atual e inserimos a nova.
+
+    =============================================
+    */
 
     if (
-        roleIdRaw !== undefined
+        roleIdFoiEnviada
     ) {
 
+        /*
+        -----------------------------------------
+        REMOVER ROLES EXISTENTES
+        -----------------------------------------
+        */
+
+        const {
+
+            error: deleteRoleError
+
+        } =
+            await supabaseAdmin
+                .from("user_roles")
+                .delete()
+                .eq(
+                    "user_id",
+                    id
+                );
+
+
+        if (deleteRoleError) {
+
+            console.error(
+                "Erro ao remover roles antigas:",
+                deleteRoleError
+            );
+
+            throw new Error(
+                deleteRoleError.message
+            );
+
+        }
+
+
+        /*
+        -----------------------------------------
+        INSERIR NOVA ROLE
+        -----------------------------------------
+        */
+
         if (
-            role_id === null
+            role_id !== null
         ) {
 
             const {
-                error
+
+                error: insertRoleError
+
             } =
                 await supabaseAdmin
                     .from("user_roles")
-                    .delete()
-                    .eq(
-                        "user_id",
-                        id
-                    );
+                    .insert({
+
+                        user_id:
+                            id,
+
+                        role_id
+
+                    });
 
 
-            if (error) {
+            if (insertRoleError) {
+
+                console.error(
+                    "Erro ao inserir nova role:",
+                    insertRoleError
+                );
 
                 throw new Error(
-                    error.message
+                    insertRoleError.message
                 );
+
             }
 
-        } else {
-
-            const {
-                error
-            } =
-                await supabaseAdmin
-                    .from("user_roles")
-                    .upsert(
-
-                        {
-                            user_id:
-                                id,
-
-                            role_id
-                        },
-
-                        {
-                            onConflict:
-                                "user_id"
-                        }
-                    );
-
-
-            if (error) {
-
-                throw new Error(
-                    error.message
-                );
-            }
         }
+
     }
 
+
+    /*
+    =============================================
+    RETORNO
+    =============================================
+    */
 
     return {
 
@@ -1407,15 +1684,18 @@ async function editarUsuario(
 
         message:
             "Usuário atualizado com sucesso."
+
     };
+
 }
 
 
-/**
- * =====================================================
- * ALTERAR SENHA
- * =====================================================
- */
+/*
+=====================================================
+ALTERAR SENHA
+=====================================================
+*/
+
 async function alterarSenha(
     body: any
 ) {
@@ -1428,9 +1708,11 @@ async function alterarSenha(
 
     const password =
         String(
+
             body?.password ??
             body?.senha ??
             ""
+
         );
 
 
@@ -1439,6 +1721,7 @@ async function alterarSenha(
         throw new Error(
             "ID do usuário é obrigatório."
         );
+
     }
 
 
@@ -1447,6 +1730,7 @@ async function alterarSenha(
         throw new Error(
             "A nova senha é obrigatória."
         );
+
     }
 
 
@@ -1457,20 +1741,26 @@ async function alterarSenha(
         throw new Error(
             "A senha deve possuir pelo menos 6 caracteres."
         );
+
     }
 
 
     const {
+
         error
+
     } =
         await supabaseAdmin
             .auth
             .admin
             .updateUserById(
+
                 id,
+
                 {
                     password
                 }
+
             );
 
 
@@ -1479,6 +1769,7 @@ async function alterarSenha(
         throw new Error(
             error.message
         );
+
     }
 
 
@@ -1489,15 +1780,18 @@ async function alterarSenha(
 
         message:
             "Senha alterada com sucesso."
+
     };
+
 }
 
 
-/**
- * =====================================================
- * EXCLUIR USUÁRIO
- * =====================================================
- */
+/*
+=====================================================
+EXCLUIR USUÁRIO
+=====================================================
+*/
+
 async function excluirUsuario(
     body: any,
     administrador: any
@@ -1514,14 +1808,15 @@ async function excluirUsuario(
         throw new Error(
             "ID do usuário é obrigatório."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * IMPEDIR EXCLUSÃO DA PRÓPRIA CONTA
-     * =================================================
-     */
+    /*
+    =============================================
+    IMPEDIR EXCLUSÃO DA PRÓPRIA CONTA
+    =============================================
+    */
 
     if (
         id === administrador.id
@@ -1530,17 +1825,20 @@ async function excluirUsuario(
         throw new Error(
             "Você não pode excluir o próprio usuário."
         );
+
     }
 
 
-    /**
-     * =================================================
-     * EXCLUIR USER_ROLES
-     * =================================================
-     */
+    /*
+    =============================================
+    EXCLUIR USER_ROLES
+    =============================================
+    */
 
     const {
+
         error: roleError
+
     } =
         await supabaseAdmin
             .from("user_roles")
@@ -1561,17 +1859,20 @@ async function excluirUsuario(
         throw new Error(
             roleError.message
         );
+
     }
 
 
-    /**
-     * =================================================
-     * EXCLUIR PROFILE
-     * =================================================
-     */
+    /*
+    =============================================
+    EXCLUIR PROFILE
+    =============================================
+    */
 
     const {
+
         error: profileError
+
     } =
         await supabaseAdmin
             .from("profiles")
@@ -1587,17 +1888,20 @@ async function excluirUsuario(
         throw new Error(
             profileError.message
         );
+
     }
 
 
-    /**
-     * =================================================
-     * EXCLUIR AUTH
-     * =================================================
-     */
+    /*
+    =============================================
+    EXCLUIR AUTH
+    =============================================
+    */
 
     const {
+
         error: authError
+
     } =
         await supabaseAdmin
             .auth
@@ -1612,6 +1916,7 @@ async function excluirUsuario(
         throw new Error(
             authError.message
         );
+
     }
 
 
@@ -1622,23 +1927,28 @@ async function excluirUsuario(
 
         message:
             "Usuário excluído com sucesso."
+
     };
+
 }
 
 
-/**
- * =====================================================
- * HANDLER PRINCIPAL
- * =====================================================
- */
-Deno.serve(
-    async (req) => {
+/*
+=====================================================
+HANDLER PRINCIPAL
+=====================================================
+*/
 
-        /**
-         * =============================================
-         * CORS
-         * =============================================
-         */
+Deno.serve(
+    async (
+        req
+    ) => {
+
+        /*
+        =============================================
+        CORS
+        =============================================
+        */
 
         if (
             req.method ===
@@ -1652,16 +1962,17 @@ Deno.serve(
                         corsHeaders
                 }
             );
+
         }
 
 
         try {
 
-            /**
-             * =========================================
-             * VERIFICAR ADMIN
-             * =========================================
-             */
+            /*
+            =========================================
+            VERIFICAR ADMIN
+            =========================================
+            */
 
             const administrador =
                 await verificarAdministrador(
@@ -1669,11 +1980,11 @@ Deno.serve(
                 );
 
 
-            /**
-             * =========================================
-             * LER BODY
-             * =========================================
-             */
+            /*
+            =========================================
+            LER BODY
+            =========================================
+            */
 
             let body: any = {};
 
@@ -1689,7 +2000,9 @@ Deno.serve(
                         await req.json();
 
                 }
-                catch (parseError) {
+                catch (
+                    parseError
+                ) {
 
                     console.error(
                         "Erro ao interpretar JSON:",
@@ -1699,15 +2012,17 @@ Deno.serve(
                     throw new Error(
                         "O corpo da requisição não contém um JSON válido."
                     );
+
                 }
+
             }
 
 
-            /**
-             * =========================================
-             * NORMALIZAR BODY
-             * =========================================
-             */
+            /*
+            =========================================
+            NORMALIZAR BODY
+            =========================================
+            */
 
             body =
                 normalizarBody(
@@ -1715,11 +2030,36 @@ Deno.serve(
                 );
 
 
-            /**
-             * =========================================
-             * LOG DA REQUISIÇÃO
-             * =========================================
-             */
+            /*
+            =========================================
+            DETERMINAR ACTION
+            =========================================
+
+            A operação é determinada pelo
+            body.action.
+
+            Isso é importante porque o frontend
+            usando supabase.functions.invoke()
+            normalmente envia POST para várias
+            operações.
+
+            =========================================
+            */
+
+            const action =
+                body?.action ||
+                (
+                    req.method === "GET"
+                        ? "list"
+                        : ""
+                );
+
+
+            /*
+            =========================================
+            LOG
+            =========================================
+            */
 
             console.log(
                 "========================================"
@@ -1730,32 +2070,37 @@ Deno.serve(
             );
 
             console.log(
-                "Método:",
+                "MÉTODO:",
                 req.method
             );
 
             console.log(
-                "Action:",
-                body?.action
+                "ACTION:",
+                action
             );
 
             console.log(
-                "Body:",
-                JSON.stringify(
-                    {
-                        ...body,
+                "ADMIN:",
+                administrador.id
+            );
 
-                        password:
-                            body?.password
-                                ? "***"
-                                : undefined,
+            console.log(
+                "BODY:",
+                JSON.stringify({
 
-                        senha:
-                            body?.senha
-                                ? "***"
-                                : undefined
-                    }
-                )
+                    ...body,
+
+                    password:
+                        body?.password
+                            ? "***"
+                            : undefined,
+
+                    senha:
+                        body?.senha
+                            ? "***"
+                            : undefined
+
+                })
             );
 
             console.log(
@@ -1763,72 +2108,38 @@ Deno.serve(
             );
 
 
-            /**
-             * =========================================
-             * GET
-             *
-             * LISTAR
-             * =========================================
-             */
+            /*
+            =========================================
+            LISTAR
+            =========================================
+            */
 
             if (
-                req.method ===
-                "GET"
+                action ===
+                "list"
             ) {
 
                 const dados =
                     await listarDados();
 
+
                 return jsonResponse(
                     dados
                 );
+
             }
 
 
-            /**
-             * =========================================
-             * POST
-             * =========================================
-             */
+            /*
+            =========================================
+            CRIAR
+            =========================================
+            */
 
             if (
-                req.method ===
-                "POST"
+                action ===
+                "create"
             ) {
-
-                /**
-                 * -----------------------------------------
-                 * POST + action=list
-                 *
-                 * ISSO É O QUE ESTAVA FALTANDO.
-                 * -----------------------------------------
-                 */
-
-                if (
-                    body?.action ===
-                    "list"
-                ) {
-
-                    console.log(
-                        "POST LIST → carregando usuários e roles"
-                    );
-
-                    const dados =
-                        await listarDados();
-
-                    return jsonResponse(
-                        dados
-                    );
-                }
-
-
-                /**
-                 * -----------------------------------------
-                 * POST NORMAL
-                 *
-                 * CRIAR USUÁRIO
-                 * -----------------------------------------
-                 */
 
                 const usuario =
                     await criarUsuario(
@@ -1838,6 +2149,7 @@ Deno.serve(
 
                 return jsonResponse(
                     {
+
                         success:
                             true,
 
@@ -1845,50 +2157,24 @@ Deno.serve(
 
                         user:
                             usuario
+
                     },
                     201
                 );
+
             }
 
 
-            /**
-             * =========================================
-             * PUT
-             * =========================================
-             */
+            /*
+            =========================================
+            EDITAR
+            =========================================
+            */
 
             if (
-                req.method ===
-                "PUT"
+                action ===
+                "update"
             ) {
-
-                /**
-                 * -----------------------------------------
-                 * ALTERAR SENHA
-                 * -----------------------------------------
-                 */
-
-                if (
-                    body.action ===
-                    "password"
-                ) {
-
-                    const resultado =
-                        await alterarSenha(
-                            body
-                        );
-
-                    return jsonResponse(
-                        resultado
-                    );
-                }
-
-
-                /**
-                 * -----------------------------------------
-                 * EDITAR USUÁRIO
-                 * -----------------------------------------
-                 */
 
                 const resultado =
                     await editarUsuario(
@@ -1899,18 +2185,43 @@ Deno.serve(
                 return jsonResponse(
                     resultado
                 );
+
             }
 
 
-            /**
-             * =========================================
-             * DELETE
-             * =========================================
-             */
+            /*
+            =========================================
+            ALTERAR SENHA
+            =========================================
+            */
 
             if (
-                req.method ===
-                "DELETE"
+                action ===
+                "password"
+            ) {
+
+                const resultado =
+                    await alterarSenha(
+                        body
+                    );
+
+
+                return jsonResponse(
+                    resultado
+                );
+
+            }
+
+
+            /*
+            =========================================
+            EXCLUIR
+            =========================================
+            */
+
+            if (
+                action ===
+                "delete"
             ) {
 
                 const resultado =
@@ -1923,28 +2234,33 @@ Deno.serve(
                 return jsonResponse(
                     resultado
                 );
+
             }
 
 
-            /**
-             * =========================================
-             * MÉTODO NÃO PERMITIDO
-             * =========================================
-             */
+            /*
+            =========================================
+            ACTION DESCONHECIDA
+            =========================================
+            */
 
             return jsonResponse(
                 {
+
                     success:
                         false,
 
                     error:
-                        "Método não permitido."
+                        `Ação "${action}" não reconhecida.`
+
                 },
-                405
+                400
             );
 
         }
-        catch (error) {
+        catch (
+            error
+        ) {
 
             console.error(
                 "========================================"
@@ -1962,16 +2278,22 @@ Deno.serve(
 
             return jsonResponse(
                 {
+
                     success:
                         false,
 
                     error:
                         error instanceof Error
+
                             ? error.message
+
                             : "Erro interno."
+
                 },
                 400
             );
+
         }
+
     }
 );
