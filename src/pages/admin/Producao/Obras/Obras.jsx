@@ -54,7 +54,9 @@ const FORM_INICIAL = {
 
     projetista_nome: "",
 
-    dias_finalizacao_esperado: ""
+    dias_finalizacao_esperado: "",
+
+    fase: ""
 
 };
 
@@ -1027,7 +1029,9 @@ export default function Obras() {
 
                     obra.valor,
 
-                    obra.dias_finalizacao_esperado
+                    obra.dias_finalizacao_esperado,
+
+                    obra.fase
 
                 ];
 
@@ -1111,6 +1115,8 @@ export default function Obras() {
                     obra.valor,
 
                     obra.dias_finalizacao_esperado,
+
+                    obra.fase,
 
                     obra.concluida_at
 
@@ -1315,7 +1321,10 @@ export default function Obras() {
                         obra.dias_finalizacao_esperado
                     )
 
-                    : ""
+                    : "",
+
+            fase:
+                obra.fase || ""
 
         });
 
@@ -1907,7 +1916,14 @@ export default function Obras() {
                             form.dias_finalizacao_esperado
                         )
 
-                        : null
+                        : null,
+
+
+                fase:
+
+                    form.fase.trim() ||
+
+                    null
 
             };
 
@@ -2621,7 +2637,7 @@ export default function Obras() {
 
                             aba === "ativas"
 
-                                ? "Buscar por obra, endereço, cliente, arquiteto, RDO, marceneiro ou projetista..."
+                                ? "Buscar por obra, endereço, cliente, arquiteto, RDO, marceneiro, projetista ou fase..."
 
                                 : "Buscar entre as obras concluídas..."
 
@@ -2746,7 +2762,6 @@ export default function Obras() {
                                         )
 
                                     }
-
 
                                 </select>
 
@@ -2948,6 +2963,10 @@ export default function Obras() {
                                             </th>
 
                                             <th>
+                                                Fase
+                                            </th>
+
+                                            <th>
                                                 Endereço
                                             </th>
 
@@ -3023,7 +3042,7 @@ export default function Obras() {
 
                                                         <td
 
-                                                            colSpan="11"
+                                                            colSpan="12"
 
                                                             className="obras-empty"
 
@@ -3097,6 +3116,23 @@ export default function Obras() {
                                                                         </small>
 
                                                                     </div>
+
+                                                                </td>
+
+
+                                                                <td>
+
+                                                                    <span className="obra-fase">
+
+                                                                        {
+
+                                                                            obra.fase ||
+
+                                                                            "-"
+
+                                                                        }
+
+                                                                    </span>
 
                                                                 </td>
 
@@ -3677,6 +3713,36 @@ export default function Obras() {
                                             min="0"
 
                                             step="0.01"
+
+                                        />
+
+                                    </div>
+
+
+                                    <div className="obras-form-group">
+
+                                        <label>
+                                            Fase atual
+                                        </label>
+
+
+                                        <input
+
+                                            type="text"
+
+                                            name="fase"
+
+                                            value={
+                                                form.fase
+                                            }
+
+                                            onChange={
+                                                alterarCampo
+                                            }
+
+                                            placeholder="Digite a fase atual da obra"
+
+                                            autoComplete="off"
 
                                         />
 

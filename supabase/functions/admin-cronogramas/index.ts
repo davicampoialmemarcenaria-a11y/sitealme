@@ -1,4 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+    createClient
+} from "https://esm.sh/@supabase/supabase-js@2";
 
 /*
 =====================================================
@@ -7,11 +9,11 @@ CORS
 */
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods":
-    "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers":
+        "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods":
+        "GET, POST, PUT, DELETE, OPTIONS",
 };
 
 /*
@@ -21,13 +23,13 @@ SUPABASE
 */
 
 const supabaseUrl =
-  Deno.env.get("SUPABASE_URL")!;
+    Deno.env.get("SUPABASE_URL")!;
 
 const supabaseAnonKey =
-  Deno.env.get("SUPABASE_ANON_KEY")!;
+    Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const supabaseServiceRoleKey =
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 /*
 =====================================================
@@ -35,10 +37,11 @@ CLIENTE NORMAL
 =====================================================
 */
 
-const supabaseAuth = createClient(
-  supabaseUrl,
-  supabaseAnonKey
-);
+const supabaseAuth =
+    createClient(
+        supabaseUrl,
+        supabaseAnonKey
+    );
 
 /*
 =====================================================
@@ -46,10 +49,11 @@ CLIENTE ADMIN
 =====================================================
 */
 
-const supabaseAdmin = createClient(
-  supabaseUrl,
-  supabaseServiceRoleKey
-);
+const supabaseAdmin =
+    createClient(
+        supabaseUrl,
+        supabaseServiceRoleKey
+    );
 
 /*
 =====================================================
@@ -58,20 +62,20 @@ RESPOSTA JSON
 */
 
 function jsonResponse(
-  data: unknown,
-  status = 200
+    data: unknown,
+    status = 200
 ) {
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
-      headers: {
-        ...corsHeaders,
-        "Content-Type":
-          "application/json",
-      },
-    }
-  );
+    return new Response(
+        JSON.stringify(data),
+        {
+            status,
+            headers: {
+                ...corsHeaders,
+                "Content-Type":
+                    "application/json",
+            },
+        }
+    );
 }
 
 /*
@@ -81,15 +85,15 @@ ERRO
 */
 
 function mensagemErro(
-  error: unknown
+    error: unknown
 ) {
-  if (
-    error instanceof Error
-  ) {
-    return error.message;
-  }
+    if (
+        error instanceof Error
+    ) {
+        return error.message;
+    }
 
-  return "Erro interno.";
+    return "Erro interno.";
 }
 
 /*
@@ -99,13 +103,13 @@ NORMALIZAR TEXTO
 */
 
 function normalizarTexto(
-  valor: unknown
+    valor: unknown
 ) {
-  return String(
-    valor ?? ""
-  )
-    .trim()
-    .toLowerCase();
+    return String(
+        valor ?? ""
+    )
+        .trim()
+        .toLowerCase();
 }
 
 /*
@@ -115,23 +119,24 @@ CONVERTER ID
 */
 
 function validarId(
-  valor: unknown,
-  nome: string
+    valor: unknown,
+    nome: string
 ) {
-  const numero = Number(
-    valor
-  );
+    const numero =
+        Number(valor);
 
-  if (
-    !Number.isInteger(numero) ||
-    numero <= 0
-  ) {
-    throw new Error(
-      `${nome} inválido.`
-    );
-  }
+    if (
+        !Number.isInteger(
+            numero
+        ) ||
+        numero <= 0
+    ) {
+        throw new Error(
+            `${nome} inválido.`
+        );
+    }
 
-  return numero;
+    return numero;
 }
 
 /*
@@ -141,234 +146,244 @@ VERIFICAR ACESSO
 */
 
 async function verificarAcesso(
-  req: Request
+    req: Request
 ) {
-  const authHeader =
-    req.headers.get(
-      "Authorization"
-    );
+    const authHeader =
+        req.headers.get(
+            "Authorization"
+        );
 
-  if (!authHeader) {
-    throw new Error(
-      "Usuário não autenticado."
-    );
-  }
+    if (!authHeader) {
+        throw new Error(
+            "Usuário não autenticado."
+        );
+    }
 
-  const token =
-    authHeader
-      .replace(
-        /^Bearer\s+/i,
-        ""
-      )
-      .trim();
+    const token =
+        authHeader
+            .replace(
+                /^Bearer\s+/i,
+                ""
+            )
+            .trim();
 
-  if (!token) {
-    throw new Error(
-      "Token de autenticação não encontrado."
-    );
-  }
+    if (!token) {
+        throw new Error(
+            "Token de autenticação não encontrado."
+        );
+    }
 
-  /*
-  ================================================
-  VALIDAR TOKEN
-  ================================================
-  */
+    /*
+    ================================================
+    VALIDAR TOKEN
+    ================================================
+    */
 
-  const {
-    data: {
-      user,
-    },
-    error,
-  } =
-    await supabaseAuth.auth.getUser(
-      token
-    );
+    const {
+        data: {
+            user
+        },
+        error
+    } =
+        await supabaseAuth
+            .auth
+            .getUser(
+                token
+            );
 
-  if (
-    error ||
-    !user
-  ) {
-    console.error(
-      "Erro ao validar usuário:",
-      error
-    );
+    if (
+        error ||
+        !user
+    ) {
+        console.error(
+            "Erro ao validar usuário:",
+            error
+        );
 
-    throw new Error(
-      "Sessão inválida ou expirada."
-    );
-  }
+        throw new Error(
+            "Sessão inválida ou expirada."
+        );
+    }
 
-  /*
-  ================================================
-  BUSCAR ROLE
-  ================================================
-  */
+    /*
+    ================================================
+    BUSCAR ROLE
+    ================================================
+    */
 
-  const {
-    data: userRole,
-    error: roleError,
-  } =
-    await supabaseAdmin
-      .from("user_roles")
-      .select(`
-        role_id,
-        roles (
-          id,
-          nome
+    const {
+        data: userRole,
+        error: roleError
+    } =
+        await supabaseAdmin
+            .from(
+                "user_roles"
+            )
+            .select(`
+                role_id,
+                roles (
+                    id,
+                    nome
+                )
+            `)
+            .eq(
+                "user_id",
+                user.id
+            )
+            .limit(1)
+            .maybeSingle();
+
+    if (
+        roleError
+    ) {
+        console.error(
+            "Erro ao buscar role:",
+            roleError
+        );
+
+        throw new Error(
+            "Não foi possível verificar a permissão."
+        );
+    }
+
+    const roleNome =
+        Array.isArray(
+            userRole?.roles
         )
-      `)
-      .eq(
-        "user_id",
+            ? userRole?.roles?.[0]?.nome
+            : userRole?.roles?.nome;
+
+    const roleId =
+        Number(
+            userRole?.role_id
+        );
+
+    /*
+    ================================================
+    BUSCAR PROFILE
+    ================================================
+    */
+
+    const {
+        data: profile,
+        error: profileError
+    } =
+        await supabaseAdmin
+            .from(
+                "profiles"
+            )
+            .select(`
+                id,
+                nome,
+                username,
+                email,
+                pode_ver_todas_obras
+            `)
+            .eq(
+                "id",
+                user.id
+            )
+            .maybeSingle();
+
+    if (
+        profileError
+    ) {
+        console.error(
+            "Erro ao buscar profile:",
+            profileError
+        );
+
+        throw new Error(
+            "Não foi possível carregar o perfil."
+        );
+    }
+
+    /*
+    ================================================
+    PERMISSÃO ESPECIAL
+    ================================================
+    */
+
+    const podeVerTodasObras =
+        roleId === 1 ||
+        (
+            roleId === 3 &&
+            profile?.pode_ver_todas_obras === true
+        );
+
+    /*
+    ================================================
+    SOMENTE ADMIN OU PRODUÇÃO
+    ================================================
+    */
+
+    if (
+        roleId !== 1 &&
+        roleId !== 3
+    ) {
+        throw new Error(
+            "Você não possui permissão para acessar os cronogramas."
+        );
+    }
+
+    console.log(
+        "===================================="
+    );
+
+    console.log(
+        "ADMIN-CRONOGRAMAS"
+    );
+
+    console.log(
+        "USER:",
+        user.email
+    );
+
+    console.log(
+        "USER ID:",
         user.id
-      )
-      .limit(1)
-      .maybeSingle();
-
-  if (roleError) {
-    console.error(
-      "Erro ao buscar role:",
-      roleError
     );
 
-    throw new Error(
-      "Não foi possível verificar a permissão."
-    );
-  }
-
-  const roleNome =
-    Array.isArray(
-      userRole?.roles
-    )
-      ? userRole?.roles?.[0]?.nome
-      : userRole?.roles?.nome;
-
-  const roleId =
-    Number(
-      userRole?.role_id
+    console.log(
+        "USERNAME:",
+        profile?.username
     );
 
-  /*
-  ================================================
-  BUSCAR PROFILE
-  ================================================
-  */
-
-  const {
-    data: profile,
-    error: profileError,
-  } =
-    await supabaseAdmin
-      .from("profiles")
-      .select(`
-        id,
-        nome,
-        username,
-        email,
-        pode_ver_todas_obras
-      `)
-      .eq(
-        "id",
-        user.id
-      )
-      .maybeSingle();
-
-  if (profileError) {
-    console.error(
-      "Erro ao buscar profile:",
-      profileError
+    console.log(
+        "ROLE ID:",
+        roleId
     );
 
-    throw new Error(
-      "Não foi possível carregar o perfil."
-    );
-  }
-
-  /*
-  ================================================
-  PERMISSÃO ESPECIAL
-  ================================================
-  */
-
-  const podeVerTodasObras =
-    roleId === 1 ||
-    (
-      roleId === 3 &&
-      profile?.pode_ver_todas_obras === true
+    console.log(
+        "ROLE:",
+        roleNome
     );
 
-  /*
-  ================================================
-  SOMENTE ADMIN OU PRODUÇÃO
-  ================================================
-  */
-
-  if (
-    roleId !== 1 &&
-    roleId !== 3
-  ) {
-    throw new Error(
-      "Você não possui permissão para acessar os cronogramas."
+    console.log(
+        "PODE VER TODAS:",
+        podeVerTodasObras
     );
-  }
 
-  console.log(
-    "===================================="
-  );
+    console.log(
+        "===================================="
+    );
 
-  console.log(
-    "ADMIN-CRONOGRAMAS"
-  );
-
-  console.log(
-    "USER:",
-    user.email
-  );
-
-  console.log(
-    "USER ID:",
-    user.id
-  );
-
-  console.log(
-    "USERNAME:",
-    profile?.username
-  );
-
-  console.log(
-    "ROLE ID:",
-    roleId
-  );
-
-  console.log(
-    "ROLE:",
-    roleNome
-  );
-
-  console.log(
-    "PODE VER TODAS:",
-    podeVerTodasObras
-  );
-
-  console.log(
-    "===================================="
-  );
-
-  return {
-    user,
-    roleId,
-    roleNome,
-    username:
-      profile?.username ||
-      "",
-    nome:
-      profile?.nome ||
-      "",
-    email:
-      profile?.email ||
-      user.email ||
-      "",
-    podeVerTodasObras,
-  };
+    return {
+        user,
+        roleId,
+        roleNome,
+        username:
+            profile?.username ||
+            "",
+        nome:
+            profile?.nome ||
+            "",
+        email:
+            profile?.email ||
+            user.email ||
+            "",
+        podeVerTodasObras,
+    };
 }
 
 /*
@@ -378,49 +393,47 @@ FILTRAR OBRAS DO USUÁRIO
 */
 
 function filtrarObrasDoUsuario(
-  obras: any[],
-  username: string
+    obras: any[],
+    username: string
 ) {
-  const usernameNormalizado =
-    normalizarTexto(
-      username
-    );
-
-  if (
-    !usernameNormalizado
-  ) {
-    return [];
-  }
-
-  return obras.filter(
-    (
-      obra
-    ) => {
-      const rdo =
+    const usernameNormalizado =
         normalizarTexto(
-          obra.rdo_nome
+            username
         );
 
-      const marceneiro =
-        normalizarTexto(
-          obra.marceneiro_nome
-        );
-
-      const projetista =
-        normalizarTexto(
-          obra.projetista_nome
-        );
-
-      return (
-        rdo ===
-          usernameNormalizado ||
-        marceneiro ===
-          usernameNormalizado ||
-        projetista ===
-          usernameNormalizado
-      );
+    if (
+        !usernameNormalizado
+    ) {
+        return [];
     }
-  );
+
+    return obras.filter(
+        obra => {
+            const rdo =
+                normalizarTexto(
+                    obra.rdo_nome
+                );
+
+            const marceneiro =
+                normalizarTexto(
+                    obra.marceneiro_nome
+                );
+
+            const projetista =
+                normalizarTexto(
+                    obra.projetista_nome
+                );
+
+            return (
+                rdo ===
+                    usernameNormalizado ||
+                marceneiro ===
+                    usernameNormalizado ||
+                projetista ===
+                    usernameNormalizado
+            );
+        }
+    );
 }
 
 /*
@@ -430,50 +443,58 @@ LISTAR OBRAS VISÍVEIS
 */
 
 async function listarObrasVisiveis(
-  acesso: any
+    acesso: any
 ) {
-  const {
-    data,
-    error,
-  } =
-    await supabaseAdmin
-      .from("obras")
-      .select(`
-        id,
-        nome,
-        marceneiro_nome,
-        rdo_nome,
-        projetista_nome,
-        concluida
-      `)
-      .order(
-        "nome",
-        {
-          ascending:
-            true,
-        }
-      );
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .select(`
+                id,
+                nome,
+                endereco,
+                cliente_nome,
+                arquiteto_empresa,
+                data_inicio_esperada,
+                valor,
+                rdo_nome,
+                marceneiro_nome,
+                projetista_nome,
+                dias_finalizacao_esperado,
+                concluida,
+                concluida_at,
+                created_at,
+                updated_at
+            `)
+            .order(
+                "nome",
+                {
+                    ascending: true
+                }
+            );
 
-  if (error) {
-    throw new Error(
-      error.message
+    if (error) {
+        throw new Error(
+            error.message
+        );
+    }
+
+    const todas =
+        data || [];
+
+    if (
+        acesso.roleId === 1 ||
+        acesso.podeVerTodasObras === true
+    ) {
+        return todas;
+    }
+
+    return filtrarObrasDoUsuario(
+        todas,
+        acesso.username
     );
-  }
-
-  const todas =
-    data || [];
-
-  if (
-    acesso.roleId === 1 ||
-    acesso.podeVerTodasObras === true
-  ) {
-    return todas;
-  }
-
-  return filtrarObrasDoUsuario(
-    todas,
-    acesso.username
-  );
 }
 
 /*
@@ -483,236 +504,238 @@ BUSCAR USUÁRIO MARCENEIRO - ROLE 5
 */
 
 async function buscarMarceneiroResponsavel(
-  obra: any
+    obra: any
 ) {
-  const valorObra =
-    String(
-      obra?.marceneiro_nome ??
-      ""
-    ).trim();
-
-  /*
-  ================================================
-  SE A OBRA NÃO POSSUI MARCENEIRO
-  ================================================
-  */
-
-  if (!valorObra) {
-    return {
-      id: null,
-      nome: "",
-      username: "",
-      email: "",
-      role_id: 5,
-    };
-  }
-
-  /*
-  ================================================
-  PEGAR USERS COM ROLE 5
-  ================================================
-  */
-
-  const {
-    data: roleUsers,
-    error: roleUsersError,
-  } =
-    await supabaseAdmin
-      .from("user_roles")
-      .select(`
-        user_id,
-        role_id
-      `)
-      .eq(
-        "role_id",
-        5
-      );
-
-  if (roleUsersError) {
-    console.error(
-      "Erro ao buscar usuários role 5:",
-      roleUsersError
-    );
+    const valorObra =
+        String(
+            obra?.marceneiro_nome ??
+            ""
+        ).trim();
 
     /*
-    Não impede o cronograma de abrir.
-    Usamos o valor gravado na obra.
+    ================================================
+    SE A OBRA NÃO POSSUI MARCENEIRO
+    ================================================
+    */
+
+    if (
+        !valorObra
+    ) {
+        return {
+            id: null,
+            nome: "",
+            username: "",
+            email: "",
+            role_id: 5,
+        };
+    }
+
+    /*
+    ================================================
+    PEGAR USERS COM ROLE 5
+    ================================================
+    */
+
+    const {
+        data: roleUsers,
+        error: roleUsersError
+    } =
+        await supabaseAdmin
+            .from(
+                "user_roles"
+            )
+            .select(`
+                user_id,
+                role_id
+            `)
+            .eq(
+                "role_id",
+                5
+            );
+
+    if (
+        roleUsersError
+    ) {
+        console.error(
+            "Erro ao buscar usuários role 5:",
+            roleUsersError
+        );
+
+        return {
+            id: null,
+            nome:
+                valorObra,
+            username:
+                valorObra,
+            email: "",
+            role_id: 5,
+        };
+    }
+
+    const userIds =
+        (roleUsers || [])
+            .map(
+                item =>
+                    item.user_id
+            )
+            .filter(Boolean);
+
+    if (
+        userIds.length === 0
+    ) {
+        return {
+            id: null,
+            nome:
+                valorObra,
+            username:
+                valorObra,
+            email: "",
+            role_id: 5,
+        };
+    }
+
+    /*
+    ================================================
+    BUSCAR PROFILES
+    ================================================
+    */
+
+    const {
+        data: profiles,
+        error: profilesError
+    } =
+        await supabaseAdmin
+            .from(
+                "profiles"
+            )
+            .select(`
+                id,
+                nome,
+                username,
+                email
+            `)
+            .in(
+                "id",
+                userIds
+            );
+
+    if (
+        profilesError
+    ) {
+        console.error(
+            "Erro ao buscar profiles dos marceneiros:",
+            profilesError
+        );
+
+        return {
+            id: null,
+            nome:
+                valorObra,
+            username:
+                valorObra,
+            email: "",
+            role_id: 5,
+        };
+    }
+
+    /*
+    ================================================
+    ENCONTRAR O MARCENEIRO
+    ================================================
+    */
+
+    const valorNormalizado =
+        normalizarTexto(
+            valorObra
+        );
+
+    const marceneiro =
+        (profiles || []).find(
+            profile => {
+                const id =
+                    normalizarTexto(
+                        profile.id
+                    );
+
+                const nome =
+                    normalizarTexto(
+                        profile.nome
+                    );
+
+                const username =
+                    normalizarTexto(
+                        profile.username
+                    );
+
+                const email =
+                    normalizarTexto(
+                        profile.email
+                    );
+
+                return (
+                    id ===
+                        valorNormalizado ||
+                    nome ===
+                        valorNormalizado ||
+                    username ===
+                        valorNormalizado ||
+                    email ===
+                        valorNormalizado
+                );
+            }
+        );
+
+    /*
+    ================================================
+    ENCONTRADO
+    ================================================
+    */
+
+    if (
+        marceneiro
+    ) {
+        return {
+            id:
+                marceneiro.id,
+
+            nome:
+                marceneiro.nome ||
+                "",
+
+            username:
+                marceneiro.username ||
+                "",
+
+            email:
+                marceneiro.email ||
+                "",
+
+            role_id:
+                5,
+        };
+    }
+
+    /*
+    ================================================
+    NÃO ENCONTRADO
+    ================================================
     */
 
     return {
-      id: null,
-      nome:
-        valorObra,
-      username:
-        valorObra,
-      email: "",
-      role_id: 5,
+        id: null,
+
+        nome:
+            valorObra,
+
+        username:
+            valorObra,
+
+        email:
+            "",
+
+        role_id:
+            5,
     };
-  }
-
-  const userIds =
-    (roleUsers || [])
-      .map(
-        item =>
-          item.user_id
-      )
-      .filter(Boolean);
-
-  if (
-    userIds.length === 0
-  ) {
-    return {
-      id: null,
-      nome:
-        valorObra,
-      username:
-        valorObra,
-      email: "",
-      role_id: 5,
-    };
-  }
-
-  /*
-  ================================================
-  BUSCAR PROFILES
-  ================================================
-  */
-
-  const {
-    data: profiles,
-    error: profilesError,
-  } =
-    await supabaseAdmin
-      .from("profiles")
-      .select(`
-        id,
-        nome,
-        username,
-        email
-      `)
-      .in(
-        "id",
-        userIds
-      );
-
-  if (profilesError) {
-    console.error(
-      "Erro ao buscar profiles dos marceneiros:",
-      profilesError
-    );
-
-    return {
-      id: null,
-      nome:
-        valorObra,
-      username:
-        valorObra,
-      email: "",
-      role_id: 5,
-    };
-  }
-
-  /*
-  ================================================
-  ENCONTRAR O MARCENEIRO
-  ================================================
-  
-  A obra pode estar salvando:
-  - username
-  - nome
-  - email
-  - eventualmente id
-  ================================================
-  */
-
-  const valorNormalizado =
-    normalizarTexto(
-      valorObra
-    );
-
-  const marceneiro =
-    (profiles || []).find(
-      profile => {
-        const id =
-          normalizarTexto(
-            profile.id
-          );
-
-        const nome =
-          normalizarTexto(
-            profile.nome
-          );
-
-        const username =
-          normalizarTexto(
-            profile.username
-          );
-
-        const email =
-          normalizarTexto(
-            profile.email
-          );
-
-        return (
-          id ===
-            valorNormalizado ||
-          nome ===
-            valorNormalizado ||
-          username ===
-            valorNormalizado ||
-          email ===
-            valorNormalizado
-        );
-      }
-    );
-
-  /*
-  ================================================
-  ENCONTRADO
-  ================================================
-  */
-
-  if (marceneiro) {
-    return {
-      id:
-        marceneiro.id,
-
-      nome:
-        marceneiro.nome ||
-        "",
-
-      username:
-        marceneiro.username ||
-        "",
-
-      email:
-        marceneiro.email ||
-        "",
-
-      role_id:
-        5,
-    };
-  }
-
-  /*
-  ================================================
-  NÃO ENCONTRADO
-  ================================================
-  
-  Mantém o valor salvo em obras.
-  ================================================
-  */
-
-  return {
-    id: null,
-    nome:
-      valorObra,
-    username:
-      valorObra,
-    email: "",
-    role_id:
-      5,
-  };
 }
 
 /*
@@ -722,95 +745,94 @@ BUSCAR OBRA COMPLETA
 */
 
 async function buscarObra(
-  id: any
+    id: any
 ) {
-  const obraId =
-    validarId(
-      id,
-      "Obra"
-    );
+    const obraId =
+        validarId(
+            id,
+            "Obra"
+        );
 
-  const {
-    data,
-    error,
-  } =
-    await supabaseAdmin
-      .from("obras")
-      .select(`
-        id,
-        nome,
-        endereco,
-        cliente_nome,
-        arquiteto_empresa,
-        data_inicio_esperada,
-        valor,
-        rdo_nome,
-        marceneiro_nome,
-        projetista_nome,
-        dias_finalizacao_esperado,
-        concluida,
-        concluida_at,
-        created_at,
-        updated_at
-      `)
-      .eq(
-        "id",
-        obraId
-      )
-      .maybeSingle();
+    const {
+        data,
+        error
+    } =
+        await supabaseAdmin
+            .from("obras")
+            .select(`
+                id,
+                nome,
+                endereco,
+                cliente_nome,
+                arquiteto_empresa,
+                data_inicio_esperada,
+                valor,
+                rdo_nome,
+                marceneiro_nome,
+                projetista_nome,
+                dias_finalizacao_esperado,
+                concluida,
+                concluida_at,
+                created_at,
+                updated_at
+            `)
+            .eq(
+                "id",
+                obraId
+            )
+            .maybeSingle();
 
-  if (error) {
-    throw new Error(
-      error.message
-    );
-  }
+    if (error) {
+        throw new Error(
+            error.message
+        );
+    }
 
-  if (!data) {
-    throw new Error(
-      "Obra não encontrada."
-    );
-  }
+    if (!data) {
+        throw new Error(
+            "Obra não encontrada."
+        );
+    }
 
-  /*
-  ================================================
-  MARCENEIRO ROLE 5
-  ================================================
-  */
+    /*
+    ================================================
+    MARCENEIRO ROLE 5
+    ================================================
+    */
 
-  const marceneiro =
-    await buscarMarceneiroResponsavel(
-      data
-    );
+    const marceneiro =
+        await buscarMarceneiroResponsavel(
+            data
+        );
 
-  /*
-  ================================================
-  RETORNO ENRIQUECIDO
-  ================================================
-  */
+    /*
+    ================================================
+    RETORNO ENRIQUECIDO
+    ================================================
+    */
 
-  return {
-    ...data,
+    return {
+        ...data,
 
-    marceneiro_nome:
-      marceneiro.nome ||
-      data.marceneiro_nome ||
-      "",
+        marceneiro_nome:
+            marceneiro.nome ||
+            data.marceneiro_nome ||
+            "",
 
-    marceneiro_username:
-      marceneiro.username ||
-      "",
+        marceneiro_username:
+            marceneiro.username ||
+            "",
 
-    marceneiro_email:
-      marceneiro.email ||
-      "",
+        marceneiro_email:
+            marceneiro.email ||
+            "",
 
-    marceneiro_id:
-      marceneiro.id ||
-      null,
+        marceneiro_id:
+            marceneiro.id ||
+            null,
 
-    marceneiro:
-      marceneiro,
-  };
+        marceneiro,
+    };
 }
 
 /*
@@ -820,28 +842,28 @@ VERIFICAR ACESSO À OBRA
 */
 
 async function usuarioPodeAcessarObra(
-  obra: any,
-  acesso: any
+    obra: any,
+    acesso: any
 ) {
-  if (
-    acesso.roleId === 1 ||
-    acesso.podeVerTodasObras === true
-  ) {
-    return true;
-  }
+    if (
+        acesso.roleId === 1 ||
+        acesso.podeVerTodasObras === true
+    ) {
+        return true;
+    }
 
-  if (
-    acesso.roleId === 3
-  ) {
-    return (
-      filtrarObrasDoUsuario(
-        [obra],
-        acesso.username
-      ).length > 0
-    );
-  }
+    if (
+        acesso.roleId === 3
+    ) {
+        return (
+            filtrarObrasDoUsuario(
+                [obra],
+                acesso.username
+            ).length > 0
+        );
+    }
 
-  return false;
+    return false;
 }
 
 /*
@@ -851,322 +873,302 @@ LINHAS BASE
 */
 
 function linhasBase() {
-  return [
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "REUNIÃO DE ONBOARDING",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "normal",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "MEDIÇÃO - PISO/FORRO",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "APROVAÇÃO DO PROJETO PELA ARQUITETA",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "normal",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "APROVAÇÃO DO PROJETO PELO CLIENTE FINAL",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "amarela",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "COMPRA DE MATERIAL",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "RECEBIMENTO DO MATERIAL",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "INÍCIO DE PRODUÇÃO",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FIM DA PRODUÇÃO",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "CONFERÊNCIA PRÉ-FRETE",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "amarela",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FRETE",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "INÍCIO DE INSTALAÇÃO",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FINALIZAÇÃO DA INSTALAÇÃO",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "azul",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "MEDIÇÃO - BANCADAS ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "COMPRA DE MATERIAL ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "RECEBIMENTO DO MATERIAL ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "INÍCIO DE PRODUÇÃO ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FIM DA PRODUÇÃO ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "CONFERÊNCIA PRÉ-FRETE ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FRETE ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "INÍCIO DE INSTALAÇÃO ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-
-    {
-      id:
-        crypto.randomUUID(),
-      item:
-        "FINALIZAÇÃO DA INSTALAÇÃO ETAPA 2",
-      data_prevista:
-        "",
-      data_realizada:
-        "",
-      observacoes:
-        "",
-      tipo:
-        "laranja",
-    },
-  ];
+    return [
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "REUNIÃO DE ONBOARDING",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "normal",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "MEDIÇÃO - PISO/FORRO",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "APROVAÇÃO DO PROJETO PELA ARQUITETA",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "normal",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "APROVAÇÃO DO PROJETO PELO CLIENTE FINAL",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "amarela",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "COMPRA DE MATERIAL",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "RECEBIMENTO DO MATERIAL",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "INÍCIO DE PRODUÇÃO",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FIM DA PRODUÇÃO",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "CONFERÊNCIA PRÉ-FRETE",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "amarela",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FRETE",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "INÍCIO DE INSTALAÇÃO",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FINALIZAÇÃO DA INSTALAÇÃO",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "azul",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "MEDIÇÃO - BANCADAS ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "COMPRA DE MATERIAL ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "RECEBIMENTO DO MATERIAL ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "INÍCIO DE PRODUÇÃO ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FIM DA PRODUÇÃO ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "CONFERÊNCIA PRÉ-FRETE ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FRETE ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "INÍCIO DE INSTALAÇÃO ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+        {
+            id:
+                crypto.randomUUID(),
+            item:
+                "FINALIZAÇÃO DA INSTALAÇÃO ETAPA 2",
+            data_prevista:
+                "",
+            data_realizada:
+                "",
+            observacoes:
+                "",
+            tipo:
+                "laranja",
+        },
+    ];
 }
 
 /*
@@ -1176,80 +1178,82 @@ VALIDAR LINHAS
 */
 
 function validarLinhas(
-  linhas: any
+    linhas: any
 ) {
-  if (
-    !Array.isArray(linhas)
-  ) {
-    throw new Error(
-      "As linhas do cronograma são inválidas."
-    );
-  }
-
-  if (
-    linhas.length > 500
-  ) {
-    throw new Error(
-      "O cronograma não pode possuir mais de 500 linhas."
-    );
-  }
-
-  return linhas.map(
-    (
-      linha,
-      index
-    ) => {
-      const item =
-        String(
-          linha?.item ??
-          ""
-        ).trim();
-
-      if (!item) {
-        throw new Error(
-          `A linha ${index + 1} precisa possuir um item.`
-        );
-      }
-
-      const tiposValidos = [
-        "normal",
-        "azul",
-        "amarela",
-        "laranja",
-      ];
-
-      const tipo =
-        tiposValidos.includes(
-          linha?.tipo
+    if (
+        !Array.isArray(
+            linhas
         )
-          ? linha.tipo
-          : "normal";
-
-      return {
-        id:
-          linha?.id ||
-          crypto.randomUUID(),
-
-        item,
-
-        data_prevista:
-          linha?.data_prevista ||
-          "",
-
-        data_realizada:
-          linha?.data_realizada ||
-          "",
-
-        observacoes:
-          String(
-            linha?.observacoes ??
-            ""
-          ),
-
-        tipo,
-      };
+    ) {
+        throw new Error(
+            "As linhas do cronograma são inválidas."
+        );
     }
-  );
+
+    if (
+        linhas.length > 500
+    ) {
+        throw new Error(
+            "O cronograma não pode possuir mais de 500 linhas."
+        );
+    }
+
+    return linhas.map(
+        (
+            linha,
+            index
+        ) => {
+            const item =
+                String(
+                    linha?.item ??
+                    ""
+                ).trim();
+
+            if (!item) {
+                throw new Error(
+                    `A linha ${index + 1} precisa possuir um item.`
+                );
+            }
+
+            const tiposValidos = [
+                "normal",
+                "azul",
+                "amarela",
+                "laranja",
+            ];
+
+            const tipo =
+                tiposValidos.includes(
+                    linha?.tipo
+                )
+                    ? linha.tipo
+                    : "normal";
+
+            return {
+                id:
+                    linha?.id ||
+                    crypto.randomUUID(),
+
+                item,
+
+                data_prevista:
+                    linha?.data_prevista ||
+                    "",
+
+                data_realizada:
+                    linha?.data_realizada ||
+                    "",
+
+                observacoes:
+                    String(
+                        linha?.observacoes ??
+                        ""
+                    ),
+
+                tipo,
+            };
+        }
+    );
 }
 
 /*
@@ -1259,285 +1263,337 @@ LISTAR CRONOGRAMAS
 */
 
 async function listarCronogramas(
-  acesso: any
+    acesso: any
 ) {
-  const obrasVisiveis =
-    await listarObrasVisiveis(
-      acesso
-    );
+    /*
+    ================================================
+    TODAS AS OBRAS VISÍVEIS
+    ================================================
+    */
 
-  const obraIds =
-    obrasVisiveis.map(
-      obra =>
-        obra.id
-    );
-
-  if (
-    obraIds.length === 0
-  ) {
-    return {
-      cronogramas: [],
-      obrasDisponiveis:
-        [],
-    };
-  }
-
-  /*
-  ================================================
-  CRONOGRAMAS
-  ================================================
-  */
-
-  const {
-    data: cronogramasData,
-    error: cronogramasError,
-  } =
-    await supabaseAdmin
-      .from("cronogramas")
-      .select(`
-        id,
-        obra_id,
-        created_at,
-        updated_at
-      `)
-      .in(
-        "obra_id",
-        obraIds
-      )
-      .order(
-        "updated_at",
-        {
-          ascending:
-            false,
-        }
-      );
-
-  if (
-    cronogramasError
-  ) {
-    throw new Error(
-      cronogramasError.message
-    );
-  }
-
-  const cronogramas =
-    cronogramasData ||
-    [];
-
-  const cronogramaIds =
-    cronogramas.map(
-      item =>
-        item.id
-    );
-
-  /*
-  ================================================
-  VERSÕES
-  ================================================
-  */
-
-  let versoes: any[] =
-    [];
-
-  if (
-    cronogramaIds.length >
-    0
-  ) {
-    const {
-      data,
-      error,
-    } =
-      await supabaseAdmin
-        .from(
-          "cronograma_versoes"
-        )
-        .select(`
-          id,
-          cronograma_id,
-          numero,
-          sharepoint_id,
-          data_finalizacao_contrato,
-          created_at
-        `)
-        .in(
-          "cronograma_id",
-          cronogramaIds
-        )
-        .order(
-          "numero",
-          {
-            ascending:
-              false,
-          }
+    const obrasVisiveis =
+        await listarObrasVisiveis(
+            acesso
         );
 
-    if (error) {
-      throw new Error(
-        error.message
-      );
-    }
+    /*
+    ================================================
+    SE NÃO HÁ OBRAS
+    ================================================
+    */
 
-    versoes =
-      data || [];
-  }
-
-  /*
-  ================================================
-  MAPAS
-  ================================================
-  */
-
-  const obraMap =
-    new Map(
-      obrasVisiveis.map(
-        obra => [
-          String(
-            obra.id
-          ),
-          obra,
-        ]
-      )
-    );
-
-  const versoesMap =
-    new Map<
-      number,
-      any[]
-    >();
-
-  for (
-    const versao of versoes
-  ) {
     if (
-      !versoesMap.has(
-        versao.cronograma_id
-      )
+        obrasVisiveis.length === 0
     ) {
-      versoesMap.set(
-        versao.cronograma_id,
-        []
-      );
+        return {
+            cronogramas: [],
+            obrasDisponiveis: [],
+            obrasConcluidas: [],
+        };
     }
 
-    versoesMap
-      .get(
-        versao.cronograma_id
-      )!
-      .push(
-        versao
-      );
-  }
+    const obraIds =
+        obrasVisiveis.map(
+            obra =>
+                obra.id
+        );
 
-  /*
-  ================================================
-  RESULTADO
-  ================================================
-  */
+    /*
+    ================================================
+    CRONOGRAMAS
+    ================================================
+    */
 
-  const resultado =
-    await Promise.all(
-      cronogramas.map(
-        async (
-          cronograma
-        ) => {
-          const obra =
-            obraMap.get(
-              String(
-                cronograma.obra_id
-              )
+    const {
+        data: cronogramasData,
+        error: cronogramasError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .select(`
+                id,
+                obra_id,
+                created_at,
+                updated_at
+            `)
+            .in(
+                "obra_id",
+                obraIds
+            )
+            .order(
+                "updated_at",
+                {
+                    ascending: false,
+                }
             );
 
-          const obraComMarceneiro =
-            obra
-              ? await buscarMarceneiroResponsavel(
-                  obra
+    if (
+        cronogramasError
+    ) {
+        throw new Error(
+            cronogramasError.message
+        );
+    }
+
+    const cronogramas =
+        cronogramasData ||
+        [];
+
+    const cronogramaIds =
+        cronogramas.map(
+            item =>
+                item.id
+        );
+
+    /*
+    ================================================
+    VERSÕES
+    ================================================
+    */
+
+    let versoes:
+        any[] = [];
+
+    if (
+        cronogramaIds.length > 0
+    ) {
+        const {
+            data,
+            error
+        } =
+            await supabaseAdmin
+                .from(
+                    "cronograma_versoes"
                 )
-              : null;
+                .select(`
+                    id,
+                    cronograma_id,
+                    numero,
+                    sharepoint_id,
+                    data_finalizacao_contrato,
+                    created_at
+                `)
+                .in(
+                    "cronograma_id",
+                    cronogramaIds
+                )
+                .order(
+                    "numero",
+                    {
+                        ascending: false,
+                    }
+                );
 
-          const obraFinal =
-            obra
-              ? {
-                  ...obra,
-
-                  marceneiro_nome:
-                    obraComMarceneiro?.nome ||
-                    obra.marceneiro_nome ||
-                    "",
-
-                  marceneiro_username:
-                    obraComMarceneiro?.username ||
-                    "",
-
-                  marceneiro_email:
-                    obraComMarceneiro?.email ||
-                    "",
-
-                  marceneiro_id:
-                    obraComMarceneiro?.id ||
-                    null,
-
-                  marceneiro:
-                    obraComMarceneiro,
-                }
-              : obra;
-
-          return {
-            id:
-              cronograma.id,
-
-            obra_id:
-              cronograma.obra_id,
-
-            obra:
-              obraFinal,
-
-            created_at:
-              cronograma.created_at,
-
-            updated_at:
-              cronograma.updated_at,
-
-            versoes:
-              versoesMap.get(
-                cronograma.id
-              ) || [],
-          };
+        if (error) {
+            throw new Error(
+                error.message
+            );
         }
-      )
-    );
 
-  /*
-  ================================================
-  OBRAS SEM CRONOGRAMA
-  ================================================
-  */
+        versoes =
+            data || [];
+    }
 
-  const obrasComCronograma =
-    new Set(
-      cronogramas.map(
-        item =>
-          String(
-            item.obra_id
-          )
-      )
-    );
+    /*
+    ================================================
+    MAPA DE OBRAS
+    ================================================
+    */
 
-  const obrasDisponiveis =
-    obrasVisiveis.filter(
-      obra =>
-        !obrasComCronograma.has(
-          String(
-            obra.id
-          )
-        )
-    );
+    const obraMap =
+        new Map<
+            string,
+            any
+        >(
+            obrasVisiveis.map(
+                obra => [
+                    String(
+                        obra.id
+                    ),
+                    obra,
+                ]
+            )
+        );
 
-  return {
-    cronogramas:
-      resultado,
+    /*
+    ================================================
+    MAPA DE VERSÕES
+    ================================================
+    */
 
-    obrasDisponiveis,
-  };
+    const versoesMap =
+        new Map<
+            number,
+            any[]
+        >();
+
+    for (
+        const versao
+        of versoes
+    ) {
+        if (
+            !versoesMap.has(
+                versao.cronograma_id
+            )
+        ) {
+            versoesMap.set(
+                versao.cronograma_id,
+                []
+            );
+        }
+
+        versoesMap
+            .get(
+                versao.cronograma_id
+            )!
+            .push(
+                versao
+            );
+    }
+
+    /*
+    ================================================
+    ENRIQUECER CRONOGRAMAS
+    ================================================
+    */
+
+    const resultado =
+        await Promise.all(
+            cronogramas.map(
+                async cronograma => {
+                    const obra =
+                        obraMap.get(
+                            String(
+                                cronograma.obra_id
+                            )
+                        );
+
+                    const obraComMarceneiro =
+                        obra
+                            ? await buscarMarceneiroResponsavel(
+                                obra
+                            )
+                            : null;
+
+                    const obraFinal =
+                        obra
+                            ? {
+                                ...obra,
+
+                                marceneiro_nome:
+                                    obraComMarceneiro?.nome ||
+                                    obra.marceneiro_nome ||
+                                    "",
+
+                                marceneiro_username:
+                                    obraComMarceneiro?.username ||
+                                    "",
+
+                                marceneiro_email:
+                                    obraComMarceneiro?.email ||
+                                    "",
+
+                                marceneiro_id:
+                                    obraComMarceneiro?.id ||
+                                    null,
+
+                                marceneiro:
+                                    obraComMarceneiro,
+                            }
+                            : null;
+
+                    return {
+                        id:
+                            cronograma.id,
+
+                        obra_id:
+                            cronograma.obra_id,
+
+                        obra:
+                            obraFinal,
+
+                        created_at:
+                            cronograma.created_at,
+
+                        updated_at:
+                            cronograma.updated_at,
+
+                        versoes:
+                            versoesMap.get(
+                                cronograma.id
+                            ) || [],
+                    };
+                }
+            )
+        );
+
+    /*
+    ================================================
+    OBRAS COM CRONOGRAMA
+    ================================================
+    */
+
+    const obrasComCronograma =
+        new Set(
+            cronogramas.map(
+                item =>
+                    String(
+                        item.obra_id
+                    )
+            )
+        );
+
+    /*
+    ================================================
+    OBRAS ATIVAS DISPONÍVEIS
+    IMPORTANTE:
+    CONCLUÍDAS SÃO EXCLUÍDAS AQUI.
+    ================================================
+    */
+
+    const obrasDisponiveis =
+        obrasVisiveis.filter(
+            obra =>
+                !Boolean(
+                    obra.concluida
+                ) &&
+                !obrasComCronograma.has(
+                    String(
+                        obra.id
+                    )
+                )
+        );
+
+    /*
+    ================================================
+    OBRAS CONCLUÍDAS
+    ================================================
+    */
+
+    const obrasConcluidas =
+        obrasVisiveis.filter(
+            obra =>
+                Boolean(
+                    obra.concluida
+                )
+        );
+
+    /*
+    ================================================
+    RETORNO
+    ================================================
+    */
+
+    return {
+        cronogramas:
+            resultado,
+
+        obrasDisponiveis,
+
+        obrasConcluidas,
+    };
 }
 
 /*
@@ -1547,196 +1603,221 @@ CRIAR CRONOGRAMA
 */
 
 async function criarCronograma(
-  body: any,
-  acesso: any
+    body: any,
+    acesso: any
 ) {
-  const obraId =
-    validarId(
-      body?.obra_id ??
-        body?.obraId,
-      "Obra"
-    );
-
-  /*
-  ================================================
-  BUSCAR OBRA
-  ================================================
-  */
-
-  const obra =
-    await buscarObra(
-      obraId
-    );
-
-  /*
-  ================================================
-  VERIFICAR ACESSO
-  ================================================
-  */
-
-  const podeAcessar =
-    await usuarioPodeAcessarObra(
-      obra,
-      acesso
-    );
-
-  if (!podeAcessar) {
-    throw new Error(
-      "Você não possui permissão para criar um cronograma para esta obra."
-    );
-  }
-
-  /*
-  ================================================
-  VERIFICAR SE JÁ EXISTE
-  ================================================
-  */
-
-  const {
-    data: existente,
-    error: existenteError,
-  } =
-    await supabaseAdmin
-      .from("cronogramas")
-      .select(
-        "id"
-      )
-      .eq(
-        "obra_id",
-        obraId
-      )
-      .maybeSingle();
-
-  if (
-    existenteError
-  ) {
-    throw new Error(
-      existenteError.message
-    );
-  }
-
-  if (existente) {
-    throw new Error(
-      "Esta obra já possui um cronograma cadastrado."
-    );
-  }
-
-  /*
-  ================================================
-  CRIAR CRONOGRAMA PAI
-  ================================================
-  */
-
-  const agora =
-    new Date().toISOString();
-
-  const {
-    data: cronograma,
-    error: cronogramaError,
-  } =
-    await supabaseAdmin
-      .from("cronogramas")
-      .insert({
-        obra_id:
-          obraId,
-
-        created_at:
-          agora,
-
-        updated_at:
-          agora,
-      })
-      .select()
-      .single();
-
-  if (
-    cronogramaError
-  ) {
-    console.error(
-      "Erro ao criar cronograma:",
-      cronogramaError
-    );
-
-    throw new Error(
-      cronogramaError.message
-    );
-  }
-
-  /*
-  ================================================
-  CRIAR VERSÃO 1
-  ================================================
-  */
-
-  const {
-    data: versao,
-    error: versaoError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .insert({
-        cronograma_id:
-          cronograma.id,
-
-        numero:
-          1,
-
-        sharepoint_id:
-          null,
-
-        data_finalizacao_contrato:
-          null,
-
-        linhas:
-          linhasBase(),
-      })
-      .select()
-      .single();
-
-  if (
-    versaoError
-  ) {
-    console.error(
-      "Erro ao criar versão inicial:",
-      versaoError
-    );
+    const obraId =
+        validarId(
+            body?.obra_id ??
+            body?.obraId,
+            "Obra"
+        );
 
     /*
-    Tenta apagar o pai
+    ================================================
+    BUSCAR OBRA
+    ================================================
     */
 
-    await supabaseAdmin
-      .from(
-        "cronogramas"
-      )
-      .delete()
-      .eq(
-        "id",
-        cronograma.id
-      );
+    const obra =
+        await buscarObra(
+            obraId
+        );
 
-    throw new Error(
-      versaoError.message
-    );
-  }
+    /*
+    ================================================
+    VERIFICAR ACESSO
+    ================================================
+    */
 
-  return {
-    cronograma: {
-      ...cronograma,
-      obra,
-    },
+    const podeAcessar =
+        await usuarioPodeAcessarObra(
+            obra,
+            acesso
+        );
 
-    versao: {
-      ...versao,
+    if (
+        !podeAcessar
+    ) {
+        throw new Error(
+            "Você não possui permissão para criar um cronograma para esta obra."
+        );
+    }
 
-      updated_at:
-        agora,
-    },
+    /*
+    ================================================
+    NÃO PERMITIR OBRA CONCLUÍDA
+    ================================================
+    */
 
-    obra,
-  };
+    if (
+        Boolean(
+            obra.concluida
+        )
+    ) {
+        throw new Error(
+            "Não é possível criar um cronograma para uma obra concluída."
+        );
+    }
+
+    /*
+    ================================================
+    VERIFICAR SE JÁ EXISTE
+    ================================================
+    */
+
+    const {
+        data: existente,
+        error: existenteError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .select(
+                "id"
+            )
+            .eq(
+                "obra_id",
+                obraId
+            )
+            .maybeSingle();
+
+    if (
+        existenteError
+    ) {
+        throw new Error(
+            existenteError.message
+        );
+    }
+
+    if (
+        existente
+    ) {
+        throw new Error(
+            "Esta obra já possui um cronograma cadastrado."
+        );
+    }
+
+    /*
+    ================================================
+    CRIAR CRONOGRAMA PAI
+    ================================================
+    */
+
+    const agora =
+        new Date().toISOString();
+
+    const {
+        data: cronograma,
+        error: cronogramaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .insert({
+                obra_id:
+                    obraId,
+
+                created_at:
+                    agora,
+
+                updated_at:
+                    agora,
+            })
+            .select()
+            .single();
+
+    if (
+        cronogramaError
+    ) {
+        console.error(
+            "Erro ao criar cronograma:",
+            cronogramaError
+        );
+
+        throw new Error(
+            cronogramaError.message
+        );
+    }
+
+    /*
+    ================================================
+    CRIAR VERSÃO 1
+    ================================================
+    */
+
+    const {
+        data: versao,
+        error: versaoError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .insert({
+                cronograma_id:
+                    cronograma.id,
+
+                numero:
+                    1,
+
+                sharepoint_id:
+                    null,
+
+                data_finalizacao_contrato:
+                    null,
+
+                linhas:
+                    linhasBase(),
+            })
+            .select()
+            .single();
+
+    if (
+        versaoError
+    ) {
+        console.error(
+            "Erro ao criar versão inicial:",
+            versaoError
+        );
+
+        /*
+        =========================================
+        TENTA APAGAR O PAI
+        =========================================
+        */
+
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .delete()
+            .eq(
+                "id",
+                cronograma.id
+            );
+
+        throw new Error(
+            versaoError.message
+        );
+    }
+
+    return {
+        cronograma: {
+            ...cronograma,
+            obra,
+        },
+
+        versao: {
+            ...versao,
+            updated_at:
+                agora,
+        },
+
+        obra,
+    };
 }
 
 /*
@@ -1746,233 +1827,236 @@ BUSCAR CRONOGRAMA + VERSÃO
 */
 
 async function buscarCronograma(
-  cronogramaIdInput: any,
-  versaoIdInput: any,
-  acesso: any
+    cronogramaIdInput: any,
+    versaoIdInput: any,
+    acesso: any
 ) {
-  const cronogramaId =
-    validarId(
-      cronogramaIdInput,
-      "Cronograma"
-    );
+    const cronogramaId =
+        validarId(
+            cronogramaIdInput,
+            "Cronograma"
+        );
 
-  /*
-  ================================================
-  BUSCAR CRONOGRAMA
-  ================================================
-  */
-
-  const {
-    data: cronograma,
-    error: cronogramaError,
-  } =
-    await supabaseAdmin
-      .from("cronogramas")
-      .select(`
-        id,
-        obra_id,
-        created_at,
-        updated_at
-      `)
-      .eq(
-        "id",
-        cronogramaId
-      )
-      .maybeSingle();
-
-  if (
-    cronogramaError
-  ) {
-    throw new Error(
-      cronogramaError.message
-    );
-  }
-
-  if (!cronograma) {
-    throw new Error(
-      "Cronograma não encontrado."
-    );
-  }
-
-  /*
-  ================================================
-  BUSCAR OBRA
-  ================================================
-  */
-
-  const obra =
-    await buscarObra(
-      cronograma.obra_id
-    );
-
-  /*
-  ================================================
-  VALIDAR ACESSO
-  ================================================
-  */
-
-  const podeAcessar =
-    await usuarioPodeAcessarObra(
-      obra,
-      acesso
-    );
-
-  if (!podeAcessar) {
-    throw new Error(
-      "Você não possui permissão para acessar este cronograma."
-    );
-  }
-
-  /*
-  ================================================
-  BUSCAR VERSÃO
-  ================================================
-  */
-
-  let versao:
-    | any
-    | null =
-    null;
-
-  if (
-    versaoIdInput
-  ) {
-    const versaoId =
-      validarId(
-        versaoIdInput,
-        "Versão"
-      );
-
-    const {
-      data,
-      error,
-    } =
-      await supabaseAdmin
-        .from(
-          "cronograma_versoes"
-        )
-        .select(`
-          id,
-          cronograma_id,
-          numero,
-          sharepoint_id,
-          data_finalizacao_contrato,
-          linhas,
-          created_at
-        `)
-        .eq(
-          "id",
-          versaoId
-        )
-        .eq(
-          "cronograma_id",
-          cronogramaId
-        )
-        .maybeSingle();
-
-    if (error) {
-      throw new Error(
-        error.message
-      );
-    }
-
-    versao =
-      data;
-  } else {
     /*
-    Se não foi passada versão,
-    pega a mais recente.
+    ================================================
+    BUSCAR CRONOGRAMA
+    ================================================
     */
 
     const {
-      data,
-      error,
+        data: cronograma,
+        error: cronogramaError
     } =
-      await supabaseAdmin
-        .from(
-          "cronograma_versoes"
-        )
-        .select(`
-          id,
-          cronograma_id,
-          numero,
-          sharepoint_id,
-          data_finalizacao_contrato,
-          linhas,
-          created_at
-        `)
-        .eq(
-          "cronograma_id",
-          cronogramaId
-        )
-        .order(
-          "numero",
-          {
-            ascending:
-              false,
-          }
-        )
-        .limit(1)
-        .maybeSingle();
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .select(`
+                id,
+                obra_id,
+                created_at,
+                updated_at
+            `)
+            .eq(
+                "id",
+                cronogramaId
+            )
+            .maybeSingle();
 
-    if (error) {
-      throw new Error(
-        error.message
-      );
+    if (
+        cronogramaError
+    ) {
+        throw new Error(
+            cronogramaError.message
+        );
     }
 
-    versao =
-      data;
-  }
+    if (!cronograma) {
+        throw new Error(
+            "Cronograma não encontrado."
+        );
+    }
 
-  if (!versao) {
-    throw new Error(
-      "Versão do cronograma não encontrada."
-    );
-  }
+    /*
+    ================================================
+    BUSCAR OBRA
+    ================================================
+    */
 
-  /*
-  ================================================
-  ATUALIZADO EM
-  ================================================
-  
-  O timestamp é controlado no pai.
-  ================================================
-  */
+    const obra =
+        await buscarObra(
+            cronograma.obra_id
+        );
 
-  const atualizadoEm =
-    cronograma.updated_at ||
-    versao.created_at ||
-    null;
+    /*
+    ================================================
+    VALIDAR ACESSO
+    ================================================
+    */
 
-  const versaoFinal = {
-    ...versao,
+    const podeAcessar =
+        await usuarioPodeAcessarObra(
+            obra,
+            acesso
+        );
 
-    updated_at:
-      atualizadoEm,
-  };
+    if (
+        !podeAcessar
+    ) {
+        throw new Error(
+            "Você não possui permissão para acessar este cronograma."
+        );
+    }
 
-  /*
-  ================================================
-  CRONOGRAMA FINAL
-  ================================================
-  */
+    /*
+    ================================================
+    BUSCAR VERSÃO
+    ================================================
+    */
 
-  const cronogramaFinal = {
-    ...cronograma,
+    let versao:
+        | any
+        | null =
+        null;
 
-    obra,
-  };
+    if (
+        versaoIdInput
+    ) {
+        const versaoId =
+            validarId(
+                versaoIdInput,
+                "Versão"
+            );
 
-  return {
-    cronograma:
-      cronogramaFinal,
+        const {
+            data,
+            error
+        } =
+            await supabaseAdmin
+                .from(
+                    "cronograma_versoes"
+                )
+                .select(`
+                    id,
+                    cronograma_id,
+                    numero,
+                    sharepoint_id,
+                    data_finalizacao_contrato,
+                    linhas,
+                    created_at
+                `)
+                .eq(
+                    "id",
+                    versaoId
+                )
+                .eq(
+                    "cronograma_id",
+                    cronogramaId
+                )
+                .maybeSingle();
 
-    obra,
+        if (error) {
+            throw new Error(
+                error.message
+            );
+        }
 
-    versao:
-      versaoFinal,
-  };
+        versao =
+            data;
+    }
+    else {
+        /*
+        =============================================
+        PEGAR VERSÃO MAIS RECENTE
+        =============================================
+        */
+
+        const {
+            data,
+            error
+        } =
+            await supabaseAdmin
+                .from(
+                    "cronograma_versoes"
+                )
+                .select(`
+                    id,
+                    cronograma_id,
+                    numero,
+                    sharepoint_id,
+                    data_finalizacao_contrato,
+                    linhas,
+                    created_at
+                `)
+                .eq(
+                    "cronograma_id",
+                    cronogramaId
+                )
+                .order(
+                    "numero",
+                    {
+                        ascending: false,
+                    }
+                )
+                .limit(1)
+                .maybeSingle();
+
+        if (error) {
+            throw new Error(
+                error.message
+            );
+        }
+
+        versao =
+            data;
+    }
+
+    if (
+        !versao
+    ) {
+        throw new Error(
+            "Versão do cronograma não encontrada."
+        );
+    }
+
+    /*
+    ================================================
+    ATUALIZADO EM
+    ================================================
+    */
+
+    const atualizadoEm =
+        cronograma.updated_at ||
+        versao.created_at ||
+        null;
+
+    const versaoFinal = {
+        ...versao,
+
+        updated_at:
+            atualizadoEm,
+    };
+
+    /*
+    ================================================
+    CRONOGRAMA FINAL
+    ================================================
+    */
+
+    const cronogramaFinal = {
+        ...cronograma,
+        obra,
+    };
+
+    return {
+        cronograma:
+            cronogramaFinal,
+
+        obra,
+
+        versao:
+            versaoFinal,
+    };
 }
 
 /*
@@ -1982,183 +2066,177 @@ SALVAR VERSÃO EXISTENTE
 */
 
 async function salvarVersaoExistente(
-  body: any,
-  acesso: any
+    body: any,
+    acesso: any
 ) {
-  const cronogramaId =
-    validarId(
-      body?.cronograma_id ??
-        body?.cronogramaId,
-      "Cronograma"
-    );
+    const cronogramaId =
+        validarId(
+            body?.cronograma_id ??
+            body?.cronogramaId,
+            "Cronograma"
+        );
 
-  const versaoId =
-    validarId(
-      body?.versao_id ??
-        body?.versaoId,
-      "Versão"
-    );
+    const versaoId =
+        validarId(
+            body?.versao_id ??
+            body?.versaoId,
+            "Versão"
+        );
 
-  /*
-  ================================================
-  VALIDAR ACESSO + EXISTÊNCIA
-  ================================================
-  */
+    /*
+    ================================================
+    VALIDAR ACESSO + EXISTÊNCIA
+    ================================================
+    */
 
-  const atual =
-    await buscarCronograma(
-      cronogramaId,
-      versaoId,
-      acesso
-    );
+    const atual =
+        await buscarCronograma(
+            cronogramaId,
+            versaoId,
+            acesso
+        );
 
-  /*
-  ================================================
-  VALIDAR LINHAS
-  ================================================
-  */
+    /*
+    ================================================
+    VALIDAR LINHAS
+    ================================================
+    */
 
-  const linhas =
-    validarLinhas(
-      body?.linhas
-    );
+    const linhas =
+        validarLinhas(
+            body?.linhas
+        );
 
-  /*
-  ================================================
-  DADOS EDITÁVEIS
-  ================================================
-  */
+    /*
+    ================================================
+    DADOS EDITÁVEIS
+    ================================================
+    */
 
-  const sharepointId =
-    String(
-      body?.sharepoint_id ??
-        ""
-    ).trim();
+    const sharepointId =
+        String(
+            body?.sharepoint_id ??
+            ""
+        ).trim();
 
-  const dataFinalizacaoContrato =
-    body?.data_finalizacao_contrato ||
-    null;
+    const dataFinalizacaoContrato =
+        body?.data_finalizacao_contrato ||
+        null;
 
-  /*
-  ================================================
-  ATUALIZAR VERSÃO
-  ================================================
-  */
+    /*
+    ================================================
+    ATUALIZAR VERSÃO
+    ================================================
+    */
 
-  const {
-    data: versaoAtualizada,
-    error: versaoError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .update({
-        sharepoint_id:
-          sharepointId ||
-          null,
+    const {
+        data: versaoAtualizada,
+        error: versaoError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .update({
+                sharepoint_id:
+                    sharepointId ||
+                    null,
 
-        data_finalizacao_contrato:
-          dataFinalizacaoContrato,
+                data_finalizacao_contrato:
+                    dataFinalizacaoContrato,
 
-        linhas:
-          linhas,
-      })
-      .eq(
-        "id",
-        versaoId
-      )
-      .eq(
-        "cronograma_id",
-        cronogramaId
-      )
-      .select()
-      .single();
+                linhas:
+                    linhas,
+            })
+            .eq(
+                "id",
+                versaoId
+            )
+            .eq(
+                "cronograma_id",
+                cronogramaId
+            )
+            .select()
+            .single();
 
-  if (
-    versaoError
-  ) {
-    console.error(
-      "ERRO AO SALVAR VERSÃO:",
-      versaoError
-    );
+    if (
+        versaoError
+    ) {
+        console.error(
+            "ERRO AO SALVAR VERSÃO:",
+            versaoError
+        );
 
-    throw new Error(
-      `Erro ao salvar a versão: ${versaoError.message}`
-    );
-  }
+        throw new Error(
+            `Erro ao salvar a versão: ${versaoError.message}`
+        );
+    }
 
-  /*
-  ================================================
-  ATUALIZAR DATA DO CRONOGRAMA
-  ================================================
-  */
+    /*
+    ================================================
+    ATUALIZAR DATA DO CRONOGRAMA
+    ================================================
+    */
 
-  const agora =
-    new Date().toISOString();
+    const agora =
+        new Date().toISOString();
 
-  const {
-    data: cronogramaAtualizado,
-    error: cronogramaError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronogramas"
-      )
-      .update({
-        updated_at:
-          agora,
-      })
-      .eq(
-        "id",
-        cronogramaId
-      )
-      .select()
-      .single();
+    const {
+        data: cronogramaAtualizado,
+        error: cronogramaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .update({
+                updated_at:
+                    agora,
+            })
+            .eq(
+                "id",
+                cronogramaId
+            )
+            .select()
+            .single();
 
-  if (
-    cronogramaError
-  ) {
-    console.error(
-      "ERRO AO ATUALIZAR CRONOGRAMA:",
-      cronogramaError
-    );
+    if (
+        cronogramaError
+    ) {
+        console.error(
+            "ERRO AO ATUALIZAR CRONOGRAMA:",
+            cronogramaError
+        );
 
-    throw new Error(
-      `Erro ao atualizar data do cronograma: ${cronogramaError.message}`
-    );
-  }
+        throw new Error(
+            `Erro ao atualizar data do cronograma: ${cronogramaError.message}`
+        );
+    }
 
-  /*
-  ================================================
-  RETORNO
-  ================================================
-  */
+    return {
+        success:
+            true,
 
-  return {
-    success:
-      true,
+        message:
+            "Cronograma salvo com sucesso.",
 
-    message:
-      "Cronograma salvo com sucesso.",
+        versao: {
+            ...versaoAtualizada,
 
-    versao: {
-      ...versaoAtualizada,
+            updated_at:
+                agora,
+        },
 
-      updated_at:
-        agora,
-    },
+        cronograma: {
+            ...cronogramaAtualizado,
 
-    cronograma: {
-      ...cronogramaAtualizado,
+            obra:
+                atual.obra,
+        },
 
-      obra:
-        atual.obra,
-    },
-
-    obra:
-      atual.obra,
-  };
+        obra:
+            atual.obra,
+    };
 }
 
 /*
@@ -2168,224 +2246,220 @@ CRIAR NOVA VERSÃO
 */
 
 async function criarNovaVersao(
-  body: any,
-  acesso: any
+    body: any,
+    acesso: any
 ) {
-  const cronogramaId =
-    validarId(
-      body?.cronograma_id ??
-        body?.cronogramaId,
-      "Cronograma"
-    );
+    const cronogramaId =
+        validarId(
+            body?.cronograma_id ??
+            body?.cronogramaId,
+            "Cronograma"
+        );
 
-  const origemVersaoId =
-    body?.origem_versao_id ??
-    body?.origemVersaoId ??
-    body?.versao_id ??
-    body?.versaoId;
+    const origemVersaoId =
+        body?.origem_versao_id ??
+        body?.origemVersaoId ??
+        body?.versao_id ??
+        body?.versaoId;
 
-  /*
-  ================================================
-  BUSCAR ORIGEM
-  ================================================
-  */
+    /*
+    ================================================
+    BUSCAR ORIGEM
+    ================================================
+    */
 
-  const atual =
-    await buscarCronograma(
-      cronogramaId,
-      origemVersaoId
-        ? validarId(
-            origemVersaoId,
-            "Versão"
-          )
-        : null,
-      acesso
-    );
+    const atual =
+        await buscarCronograma(
+            cronogramaId,
 
-  const versaoOrigem =
-    atual.versao;
+            origemVersaoId
+                ? validarId(
+                    origemVersaoId,
+                    "Versão"
+                )
+                : null,
 
-  /*
-  ================================================
-  PEGAR MAIOR NÚMERO
-  ================================================
-  */
+            acesso
+        );
 
-  const {
-    data: ultima,
-    error: ultimaError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .select(
-        "numero"
-      )
-      .eq(
-        "cronograma_id",
-        cronogramaId
-      )
-      .order(
-        "numero",
-        {
-          ascending:
-            false,
-        }
-      )
-      .limit(1)
-      .maybeSingle();
+    const versaoOrigem =
+        atual.versao;
 
-  if (
-    ultimaError
-  ) {
-    throw new Error(
-      ultimaError.message
-    );
-  }
+    /*
+    ================================================
+    PEGAR MAIOR NÚMERO
+    ================================================
+    */
 
-  const proximoNumero =
-    Number(
-      ultima?.numero ||
-        0
-    ) + 1;
+    const {
+        data: ultima,
+        error: ultimaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .select(
+                "numero"
+            )
+            .eq(
+                "cronograma_id",
+                cronogramaId
+            )
+            .order(
+                "numero",
+                {
+                    ascending:
+                        false,
+                }
+            )
+            .limit(1)
+            .maybeSingle();
 
-  /*
-  ================================================
-  COPIAR LINHAS
-  ================================================
-  */
+    if (
+        ultimaError
+    ) {
+        throw new Error(
+            ultimaError.message
+        );
+    }
 
-  const linhasOriginais =
-    validarLinhas(
-      versaoOrigem?.linhas ||
-        []
-    );
+    const proximoNumero =
+        Number(
+            ultima?.numero ||
+            0
+        ) + 1;
 
-  const novasLinhas =
-    linhasOriginais.map(
-      linha => ({
-        ...linha,
+    /*
+    ================================================
+    COPIAR LINHAS
+    ================================================
+    */
 
-        id:
-          crypto.randomUUID(),
-      })
-    );
+    const linhasOriginais =
+        validarLinhas(
+            versaoOrigem?.linhas ||
+            []
+        );
 
-  /*
-  ================================================
-  CRIAR NOVA VERSÃO
-  ================================================
-  */
+    const novasLinhas =
+        linhasOriginais.map(
+            linha => ({
+                ...linha,
 
-  const {
-    data: versao,
-    error: versaoError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .insert({
-        cronograma_id:
-          cronogramaId,
+                id:
+                    crypto.randomUUID(),
+            })
+        );
 
-        numero:
-          proximoNumero,
+    /*
+    ================================================
+    CRIAR NOVA VERSÃO
+    ================================================
+    */
 
-        sharepoint_id:
-          versaoOrigem?.sharepoint_id ||
-          null,
+    const {
+        data: versao,
+        error: versaoError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .insert({
+                cronograma_id:
+                    cronogramaId,
 
-        data_finalizacao_contrato:
-          versaoOrigem?.data_finalizacao_contrato ||
-          null,
+                numero:
+                    proximoNumero,
 
-        linhas:
-          novasLinhas,
-      })
-      .select()
-      .single();
+                sharepoint_id:
+                    versaoOrigem?.sharepoint_id ||
+                    null,
 
-  if (
-    versaoError
-  ) {
-    console.error(
-      "ERRO AO CRIAR NOVA VERSÃO:",
-      versaoError
-    );
+                data_finalizacao_contrato:
+                    versaoOrigem?.data_finalizacao_contrato ||
+                    null,
 
-    throw new Error(
-      `Erro ao criar nova versão: ${versaoError.message}`
-    );
-  }
+                linhas:
+                    novasLinhas,
+            })
+            .select()
+            .single();
 
-  /*
-  ================================================
-  ATUALIZAR PAI
-  ================================================
-  */
+    if (
+        versaoError
+    ) {
+        console.error(
+            "ERRO AO CRIAR NOVA VERSÃO:",
+            versaoError
+        );
 
-  const agora =
-    new Date().toISOString();
+        throw new Error(
+            `Erro ao criar nova versão: ${versaoError.message}`
+        );
+    }
 
-  const {
-    data: cronogramaAtualizado,
-    error: cronogramaError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronogramas"
-      )
-      .update({
-        updated_at:
-          agora,
-      })
-      .eq(
-        "id",
-        cronogramaId
-      )
-      .select()
-      .single();
+    /*
+    ================================================
+    ATUALIZAR PAI
+    ================================================
+    */
 
-  if (
-    cronogramaError
-  ) {
-    throw new Error(
-      `Erro ao atualizar cronograma: ${cronogramaError.message}`
-    );
-  }
+    const agora =
+        new Date().toISOString();
 
-  /*
-  ================================================
-  RETORNO
-  ================================================
-  */
+    const {
+        data: cronogramaAtualizado,
+        error: cronogramaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .update({
+                updated_at:
+                    agora,
+            })
+            .eq(
+                "id",
+                cronogramaId
+            )
+            .select()
+            .single();
 
-  return {
-    success:
-      true,
+    if (
+        cronogramaError
+    ) {
+        throw new Error(
+            `Erro ao atualizar cronograma: ${cronogramaError.message}`
+        );
+    }
 
-    message:
-      `Versão ${proximoNumero} criada com sucesso.`,
+    return {
+        success:
+            true,
 
-    versao: {
-      ...versao,
+        message:
+            `Versão ${proximoNumero} criada com sucesso.`,
 
-      updated_at:
-        agora,
-    },
+        versao: {
+            ...versao,
 
-    cronograma: {
-      ...cronogramaAtualizado,
+            updated_at:
+                agora,
+        },
 
-      obra:
-        atual.obra,
-    },
+        cronograma: {
+            ...cronogramaAtualizado,
 
-    obra:
-      atual.obra,
-  };
+            obra:
+                atual.obra,
+        },
+
+        obra:
+            atual.obra,
+    };
 }
 
 /*
@@ -2395,220 +2469,222 @@ EXCLUIR VERSÃO
 */
 
 async function excluirVersao(
-  body: any,
-  acesso: any
+    body: any,
+    acesso: any
 ) {
-  const versaoId =
-    validarId(
-      body?.versao_id ??
-        body?.versaoId,
-      "Versão"
+    const versaoId =
+        validarId(
+            body?.versao_id ??
+            body?.versaoId,
+            "Versão"
+        );
+
+    /*
+    ================================================
+    BUSCAR VERSÃO
+    ================================================
+    */
+
+    const {
+        data: versao,
+        error: versaoError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .select(`
+                id,
+                cronograma_id,
+                numero
+            `)
+            .eq(
+                "id",
+                versaoId
+            )
+            .maybeSingle();
+
+    if (
+        versaoError
+    ) {
+        throw new Error(
+            versaoError.message
+        );
+    }
+
+    if (
+        !versao
+    ) {
+        throw new Error(
+            "Versão não encontrada."
+        );
+    }
+
+    /*
+    ================================================
+    VALIDAR ACESSO
+    ================================================
+    */
+
+    await buscarCronograma(
+        versao.cronograma_id,
+        versao.id,
+        acesso
     );
 
-  /*
-  ================================================
-  BUSCAR VERSÃO
-  ================================================
-  */
+    /*
+    ================================================
+    CONTAR VERSÕES
+    ================================================
+    */
 
-  const {
-    data: versao,
-    error: versaoError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .select(`
-        id,
-        cronograma_id,
-        numero
-      `)
-      .eq(
-        "id",
-        versaoId
-      )
-      .maybeSingle();
+    const {
+        count,
+        error: countError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .select(
+                "id",
+                {
+                    count:
+                        "exact",
+                    head:
+                        true,
+                }
+            )
+            .eq(
+                "cronograma_id",
+                versao.cronograma_id
+            );
 
-  if (
-    versaoError
-  ) {
-    throw new Error(
-      versaoError.message
-    );
-  }
+    if (
+        countError
+    ) {
+        throw new Error(
+            countError.message
+        );
+    }
 
-  if (!versao) {
-    throw new Error(
-      "Versão não encontrada."
-    );
-  }
+    if (
+        Number(
+            count || 0
+        ) <= 1
+    ) {
+        throw new Error(
+            "O cronograma precisa possuir pelo menos uma versão."
+        );
+    }
 
-  /*
-  ================================================
-  VALIDAR ACESSO
-  ================================================
-  */
+    /*
+    ================================================
+    EXCLUIR
+    ================================================
+    */
 
-  await buscarCronograma(
-    versao.cronograma_id,
-    versao.id,
-    acesso
-  );
+    const {
+        error: deleteError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .delete()
+            .eq(
+                "id",
+                versaoId
+            );
 
-  /*
-  ================================================
-  CONTAR VERSÕES
-  ================================================
-  */
+    if (
+        deleteError
+    ) {
+        throw new Error(
+            deleteError.message
+        );
+    }
 
-  const {
-    count,
-    error: countError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .select(
-        "id",
-        {
-          count:
-            "exact",
-          head:
+    /*
+    ================================================
+    PEGAR ÚLTIMA VERSÃO
+    ================================================
+    */
+
+    const {
+        data: ultima,
+        error: ultimaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .select(
+                "created_at"
+            )
+            .eq(
+                "cronograma_id",
+                versao.cronograma_id
+            )
+            .order(
+                "numero",
+                {
+                    ascending:
+                        false,
+                }
+            )
+            .limit(1)
+            .maybeSingle();
+
+    if (
+        ultimaError
+    ) {
+        throw new Error(
+            ultimaError.message
+        );
+    }
+
+    const novaData =
+        ultima?.created_at ||
+        new Date().toISOString();
+
+    /*
+    ================================================
+    ATUALIZAR PAI
+    ================================================
+    */
+
+    const {
+        error: updateError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .update({
+                updated_at:
+                    novaData,
+            })
+            .eq(
+                "id",
+                versao.cronograma_id
+            );
+
+    if (
+        updateError
+    ) {
+        throw new Error(
+            updateError.message
+        );
+    }
+
+    return {
+        success:
             true,
-        }
-      )
-      .eq(
-        "cronograma_id",
-        versao.cronograma_id
-      );
 
-  if (
-    countError
-  ) {
-    throw new Error(
-      countError.message
-    );
-  }
-
-  if (
-    Number(
-      count || 0
-    ) <= 1
-  ) {
-    throw new Error(
-      "O cronograma precisa possuir pelo menos uma versão."
-    );
-  }
-
-  /*
-  ================================================
-  EXCLUIR
-  ================================================
-  */
-
-  const {
-    error: deleteError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .delete()
-      .eq(
-        "id",
-        versaoId
-      );
-
-  if (
-    deleteError
-  ) {
-    throw new Error(
-      deleteError.message
-    );
-  }
-
-  /*
-  ================================================
-  PEGAR ÚLTIMA VERSÃO
-  ================================================
-  */
-
-  const {
-    data: ultima,
-    error: ultimaError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .select(
-        "created_at"
-      )
-      .eq(
-        "cronograma_id",
-        versao.cronograma_id
-      )
-      .order(
-        "numero",
-        {
-          ascending:
-            false,
-        }
-      )
-      .limit(1)
-      .maybeSingle();
-
-  if (
-    ultimaError
-  ) {
-    throw new Error(
-      ultimaError.message
-    );
-  }
-
-  const novaData =
-    ultima?.created_at ||
-    new Date().toISOString();
-
-  /*
-  ================================================
-  ATUALIZAR PAI
-  ================================================
-  */
-
-  const {
-    error: updateError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronogramas"
-      )
-      .update({
-        updated_at:
-          novaData,
-      })
-      .eq(
-        "id",
-        versao.cronograma_id
-      );
-
-  if (
-    updateError
-  ) {
-    throw new Error(
-      updateError.message
-    );
-  }
-
-  return {
-    success:
-      true,
-
-    message:
-      "Versão excluída com sucesso.",
-  };
+        message:
+            "Versão excluída com sucesso.",
+    };
 }
 
 /*
@@ -2618,89 +2694,89 @@ EXCLUIR CRONOGRAMA INTEIRO
 */
 
 async function excluirCronograma(
-  body: any,
-  acesso: any
+    body: any,
+    acesso: any
 ) {
-  const cronogramaId =
-    validarId(
-      body?.cronograma_id ??
-        body?.cronogramaId,
-      "Cronograma"
+    const cronogramaId =
+        validarId(
+            body?.cronograma_id ??
+            body?.cronogramaId,
+            "Cronograma"
+        );
+
+    /*
+    ================================================
+    VALIDAR ACESSO
+    ================================================
+    */
+
+    await buscarCronograma(
+        cronogramaId,
+        null,
+        acesso
     );
 
-  /*
-  ================================================
-  VALIDAR ACESSO
-  ================================================
-  */
+    /*
+    ================================================
+    EXCLUIR VERSÕES
+    ================================================
+    */
 
-  await buscarCronograma(
-    cronogramaId,
-    null,
-    acesso
-  );
+    const {
+        error: deleteVersoesError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronograma_versoes"
+            )
+            .delete()
+            .eq(
+                "cronograma_id",
+                cronogramaId
+            );
 
-  /*
-  ================================================
-  EXCLUIR VERSÕES
-  ================================================
-  */
+    if (
+        deleteVersoesError
+    ) {
+        throw new Error(
+            deleteVersoesError.message
+        );
+    }
 
-  const {
-    error: deleteVersoesError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronograma_versoes"
-      )
-      .delete()
-      .eq(
-        "cronograma_id",
-        cronogramaId
-      );
+    /*
+    ================================================
+    EXCLUIR CRONOGRAMA
+    ================================================
+    */
 
-  if (
-    deleteVersoesError
-  ) {
-    throw new Error(
-      deleteVersoesError.message
-    );
-  }
+    const {
+        error: deleteCronogramaError
+    } =
+        await supabaseAdmin
+            .from(
+                "cronogramas"
+            )
+            .delete()
+            .eq(
+                "id",
+                cronogramaId
+            );
 
-  /*
-  ================================================
-  EXCLUIR CRONOGRAMA
-  ================================================
-  */
+    if (
+        deleteCronogramaError
+    ) {
+        throw new Error(
+            deleteCronogramaError.message
+        );
+    }
 
-  const {
-    error: deleteCronogramaError,
-  } =
-    await supabaseAdmin
-      .from(
-        "cronogramas"
-      )
-      .delete()
-      .eq(
-        "id",
-        cronogramaId
-      );
+    return {
+        success:
+            true,
 
-  if (
-    deleteCronogramaError
-  ) {
-    throw new Error(
-      deleteCronogramaError.message
-    );
-  }
-
-  return {
-    success:
-      true,
-
-    message:
-      "Cronograma excluído com sucesso.",
-  };
+        message:
+            "Cronograma excluído com sucesso.",
+    };
 }
 
 /*
@@ -2710,344 +2786,343 @@ HANDLER
 */
 
 Deno.serve(
-  async (
-    req
-  ) => {
-    /*
-    ===============================================
-    CORS
-    ===============================================
-    */
+    async (
+        req
+    ) => {
+        /*
+        =============================================
+        CORS
+        =============================================
+        */
 
-    if (
-      req.method ===
-      "OPTIONS"
-    ) {
-      return new Response(
-        "ok",
-        {
-          headers:
-            corsHeaders,
-        }
-      );
-    }
-
-    try {
-      /*
-      =============================================
-      ACESSO
-      =============================================
-      */
-
-      const acesso =
-        await verificarAcesso(
-          req
-        );
-
-      /*
-      =============================================
-      BODY
-      =============================================
-      */
-
-      let body: any =
-        {};
-
-      if (
-        req.method !==
-        "GET"
-      ) {
-        try {
-          body =
-            await req.json();
-        } catch (
-          error
+        if (
+            req.method ===
+            "OPTIONS"
         ) {
-          console.error(
-            "Erro ao ler JSON:",
-            error
-          );
-
-          throw new Error(
-            "Corpo da requisição inválido."
-          );
+            return new Response(
+                "ok",
+                {
+                    headers:
+                        corsHeaders,
+                }
+            );
         }
-      }
 
-      /*
-      =============================================
-      ACTION
-      =============================================
-      */
+        try {
+            /*
+            =========================================
+            ACESSO
+            =========================================
+            */
 
-      const action =
-        body?.action ||
-        (
-          req.method ===
-          "GET"
-            ? "list"
-            : ""
-        );
+            const acesso =
+                await verificarAcesso(
+                    req
+                );
 
-      console.log(
-        "===================================="
-      );
+            /*
+            =========================================
+            BODY
+            =========================================
+            */
 
-      console.log(
-        "ADMIN-CRONOGRAMAS"
-      );
+            let body: any =
+                {};
 
-      console.log(
-        "ACTION:",
-        action
-      );
+            if (
+                req.method !==
+                "GET"
+            ) {
+                try {
+                    body =
+                        await req.json();
+                }
+                catch (
+                    error
+                ) {
+                    console.error(
+                        "Erro ao ler JSON:",
+                        error
+                    );
 
-      console.log(
-        "BODY:",
-        JSON.stringify(
-          body
-        )
-      );
+                    throw new Error(
+                        "Corpo da requisição inválido."
+                    );
+                }
+            }
 
-      console.log(
-        "===================================="
-      );
+            /*
+            =========================================
+            ACTION
+            =========================================
+            */
 
-      /*
-      =============================================
-      LIST
-      =============================================
-      */
+            const action =
+                body?.action ||
+                (
+                    req.method ===
+                    "GET"
+                        ? "list"
+                        : ""
+                );
 
-      if (
-        action ===
-        "list"
-      ) {
-        const resultado =
-          await listarCronogramas(
-            acesso
-          );
+            console.log(
+                "===================================="
+            );
 
-        return jsonResponse({
-          success:
-            true,
+            console.log(
+                "ADMIN-CRONOGRAMAS"
+            );
 
-          ...resultado,
-        });
-      }
+            console.log(
+                "ACTION:",
+                action
+            );
 
-      /*
-      =============================================
-      CREATE
-      =============================================
-      */
+            console.log(
+                "BODY:",
+                JSON.stringify(
+                    body
+                )
+            );
 
-      if (
-        action ===
-        "create"
-      ) {
-        const resultado =
-          await criarCronograma(
-            body,
-            acesso
-          );
+            console.log(
+                "===================================="
+            );
 
-        return jsonResponse(
-          {
-            success:
-              true,
+            /*
+            =========================================
+            LIST
+            =========================================
+            */
 
-            ...resultado,
-          },
-          201
-        );
-      }
+            if (
+                action ===
+                "list"
+            ) {
+                const resultado =
+                    await listarCronogramas(
+                        acesso
+                    );
 
-      /*
-      =============================================
-      GET VERSION
-      =============================================
-      
-      Compatibilidade com:
-      
-      action: "get_version"
-      
-      usado pelo Cronograma.jsx
-      =============================================
-      */
+                return jsonResponse({
+                    success:
+                        true,
 
-      if (
-        action ===
-          "get_version" ||
-        action ===
-          "get"
-      ) {
-        const resultado =
-          await buscarCronograma(
-            body?.cronograma_id ??
-              body?.cronogramaId,
+                    ...resultado,
 
-            body?.versao_id ??
-              body?.versaoId,
+                    /*
+                    compatibilidade:
+                    */
 
-            acesso
-          );
+                    obrasDisponiveis:
+                        resultado.obrasDisponiveis,
 
-        return jsonResponse({
-          success:
-            true,
+                    obrasConcluidas:
+                        resultado.obrasConcluidas,
+                });
+            }
 
-          ...resultado,
-        });
-      }
+            /*
+            =========================================
+            CREATE
+            =========================================
+            */
 
-      /*
-      =============================================
-      SAVE VERSION
-      =============================================
-      
-      Edita a versão existente.
-      
-      NÃO cria outra versão.
-      =============================================
-      */
+            if (
+                action ===
+                "create"
+            ) {
+                const resultado =
+                    await criarCronograma(
+                        body,
+                        acesso
+                    );
 
-      if (
-        action ===
-          "save_version" ||
-        action ===
-          "save"
-      ) {
-        const resultado =
-          await salvarVersaoExistente(
-            body,
-            acesso
-          );
+                return jsonResponse(
+                    {
+                        success:
+                            true,
+                        ...resultado,
+                    },
+                    201
+                );
+            }
 
-        return jsonResponse({
-          success:
-            true,
+            /*
+            =========================================
+            GET VERSION
+            =========================================
+            */
 
-          ...resultado,
-        });
-      }
+            if (
+                action ===
+                    "get_version" ||
+                action ===
+                    "get"
+            ) {
+                const resultado =
+                    await buscarCronograma(
+                        body?.cronograma_id ??
+                        body?.cronogramaId,
 
-      /*
-      =============================================
-      CREATE VERSION
-      =============================================
-      */
+                        body?.versao_id ??
+                        body?.versaoId,
 
-      if (
-        action ===
-        "create_version"
-      ) {
-        const resultado =
-          await criarNovaVersao(
-            body,
-            acesso
-          );
+                        acesso
+                    );
 
-        return jsonResponse(
-          {
-            success:
-              true,
+                return jsonResponse({
+                    success:
+                        true,
 
-            ...resultado,
-          },
-          201
-        );
-      }
+                    ...resultado,
+                });
+            }
 
-      /*
-      =============================================
-      DELETE VERSION
-      =============================================
-      */
+            /*
+            =========================================
+            SAVE VERSION
+            =========================================
+            */
 
-      if (
-        action ===
-        "delete_version"
-      ) {
-        const resultado =
-          await excluirVersao(
-            body,
-            acesso
-          );
+            if (
+                action ===
+                    "save_version" ||
+                action ===
+                    "save"
+            ) {
+                const resultado =
+                    await salvarVersaoExistente(
+                        body,
+                        acesso
+                    );
 
-        return jsonResponse(
-          resultado
-        );
-      }
+                return jsonResponse({
+                    success:
+                        true,
 
-      /*
-      =============================================
-      DELETE CRONOGRAMA
-      =============================================
-      */
+                    ...resultado,
+                });
+            }
 
-      if (
-        action ===
-        "delete"
-      ) {
-        const resultado =
-          await excluirCronograma(
-            body,
-            acesso
-          );
+            /*
+            =========================================
+            CREATE VERSION
+            =========================================
+            */
 
-        return jsonResponse(
-          resultado
-        );
-      }
+            if (
+                action ===
+                "create_version"
+            ) {
+                const resultado =
+                    await criarNovaVersao(
+                        body,
+                        acesso
+                    );
 
-      /*
-      =============================================
-      AÇÃO NÃO RECONHECIDA
-      =============================================
-      */
+                return jsonResponse(
+                    {
+                        success:
+                            true,
 
-      return jsonResponse(
-        {
-          success:
-            false,
+                        ...resultado,
+                    },
+                    201
+                );
+            }
 
-          error:
-            `Ação "${action}" não reconhecida.`,
-        },
-        400
-      );
-    } catch (
-      error
-    ) {
-      console.error(
-        "===================================="
-      );
+            /*
+            =========================================
+            DELETE VERSION
+            =========================================
+            */
 
-      console.error(
-        "ADMIN-CRONOGRAMAS ERROR:"
-      );
+            if (
+                action ===
+                "delete_version"
+            ) {
+                const resultado =
+                    await excluirVersao(
+                        body,
+                        acesso
+                    );
 
-      console.error(
-        error
-      );
+                return jsonResponse(
+                    resultado
+                );
+            }
 
-      console.error(
-        "===================================="
-      );
+            /*
+            =========================================
+            DELETE CRONOGRAMA
+            =========================================
+            */
 
-      return jsonResponse(
-        {
-          success:
-            false,
+            if (
+                action ===
+                "delete"
+            ) {
+                const resultado =
+                    await excluirCronograma(
+                        body,
+                        acesso
+                    );
 
-          error:
-            mensagemErro(
-              error
-            ),
-        },
-        400
-      );
+                return jsonResponse(
+                    resultado
+                );
+            }
+
+            /*
+            =========================================
+            AÇÃO NÃO RECONHECIDA
+            =========================================
+            */
+
+            return jsonResponse(
+                {
+                    success:
+                        false,
+
+                    error:
+                        `Ação "${action}" não reconhecida.`,
+                },
+                400
+            );
+        }
+        catch (
+            error
+        ) {
+            console.error(
+                "===================================="
+            );
+
+            console.error(
+                "ADMIN-CRONOGRAMAS ERROR:"
+            );
+
+            console.error(
+                error
+            );
+
+            console.error(
+                "===================================="
+            );
+
+            return jsonResponse(
+                {
+                    success:
+                        false,
+
+                    error:
+                        mensagemErro(
+                            error
+                        ),
+                },
+                400
+            );
+        }
     }
-  }
 );

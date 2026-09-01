@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+
 /*
 =====================================================
 CORS
@@ -7,11 +8,15 @@ CORS
 */
 
 const corsHeaders = {
+
     "Access-Control-Allow-Origin": "*",
+
     "Access-Control-Allow-Headers":
         "authorization, x-client-info, apikey, content-type",
+
     "Access-Control-Allow-Methods":
         "GET, POST, PUT, DELETE, OPTIONS",
+
 };
 
 
@@ -67,16 +72,28 @@ function jsonResponse(
     data: unknown,
     status = 200
 ) {
+
     return new Response(
+
         JSON.stringify(data),
+
         {
+
             status,
+
             headers: {
+
                 ...corsHeaders,
-                "Content-Type": "application/json",
+
+                "Content-Type":
+                    "application/json",
+
             },
+
         }
+
     );
+
 }
 
 
@@ -89,11 +106,13 @@ NORMALIZAR TEXTO
 function normalizarTexto(
     valor: unknown
 ) {
+
     return String(
         valor ?? ""
     )
         .trim()
         .toLowerCase();
+
 }
 
 
@@ -106,12 +125,19 @@ NORMALIZAR BOOLEAN
 function normalizarBoolean(
     valor: unknown
 ) {
+
     return (
+
         valor === true ||
+
         valor === "true" ||
+
         valor === 1 ||
+
         valor === "1"
+
     );
+
 }
 
 
@@ -136,10 +162,13 @@ async function verificarProducao(
             "Authorization"
         );
 
+
     if (!authHeader) {
+
         throw new Error(
             "Usuário não autenticado."
         );
+
     }
 
 
@@ -157,10 +186,13 @@ async function verificarProducao(
             )
             .trim();
 
+
     if (!token) {
+
         throw new Error(
             "Token de autenticação não encontrado."
         );
+
     }
 
 
@@ -171,20 +203,28 @@ async function verificarProducao(
     */
 
     const {
+
         data: {
             user
         },
+
         error
+
     } =
+
         await supabaseAuth
             .auth
             .getUser(
                 token
             );
 
+
     if (
+
         error ||
+
         !user
+
     ) {
 
         console.error(
@@ -192,9 +232,11 @@ async function verificarProducao(
             error
         );
 
+
         throw new Error(
             "Sessão inválida ou expirada."
         );
+
     }
 
 
@@ -205,9 +247,13 @@ async function verificarProducao(
     */
 
     const {
+
         data: userRole,
+
         error: roleError
+
     } =
+
         await supabaseAdmin
             .from("user_roles")
             .select(`
@@ -223,6 +269,7 @@ async function verificarProducao(
             )
             .maybeSingle();
 
+
     if (roleError) {
 
         console.error(
@@ -230,9 +277,11 @@ async function verificarProducao(
             roleError
         );
 
+
         throw new Error(
             "Não foi possível verificar a permissão."
         );
+
     }
 
 
@@ -243,13 +292,18 @@ async function verificarProducao(
     */
 
     const roleNome =
+
         Array.isArray(
             userRole?.roles
         )
+
             ? userRole?.roles?.[0]?.nome
+
             : userRole?.roles?.nome;
 
+
     const roleId =
+
         Number(
             userRole?.role_id
         );
@@ -262,9 +316,13 @@ async function verificarProducao(
     */
 
     const {
+
         data: profile,
+
         error: profileError
+
     } =
+
         await supabaseAdmin
             .from("profiles")
             .select(`
@@ -280,6 +338,7 @@ async function verificarProducao(
             )
             .maybeSingle();
 
+
     if (profileError) {
 
         console.error(
@@ -287,9 +346,11 @@ async function verificarProducao(
             profileError
         );
 
+
         throw new Error(
             "Não foi possível carregar o perfil do usuário."
         );
+
     }
 
 
@@ -306,15 +367,19 @@ async function verificarProducao(
 
     ROLE 3 normal
     → somente relacionadas ao username.
-
     =================================================
     */
 
     const podeVerTodasObras =
+
         roleId === 1 ||
+
         (
+
             roleId === 3 &&
+
             profile?.pode_ver_todas_obras === true
+
         );
 
 
@@ -325,13 +390,17 @@ async function verificarProducao(
     */
 
     if (
+
         roleId !== 1 &&
+
         roleId !== 3
+
     ) {
 
         throw new Error(
             "Você não possui permissão para acessar as obras."
         );
+
     }
 
 
@@ -411,6 +480,7 @@ async function verificarProducao(
         podeVerTodasObras
 
     };
+
 }
 
 
@@ -425,25 +495,32 @@ function normalizarObra(
 ) {
 
     const nome =
+
         String(
             body?.nome ??
             ""
         ).trim();
 
+
     const endereco =
+
         String(
             body?.endereco ??
             ""
         ).trim();
 
+
     const cliente_nome =
+
         String(
             body?.cliente_nome ??
             body?.cliente ??
             ""
         ).trim();
 
+
     const arquiteto_empresa =
+
         String(
             body?.arquiteto_empresa ??
             body?.arquiteto ??
@@ -451,9 +528,26 @@ function normalizarObra(
             ""
         ).trim();
 
+
     const data_inicio_esperada =
+
         body?.data_inicio_esperada ||
+
         null;
+
+
+    /*
+    =================================================
+    FASE
+    =================================================
+    */
+
+    const fase =
+
+        String(
+            body?.fase ??
+            ""
+        ).trim();
 
 
     /*
@@ -465,18 +559,28 @@ function normalizarObra(
     let valor =
         body?.valor;
 
+
     if (
+
         valor === "" ||
+
         valor === undefined ||
+
         valor === null
+
     ) {
+
         valor = null;
+
     }
+
     else {
+
         valor =
             Number(
                 valor
             );
+
     }
 
 
@@ -487,20 +591,25 @@ function normalizarObra(
     */
 
     const rdo_nome =
+
         String(
             body?.rdo_nome ??
             body?.rdo ??
             ""
         ).trim();
 
+
     const marceneiro_nome =
+
         String(
             body?.marceneiro_nome ??
             body?.marceneiro ??
             ""
         ).trim();
 
+
     const projetista_nome =
+
         String(
             body?.projetista_nome ??
             body?.projetista ??
@@ -517,18 +626,29 @@ function normalizarObra(
     let dias_finalizacao_esperado =
         body?.dias_finalizacao_esperado;
 
+
     if (
+
         dias_finalizacao_esperado === "" ||
+
         dias_finalizacao_esperado === undefined ||
+
         dias_finalizacao_esperado === null
+
     ) {
+
         dias_finalizacao_esperado = null;
+
     }
+
     else {
+
         dias_finalizacao_esperado =
+
             Number(
                 dias_finalizacao_esperado
             );
+
     }
 
 
@@ -539,6 +659,7 @@ function normalizarObra(
     */
 
     const concluida =
+
         normalizarBoolean(
             body?.concluida
         );
@@ -566,9 +687,12 @@ function normalizarObra(
 
         dias_finalizacao_esperado,
 
+        fase,
+
         concluida
 
     };
+
 }
 
 
@@ -587,42 +711,59 @@ function validarObra(
         throw new Error(
             "O nome da obra é obrigatório."
         );
+
     }
 
 
     if (
+
         obra.valor !== null &&
+
         (
+
             Number.isNaN(
                 obra.valor
             ) ||
+
             obra.valor < 0
+
         )
+
     ) {
 
         throw new Error(
             "O valor da obra é inválido."
         );
+
     }
 
 
     if (
+
         obra.dias_finalizacao_esperado !== null &&
+
         (
+
             Number.isNaN(
                 obra.dias_finalizacao_esperado
             ) ||
+
             obra.dias_finalizacao_esperado < 0 ||
+
             !Number.isInteger(
                 obra.dias_finalizacao_esperado
             )
+
         )
+
     ) {
 
         throw new Error(
             "O número de dias esperado é inválido."
         );
+
     }
+
 }
 
 
@@ -635,9 +776,13 @@ LISTAR TODAS AS OBRAS
 async function listarTodasAsObras() {
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .select(`
@@ -652,6 +797,7 @@ async function listarTodasAsObras() {
                 marceneiro_nome,
                 projetista_nome,
                 dias_finalizacao_esperado,
+                fase,
                 concluida,
                 concluida_at,
                 created_at,
@@ -665,6 +811,7 @@ async function listarTodasAsObras() {
                 }
             );
 
+
     if (error) {
 
         console.error(
@@ -672,12 +819,16 @@ async function listarTodasAsObras() {
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
+
     return data || [];
+
 }
 
 
@@ -690,9 +841,13 @@ LISTAR OBRAS CONCLUÍDAS
 async function listarObrasConcluidas() {
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .select(`
@@ -707,6 +862,7 @@ async function listarObrasConcluidas() {
                 marceneiro_nome,
                 projetista_nome,
                 dias_finalizacao_esperado,
+                fase,
                 concluida,
                 concluida_at,
                 created_at,
@@ -724,6 +880,7 @@ async function listarObrasConcluidas() {
                 }
             );
 
+
     if (error) {
 
         console.error(
@@ -731,12 +888,16 @@ async function listarObrasConcluidas() {
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
+
     return data || [];
+
 }
 
 
@@ -752,12 +913,16 @@ function filtrarObrasDoUsuario(
 ) {
 
     const usernameNormalizado =
+
         normalizarTexto(
             username
         );
 
+
     if (!usernameNormalizado) {
+
         return [];
+
     }
 
 
@@ -765,28 +930,39 @@ function filtrarObrasDoUsuario(
         obra => {
 
             const rdo =
+
                 normalizarTexto(
                     obra.rdo_nome
                 );
 
+
             const marceneiro =
+
                 normalizarTexto(
                     obra.marceneiro_nome
                 );
 
+
             const projetista =
+
                 normalizarTexto(
                     obra.projetista_nome
                 );
 
 
             return (
+
                 rdo === usernameNormalizado ||
+
                 marceneiro === usernameNormalizado ||
+
                 projetista === usernameNormalizado
+
             );
+
         }
     );
+
 }
 
 
@@ -809,10 +985,15 @@ function usuarioPodeAcessarObra(
     */
 
     if (
+
         exigirNaoConcluida &&
+
         obra.concluida === true
+
     ) {
+
         return false;
+
     }
 
 
@@ -823,9 +1004,13 @@ function usuarioPodeAcessarObra(
     */
 
     if (
+
         acesso.roleId === 1
+
     ) {
+
         return true;
+
     }
 
 
@@ -836,10 +1021,15 @@ function usuarioPodeAcessarObra(
     */
 
     if (
+
         acesso.roleId === 3 &&
+
         acesso.podeVerTodasObras === true
+
     ) {
+
         return true;
+
     }
 
 
@@ -850,19 +1040,28 @@ function usuarioPodeAcessarObra(
     */
 
     if (
+
         acesso.roleId === 3
+
     ) {
 
         return (
+
             filtrarObrasDoUsuario(
+
                 [obra],
+
                 acesso.username
+
             ).length > 0
+
         );
+
     }
 
 
     return false;
+
 }
 
 
@@ -877,16 +1076,22 @@ async function buscarObraPorId(
 ) {
 
     if (!id) {
+
         throw new Error(
             "ID da obra é obrigatório."
         );
+
     }
 
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .select(`
@@ -901,6 +1106,7 @@ async function buscarObraPorId(
                 marceneiro_nome,
                 projetista_nome,
                 dias_finalizacao_esperado,
+                fase,
                 concluida,
                 concluida_at,
                 created_at,
@@ -912,6 +1118,7 @@ async function buscarObraPorId(
             )
             .maybeSingle();
 
+
     if (error) {
 
         console.error(
@@ -919,9 +1126,11 @@ async function buscarObraPorId(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
@@ -930,10 +1139,12 @@ async function buscarObraPorId(
         throw new Error(
             "Obra não encontrada."
         );
+
     }
 
 
     return data;
+
 }
 
 
@@ -946,9 +1157,13 @@ LISTAR USUÁRIOS RESPONSÁVEIS
 async function listarUsuariosResponsaveis() {
 
     const {
+
         data: profiles,
+
         error: profilesError
+
     } =
+
         await supabaseAdmin
             .from("profiles")
             .select(`
@@ -963,6 +1178,7 @@ async function listarUsuariosResponsaveis() {
                 }
             );
 
+
     if (profilesError) {
 
         console.error(
@@ -970,9 +1186,11 @@ async function listarUsuariosResponsaveis() {
             profilesError
         );
 
+
         throw new Error(
             profilesError.message
         );
+
     }
 
 
@@ -980,14 +1198,21 @@ async function listarUsuariosResponsaveis() {
 
 
     for (
+
         const profile
+
         of profiles || []
+
     ) {
 
         const {
+
             data: userRole,
+
             error: userRoleError
+
         } =
+
             await supabaseAdmin
                 .from("user_roles")
                 .select(`
@@ -1012,15 +1237,20 @@ async function listarUsuariosResponsaveis() {
                 userRoleError
             );
 
+
             continue;
+
         }
 
 
         const role =
+
             Array.isArray(
                 userRole?.roles
             )
+
                 ? userRole?.roles?.[0]
+
                 : userRole?.roles;
 
 
@@ -1042,42 +1272,59 @@ async function listarUsuariosResponsaveis() {
                 role?.nome || ""
 
         });
+
     }
 
 
     const usuariosValidos =
+
         usuarios.filter(
+
             usuario =>
+
                 Boolean(
                     usuario.username
                 )
+
         );
 
 
     const usuariosRdo =
+
         usuariosValidos.filter(
+
             usuario =>
+
                 Number(
                     usuario.role_id
                 ) === 3
+
         );
 
 
     const usuariosProjetistas =
+
         usuariosValidos.filter(
+
             usuario =>
+
                 Number(
                     usuario.role_id
                 ) === 3
+
         );
 
 
     const usuariosMarceneiros =
+
         usuariosValidos.filter(
+
             usuario =>
+
                 Number(
                     usuario.role_id
                 ) === 5
+
         );
 
 
@@ -1093,6 +1340,7 @@ async function listarUsuariosResponsaveis() {
         usuariosProjetistas
 
     };
+
 }
 
 
@@ -1107,6 +1355,7 @@ async function criarObra(
 ) {
 
     const obra =
+
         normalizarObra(
             body
         );
@@ -1118,9 +1367,13 @@ async function criarObra(
 
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .insert({
@@ -1161,6 +1414,10 @@ async function criarObra(
                 dias_finalizacao_esperado:
                     obra.dias_finalizacao_esperado,
 
+                fase:
+                    obra.fase ||
+                    null,
+
                 concluida:
                     false,
 
@@ -1179,13 +1436,16 @@ async function criarObra(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
     return data;
+
 }
 
 
@@ -1200,7 +1460,9 @@ async function editarObra(
 ) {
 
     const id =
+
         body?.id ??
+
         body?.obra_id;
 
 
@@ -1209,10 +1471,12 @@ async function editarObra(
         throw new Error(
             "ID da obra é obrigatório."
         );
+
     }
 
 
     const obra =
+
         normalizarObra(
             body
         );
@@ -1224,19 +1488,25 @@ async function editarObra(
 
 
     const obraAtual =
+
         await buscarObraPorId(
             id
         );
 
 
     const agora =
+
         new Date().toISOString();
 
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .update({
@@ -1277,6 +1547,10 @@ async function editarObra(
                 dias_finalizacao_esperado:
                     obra.dias_finalizacao_esperado,
 
+                fase:
+                    obra.fase ||
+                    null,
+
                 concluida:
                     obraAtual.concluida,
 
@@ -1302,13 +1576,16 @@ async function editarObra(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
     return data;
+
 }
 
 
@@ -1324,7 +1601,9 @@ async function concluirObra(
 ) {
 
     const id =
+
         body?.id ??
+
         body?.obra_id;
 
 
@@ -1333,47 +1612,60 @@ async function concluirObra(
         throw new Error(
             "ID da obra é obrigatório."
         );
+
     }
 
 
     const obra =
+
         await buscarObraPorId(
             id
         );
 
 
     if (
+
         !usuarioPodeAcessarObra(
             obra,
             acesso,
             true
         )
+
     ) {
 
         throw new Error(
             "Você não possui permissão para concluir esta obra."
         );
+
     }
 
 
     if (
+
         obra.concluida === true
+
     ) {
 
         throw new Error(
             "Esta obra já está concluída."
         );
+
     }
 
 
     const agora =
+
         new Date().toISOString();
 
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .update({
@@ -1407,13 +1699,16 @@ async function concluirObra(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
     return data;
+
 }
 
 
@@ -1429,7 +1724,9 @@ async function desconcluirObra(
 ) {
 
     const id =
+
         body?.id ??
+
         body?.obra_id;
 
 
@@ -1438,6 +1735,7 @@ async function desconcluirObra(
         throw new Error(
             "ID da obra é obrigatório."
         );
+
     }
 
 
@@ -1452,6 +1750,7 @@ async function desconcluirObra(
 
 
     const obra =
+
         await buscarObraPorId(
             id
         );
@@ -1464,16 +1763,19 @@ async function desconcluirObra(
     */
 
     if (
+
         !usuarioPodeAcessarObra(
             obra,
             acesso,
             false
         )
+
     ) {
 
         throw new Error(
             "Você não possui permissão para desconcluir esta obra."
         );
+
     }
 
 
@@ -1484,12 +1786,15 @@ async function desconcluirObra(
     */
 
     if (
+
         obra.concluida !== true
+
     ) {
 
         throw new Error(
             "Esta obra já está em andamento."
         );
+
     }
 
 
@@ -1500,13 +1805,18 @@ async function desconcluirObra(
     */
 
     const agora =
+
         new Date().toISOString();
 
 
     const {
+
         data,
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .update({
@@ -1540,9 +1850,11 @@ async function desconcluirObra(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
@@ -1553,6 +1865,7 @@ async function desconcluirObra(
 
 
     return data;
+
 }
 
 
@@ -1568,7 +1881,9 @@ async function excluirObra(
 ) {
 
     const id =
+
         body?.id ??
+
         body?.obra_id;
 
 
@@ -1577,32 +1892,40 @@ async function excluirObra(
         throw new Error(
             "ID da obra é obrigatório."
         );
+
     }
 
 
     const obra =
+
         await buscarObraPorId(
             id
         );
 
 
     if (
+
         !usuarioPodeAcessarObra(
             obra,
             acesso,
             false
         )
+
     ) {
 
         throw new Error(
             "Você não possui permissão para excluir esta obra."
         );
+
     }
 
 
     const {
+
         error
+
     } =
+
         await supabaseAdmin
             .from("obras")
             .delete()
@@ -1619,9 +1942,11 @@ async function excluirObra(
             error
         );
 
+
         throw new Error(
             error.message
         );
+
     }
 
 
@@ -1634,6 +1959,7 @@ async function excluirObra(
             "Obra excluída com sucesso."
 
     };
+
 }
 
 
@@ -1644,6 +1970,7 @@ HANDLER
 */
 
 Deno.serve(
+
     async (
         req
     ) => {
@@ -1655,17 +1982,23 @@ Deno.serve(
         */
 
         if (
+
             req.method ===
             "OPTIONS"
+
         ) {
 
             return new Response(
+
                 "ok",
+
                 {
                     headers:
                         corsHeaders
                 }
+
             );
+
         }
 
 
@@ -1678,6 +2011,7 @@ Deno.serve(
             */
 
             const acesso =
+
                 await verificarProducao(
                     req
                 );
@@ -1693,8 +2027,10 @@ Deno.serve(
 
 
             if (
+
                 req.method !==
                 "GET"
+
             ) {
 
                 try {
@@ -1703,6 +2039,7 @@ Deno.serve(
                         await req.json();
 
                 }
+
                 catch (error) {
 
                     console.error(
@@ -1710,10 +2047,13 @@ Deno.serve(
                         error
                     );
 
+
                     throw new Error(
                         "Corpo da requisição inválido."
                     );
+
                 }
+
             }
 
 
@@ -1724,17 +2064,29 @@ Deno.serve(
             */
 
             const action =
+
                 body?.action ||
+
                 (
+
                     req.method === "GET"
+
                         ? "list"
+
                         : req.method === "POST"
+
                             ? "create"
+
                             : req.method === "PUT"
+
                                 ? "update"
+
                                 : req.method === "DELETE"
+
                                     ? "delete"
+
                                     : ""
+
                 );
 
 
@@ -1799,18 +2151,25 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "list"
+
             ) {
 
                 const todasAsObras =
+
                     await listarTodasAsObras();
 
 
                 const obrasAtivas =
+
                     todasAsObras.filter(
+
                         obra =>
+
                             obra.concluida !== true
+
                     );
 
 
@@ -1824,11 +2183,14 @@ Deno.serve(
                 */
 
                 if (
+
                     acesso.roleId === 1
+
                 ) {
 
                     obras =
                         obrasAtivas;
+
                 }
 
 
@@ -1839,12 +2201,16 @@ Deno.serve(
                 */
 
                 else if (
+
                     acesso.roleId === 3 &&
+
                     acesso.podeVerTodasObras === true
+
                 ) {
 
                     obras =
                         obrasAtivas;
+
                 }
 
 
@@ -1855,18 +2221,26 @@ Deno.serve(
                 */
 
                 else if (
+
                     acesso.roleId === 3
+
                 ) {
 
                     obras =
+
                         filtrarObrasDoUsuario(
+
                             obrasAtivas,
+
                             acesso.username
+
                         );
+
                 }
 
 
                 const dadosUsuarios =
+
                     await listarUsuariosResponsaveis();
 
 
@@ -1915,6 +2289,7 @@ Deno.serve(
                     }
 
                 });
+
             }
 
 
@@ -1925,15 +2300,62 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "list_concluidas"
+
             ) {
 
                 const concluidas =
+
                     await listarObrasConcluidas();
 
 
+                /*
+                =================================================
+                SEGURANÇA:
+                PRODUÇÃO NORMAL VÊ SOMENTE AS PRÓPRIAS
+                OBRAS CONCLUÍDAS
+                =================================================
+                */
+
+                let obrasConcluidasVisiveis: any[] = [];
+
+
+                if (
+
+                    acesso.roleId === 1 ||
+
+                    acesso.podeVerTodasObras === true
+
+                ) {
+
+                    obrasConcluidasVisiveis =
+                        concluidas;
+
+                }
+
+                else if (
+
+                    acesso.roleId === 3
+
+                ) {
+
+                    obrasConcluidasVisiveis =
+
+                        filtrarObrasDoUsuario(
+
+                            concluidas,
+
+                            acesso.username
+
+                        );
+
+                }
+
+
                 const dadosUsuarios =
+
                     await listarUsuariosResponsaveis();
 
 
@@ -1943,7 +2365,7 @@ Deno.serve(
                         true,
 
                     obras:
-                        concluidas,
+                        obrasConcluidasVisiveis,
 
                     usuarios:
                         dadosUsuarios.usuarios,
@@ -1983,6 +2405,7 @@ Deno.serve(
                     }
 
                 });
+
             }
 
 
@@ -1993,25 +2416,34 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "create"
+
             ) {
 
                 const obra =
+
                     await criarObra(
                         body
                     );
 
 
                 return jsonResponse(
+
                     {
+
                         success:
                             true,
 
                         obra
+
                     },
+
                     201
+
                 );
+
             }
 
 
@@ -2022,14 +2454,20 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "complete"
+
             ) {
 
                 const obra =
+
                     await concluirObra(
+
                         body,
+
                         acesso
+
                     );
 
 
@@ -2041,6 +2479,7 @@ Deno.serve(
                     obra
 
                 });
+
             }
 
 
@@ -2051,14 +2490,20 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "uncomplete"
+
             ) {
 
                 const obra =
+
                     await desconcluirObra(
+
                         body,
+
                         acesso
+
                     );
 
 
@@ -2070,6 +2515,7 @@ Deno.serve(
                     obra
 
                 });
+
             }
 
 
@@ -2080,12 +2526,16 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "update"
+
             ) {
 
                 const id =
+
                     body?.id ??
+
                     body?.obra_id;
 
 
@@ -2094,30 +2544,40 @@ Deno.serve(
                     throw new Error(
                         "ID da obra é obrigatório."
                     );
+
                 }
 
 
                 const obraAtual =
+
                     await buscarObraPorId(
                         id
                     );
 
 
                 if (
+
                     !usuarioPodeAcessarObra(
+
                         obraAtual,
+
                         acesso,
+
                         false
+
                     )
+
                 ) {
 
                     throw new Error(
                         "Você não possui permissão para editar esta obra."
                     );
+
                 }
 
 
                 const obra =
+
                     await editarObra(
                         body
                     );
@@ -2131,6 +2591,7 @@ Deno.serve(
                     obra
 
                 });
+
             }
 
 
@@ -2141,20 +2602,27 @@ Deno.serve(
             */
 
             if (
+
                 action ===
                 "delete"
+
             ) {
 
                 const resultado =
+
                     await excluirObra(
+
                         body,
+
                         acesso
+
                     );
 
 
                 return jsonResponse(
                     resultado
                 );
+
             }
 
 
@@ -2165,6 +2633,7 @@ Deno.serve(
             */
 
             return jsonResponse(
+
                 {
 
                     success:
@@ -2174,13 +2643,14 @@ Deno.serve(
                         `Ação "${action}" não reconhecida.`
 
                 },
+
                 400
+
             );
 
         }
-        catch (
-            error
-        ) {
+
+        catch (error) {
 
             console.error(
                 "===================================="
@@ -2216,6 +2686,9 @@ Deno.serve(
                 400
 
             );
+
         }
+
     }
+
 );
