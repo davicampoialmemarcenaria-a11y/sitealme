@@ -444,3 +444,25 @@ entrypoint = "./functions/admin-cronogramas/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/admin-cronogramas/*.html" ]
+
+[functions.admin-inforfi]
+enabled = true
+verify_jwt = false
+import_map = "./functions/admin-inforfi/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/admin-inforfi/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/admin-inforfi/*.html" ]
+
+[functions.admin-documentos]
+enabled = true
+verify_jwt = false
+import_map = "./functions/admin-documentos/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/admin-documentos/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/admin-documentos/*.html" ]

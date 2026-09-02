@@ -9,7 +9,6 @@ import {
     useAuth
 } from "../contexts/AuthContext";
 
-
 /*
 =====================================================
 PÁGINAS PÚBLICAS
@@ -37,7 +36,6 @@ import Marceneiro
 import Login
     from "../pages/Login/Login";
 
-
 /*
 =====================================================
 LAYOUT ADMINISTRATIVO
@@ -46,7 +44,6 @@ LAYOUT ADMINISTRATIVO
 
 import AdminLayout
     from "../pages/admin/Layout/AdminLayout";
-
 
 /*
 =====================================================
@@ -75,6 +72,23 @@ import Producao
 import Obras
     from "../pages/admin/Producao/Obras/Obras";
 
+/*
+=====================================================
+INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
+=====================================================
+*/
+
+import InforFi
+    from "../pages/admin/Producao/InforFi/InforFi";
+
+/*
+=====================================================
+DOCUMENTOS DO CLIENTE
+=====================================================
+*/
+
+import DocumentosCliente
+    from "../pages/admin/Producao/DocumentosCliente/DocumentosCliente";
 
 /*
 =====================================================
@@ -85,32 +99,14 @@ CRONOGRAMAS
 import Cronogramas
     from "../pages/admin/Producao/Cronogramas/Cronogramas";
 
-
 /*
 =====================================================
 CRONOGRAMA INDIVIDUAL
-=====================================================
-
-IMPORTANTE:
-
-Este arquivo precisa existir exatamente em:
-
-src/pages/admin/Producao/Cronogramas/Cronograma.jsx
-
-Não é:
-
-Cronogramas.jsx
-
-e não é:
-
-Cronogram.jsx
-
 =====================================================
 */
 
 import Cronograma
     from "../pages/admin/Producao/Cronogramas/Cronograma";
-
 
 /*
 =====================================================
@@ -124,7 +120,6 @@ import Newsu
 import NewsPage
     from "../pages/Newsu/NewsPage/NewsPage";
 
-
 /*
 =====================================================
 PÁGINAS PÚBLICAS DE PROJETOS
@@ -137,7 +132,6 @@ import Projetosu
 import ProjetosPage
     from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 
-
 /*
 =====================================================
 PROTEÇÃO
@@ -146,7 +140,6 @@ PROTEÇÃO
 
 import ProtectedRoute
     from "../components/ProtectedRoute";
-
 
 /*
 =====================================================
@@ -157,19 +150,9 @@ SCROLL
 import ScrollToTop
     from "../components/ScrollToTop/ScrollToTop";
 
-
 /*
 =====================================================
 INÍCIO DO ADMIN
-=====================================================
-
-/admin
-
-Administrativo Geral → Dashboard
-Comercial            → Comercial
-Produção             → Produção
-Financeiro           → Financeiro
-
 =====================================================
 */
 
@@ -178,7 +161,6 @@ function AdminInicio() {
     const {
         role
     } = useAuth();
-
 
     /*
     =================================================
@@ -189,15 +171,10 @@ function AdminInicio() {
     if (
         role === "Administrativo Geral"
     ) {
-
         return (
-
             <Dashboard />
-
         );
-
     }
-
 
     /*
     =================================================
@@ -208,18 +185,13 @@ function AdminInicio() {
     if (
         role === "comercial"
     ) {
-
         return (
-
             <Navigate
                 to="/admin/comercial"
                 replace
             />
-
         );
-
     }
-
 
     /*
     =================================================
@@ -230,18 +202,13 @@ function AdminInicio() {
     if (
         role === "producao"
     ) {
-
         return (
-
             <Navigate
                 to="/admin/producao"
                 replace
             />
-
         );
-
     }
-
 
     /*
     =================================================
@@ -252,18 +219,13 @@ function AdminInicio() {
     if (
         role === "financeiro"
     ) {
-
         return (
-
             <Navigate
                 to="/admin/financeiro"
                 replace
             />
-
         );
-
     }
-
 
     /*
     =================================================
@@ -272,16 +234,12 @@ function AdminInicio() {
     */
 
     return (
-
         <Navigate
             to="/"
             replace
         />
-
     );
-
 }
-
 
 /*
 =====================================================
@@ -298,7 +256,6 @@ export default function Router() {
             <ScrollToTop />
 
             <Routes>
-
 
                 {/* =================================================
                     SITE
@@ -353,7 +310,6 @@ export default function Router() {
                     }
                 />
 
-
                 {/* =================================================
                     NEWS PÚBLICO
                 ================================================= */}
@@ -371,7 +327,6 @@ export default function Router() {
                         <NewsPage />
                     }
                 />
-
 
                 {/* =================================================
                     PROJETOS PÚBLICOS
@@ -391,7 +346,6 @@ export default function Router() {
                     }
                 />
 
-
                 {/* =================================================
                     ADMINISTRATIVO
                 ================================================= */}
@@ -399,7 +353,6 @@ export default function Router() {
                 <Route
                     path="/admin"
                     element={
-
                         <ProtectedRoute
                             allowedRoles={[
                                 "Administrativo Geral",
@@ -408,11 +361,8 @@ export default function Router() {
                                 "financeiro"
                             ]}
                         >
-
                             <AdminLayout />
-
                         </ProtectedRoute>
-
                     }
                 >
 
@@ -427,7 +377,6 @@ export default function Router() {
                         }
                     />
 
-
                     {/* =================================================
                         COMERCIAL
                     ================================================= */}
@@ -435,27 +384,20 @@ export default function Router() {
                     <Route
                         path="comercial"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "comercial"
                                 ]}
                             >
-
                                 <div>
-
                                     <h1>
                                         Comercial
                                     </h1>
-
                                 </div>
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         PRODUÇÃO
@@ -464,21 +406,16 @@ export default function Router() {
                     <Route
                         path="producao"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "producao"
                                 ]}
                             >
-
                                 <Producao />
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         OBRAS
@@ -487,85 +424,94 @@ export default function Router() {
                     <Route
                         path="obras"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "producao"
                                 ]}
                             >
-
                                 <Obras />
-
                             </ProtectedRoute>
-
                         }
                     />
 
+                    {/* =================================================
+                        INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
+
+                        URL:
+                        /admin/producao/inforfi
+                    ================================================= */}
+
+                    <Route
+                        path="producao/inforfi"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "producao"
+                                ]}
+                            >
+                                <InforFi />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* =================================================
+                        DOCUMENTOS DO CLIENTE
+
+                        URL:
+                        /admin/producao/documentos-cliente
+                    ================================================= */}
+
+                    <Route
+                        path="producao/documentos-cliente"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "producao"
+                                ]}
+                            >
+                                <DocumentosCliente />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     {/* =================================================
                         CRONOGRAMAS
-                    =================================================
-
-                    URL:
-
-                    /admin/cronogramas
-
-                    Tela com a lista dos cronogramas.
-
                     ================================================= */}
 
                     <Route
                         path="cronogramas"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "producao"
                                 ]}
                             >
-
                                 <Cronogramas />
-
                             </ProtectedRoute>
-
                         }
                     />
 
-
                     {/* =================================================
                         CRONOGRAMA INDIVIDUAL
-                    =================================================
-
-                    URL:
-
-                    /admin/cronogramas/:cronogramaId/:versaoId
-
-                    Exemplo:
-
-                    /admin/cronogramas/1/1
-
                     ================================================= */}
 
                     <Route
                         path="cronogramas/:cronogramaId/:versaoId"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "producao"
                                 ]}
                             >
-
                                 <Cronograma />
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         FINANCEIRO
@@ -574,27 +520,20 @@ export default function Router() {
                     <Route
                         path="financeiro"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "financeiro"
                                 ]}
                             >
-
                                 <div>
-
                                     <h1>
                                         Financeiro
                                     </h1>
-
                                 </div>
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         ESTOQUE
@@ -603,21 +542,16 @@ export default function Router() {
                     <Route
                         path="estoque"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
                                     "financeiro"
                                 ]}
                             >
-
                                 <Estoque />
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         NEWS
@@ -626,20 +560,15 @@ export default function Router() {
                     <Route
                         path="news"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral"
                                 ]}
                             >
-
                                 <News />
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         PROJETOS
@@ -648,20 +577,15 @@ export default function Router() {
                     <Route
                         path="projetos"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral"
                                 ]}
                             >
-
                                 <Projetos />
-
                             </ProtectedRoute>
-
                         }
                     />
-
 
                     {/* =================================================
                         USUÁRIOS
@@ -670,22 +594,17 @@ export default function Router() {
                     <Route
                         path="usuarios"
                         element={
-
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral"
                                 ]}
                             >
-
                                 <Usuarios />
-
                             </ProtectedRoute>
-
                         }
                     />
 
                 </Route>
-
 
                 {/* =====================================================
                     ROTA NÃO ENCONTRADA
@@ -694,19 +613,15 @@ export default function Router() {
                 <Route
                     path="*"
                     element={
-
                         <Navigate
                             to="/"
                             replace
                         />
-
                     }
                 />
 
             </Routes>
 
         </BrowserRouter>
-
     );
-
 }

@@ -1,7 +1,9 @@
 import {
     FiArrowRight,
     FiBox,
-    FiCalendar
+    FiCalendar,
+    FiDollarSign,
+    FiFolder
 } from "react-icons/fi";
 
 import {
@@ -60,17 +62,13 @@ export default function Producao() {
                 ================================================= */}
 
                 <button
-
                     type="button"
-
                     className="producao-card"
-
                     onClick={() =>
                         navigate(
                             "/admin/obras"
                         )
                     }
-
                 >
 
                     <div
@@ -113,20 +111,30 @@ export default function Producao() {
                 </button>
 
 
-
                 {/* =================================================
                     CARD CRONOGRAMA
                 ================================================= */}
-<button
-    type="button"
-    className="producao-card"
-    onClick={() => {
-        console.log("CLICOU CRONOGRAMAS");
-        console.log("INDO PARA:", "/admin/cronogramas");
 
-        navigate("/admin/cronogramas");
-    }}
->
+                <button
+                    type="button"
+                    className="producao-card"
+                    onClick={() => {
+
+                        console.log(
+                            "CLICOU CRONOGRAMAS"
+                        );
+
+                        console.log(
+                            "INDO PARA:",
+                            "/admin/cronogramas"
+                        );
+
+                        navigate(
+                            "/admin/cronogramas"
+                        );
+
+                    }}
+                >
 
                     <div
                         className="producao-card-icon"
@@ -152,6 +160,136 @@ export default function Producao() {
                         <p>
                             Organize os prazos e acompanhe
                             o cronograma das obras da ALME.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
+                {/* =================================================
+                    CARD INFORMAÇÕES FINANCEIRAS
+                ================================================= */}
+
+                <button
+                    type="button"
+                    className="producao-card"
+                    onClick={() => {
+
+                        console.log(
+                            "CLICOU INFORMAÇÕES FINANCEIRAS"
+                        );
+
+                        console.log(
+                            "INDO PARA:",
+                            "/admin/producao/inforfi"
+                        );
+
+                        navigate(
+                            "/admin/producao/inforfi"
+                        );
+
+                    }}
+                >
+
+                    <div
+                        className="producao-card-icon"
+                    >
+
+                        <FiDollarSign />
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-content"
+                    >
+
+                        <span>
+                            PRODUÇÃO
+                        </span>
+
+                        <h2>
+                            Informações financeiras
+                        </h2>
+
+                        <p>
+                            Consulte e acompanhe as informações
+                            financeiras relacionadas às obras.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
+                {/* =================================================
+                    CARD DOCUMENTOS DO CLIENTE
+                ================================================= */}
+
+                <button
+                    type="button"
+                    className="producao-card"
+                    onClick={() => {
+
+                        console.log(
+                            "CLICOU DOCUMENTOS DO CLIENTE"
+                        );
+
+                        console.log(
+                            "INDO PARA:",
+                            "/admin/producao/documentos-cliente"
+                        );
+
+                        navigate(
+                            "/admin/producao/documentos-cliente"
+                        );
+
+                    }}
+                >
+
+                    <div
+                        className="producao-card-icon"
+                    >
+
+                        <FiFolder />
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-content"
+                    >
+
+                        <span>
+                            PRODUÇÃO
+                        </span>
+
+                        <h2>
+                            Documentos do cliente
+                        </h2>
+
+                        <p>
+                            Organize, consulte e gerencie os
+                            documentos e arquivos das obras.
                         </p>
 
                     </div>
