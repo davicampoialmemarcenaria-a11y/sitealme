@@ -1,3 +1,4 @@
+
 .docalme-page {
     min-height: 100vh;
     padding: 32px;
@@ -5,7 +6,6 @@
     color: #4b2108;
     font-family: Montserrat, sans-serif;
 }
-
 
 /* =========================================================
    HEADER
@@ -138,7 +138,6 @@
     }
 }
 
-
 /* =========================================================
    USER
 ========================================================= */
@@ -160,7 +159,6 @@
         font-weight: 600;
     }
 }
-
 
 /* =========================================================
    ERROR
@@ -201,7 +199,6 @@
         }
     }
 }
-
 
 /* =========================================================
    SUMMARY
@@ -257,7 +254,6 @@
     line-height: 1;
     font-weight: 700;
 }
-
 
 /* =========================================================
    TABS
@@ -318,16 +314,20 @@
     }
 }
 
-
 /* =========================================================
    FILTERS
 ========================================================= */
 
 .docalme-filters {
     margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
 }
 
 .docalme-search {
+    flex: 1;
     max-width: 620px;
     min-height: 46px;
     padding: 0 12px;
@@ -389,6 +389,34 @@
     }
 }
 
+.docalme-view-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+        min-height: 38px;
+        padding: 0 12px;
+        border: 1px solid #e4ddd5;
+        border-radius: 8px;
+        background: #fff;
+        color: #777;
+        font-family: Montserrat, sans-serif;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+            background 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease;
+
+        &:hover {
+            border-color: #d38a17;
+            background: #faf5ef;
+            color: #4b2108;
+        }
+    }
+}
 
 /* =========================================================
    SECTION TITLE
@@ -423,83 +451,300 @@
     }
 }
 
-
 /* =========================================================
-   TABLE
+   OBRAS
 ========================================================= */
 
-.docalme-table-wrapper {
+.docalme-obras-wrapper {
+    min-height: 100px;
+}
+
+.docalme-obras-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.docalme-obra-card {
     overflow: hidden;
     border: 1px solid #e4ddd5;
     border-radius: 14px;
     background: #fff;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &:hover {
+        border-color: #ddd1c5;
+    }
+
+    &.open {
+        border-color: #dbc7b4;
+        box-shadow: 0 8px 26px rgba(75, 33, 8, 0.05);
+    }
 }
 
-.docalme-table-scroll {
+/* =========================================================
+   CABEÇALHO DA OBRA
+========================================================= */
+
+.docalme-obra-header {
     width: 100%;
-    overflow-x: auto;
-}
+    min-height: 92px;
+    padding: 17px 18px;
+    border: 0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
 
-.docalme-table {
-    width: 100%;
-    min-width: 1080px;
-    border-collapse: collapse;
-
-    thead th {
-        height: 49px;
-        padding: 0 18px;
-        border-bottom: 1px solid #e4ddd5;
-        background: #fcfaf8;
-        color: #888;
-        text-align: left;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.07em;
-        white-space: nowrap;
-    }
-
-    tbody td {
-        padding: 17px 18px;
-        border-bottom: 1px solid #eee9e3;
-        vertical-align: middle;
-        font-size: 12px;
-    }
-
-    tbody tr:last-child td {
-        border-bottom: 0;
-    }
-
-    tbody tr {
-        transition: background 0.15s ease;
-
-        &:hover {
-            background: #fcfaf8;
-        }
+    &:focus-visible {
+        box-shadow: inset 0 0 0 2px rgba(211, 138, 23, 0.35);
     }
 }
 
-.docalme-obra-cell {
-    min-width: 170px;
+.docalme-obra-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.docalme-obra-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border-radius: 11px;
+    background: #f5ede4;
+    color: #d38a17;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 21px;
+        height: 21px;
+    }
+}
+
+.docalme-obra-info {
+    min-width: 0;
 
     strong {
+        display: block;
+        overflow: hidden;
         color: #4b2108;
-        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
         font-weight: 700;
+    }
+
+    span {
+        display: block;
+        margin-top: 4px;
+        overflow: hidden;
+        color: #999;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
     }
 }
 
-.docalme-arquiteto-cell {
-    min-width: 180px;
-    max-width: 240px;
-    color: #666;
-    line-height: 1.45;
+.docalme-obra-right {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.docalme-document-cell {
+.docalme-obra-counter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 3px;
+    color: #888;
+    white-space: nowrap;
+    font-size: 10px;
+
+    svg {
+        width: 15px;
+        height: 15px;
+        color: #d38a17;
+    }
+}
+
+/* =========================================================
+   NOVO BOTÃO DE UPLOAD NA OBRA
+========================================================= */
+
+.docalme-obra-upload,
+.docalme-obra-toggle {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border: 1px solid #e4ddd5;
+    border-radius: 8px;
+    background: #fff;
+    color: #777;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.docalme-obra-upload {
+    color: #a56910;
+
+    svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    &:hover {
+        border-color: #d38a17;
+        background: #faf6f1;
+        color: #4b2108;
+        transform: translateY(-1px);
+    }
+}
+
+.docalme-obra-toggle {
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.docalme-obra-card:hover .docalme-obra-toggle,
+.docalme-obra-card.open .docalme-obra-toggle {
+    border-color: #d38a17;
+    background: #faf6f1;
+    color: #4b2108;
+}
+
+/* =========================================================
+   CONTEÚDO DA OBRA
+========================================================= */
+
+.docalme-obra-content {
+    padding: 0 18px 17px;
+    border-top: 1px solid #eee9e3;
+    background: #fdfbf9;
+}
+
+/* =========================================================
+   SEM DOCUMENTOS
+========================================================= */
+
+.docalme-no-documents {
+    min-height: 72px;
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.docalme-no-documents-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 9px;
+    background: #f3eee8;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.docalme-no-documents > div:nth-child(2) {
+    min-width: 0;
+    flex: 1;
+
+    strong {
+        display: block;
+        color: #666;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    span {
+        display: block;
+        margin-top: 3px;
+        color: #aaa;
+        font-size: 10px;
+    }
+}
+
+.docalme-no-documents button {
+    min-height: 35px;
+    padding: 0 11px;
+    border: 1px solid #e1d5ca;
+    border-radius: 8px;
+    background: #fff;
+    color: #7b573b;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: Montserrat, sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #d38a17;
+        background: #faf6f1;
+        color: #4b2108;
+    }
+
+    svg {
+        width: 13px;
+        height: 13px;
+    }
+}
+
+/* =========================================================
+   DOCUMENTOS
+========================================================= */
+
+.docalme-documents-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.docalme-document-row {
+    min-height: 71px;
+    padding: 11px 0;
+    border-bottom: 1px solid #eee9e3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.docalme-document-left {
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 11px;
-    min-width: 250px;
 }
 
 .docalme-document-icon {
@@ -519,55 +764,60 @@
     }
 }
 
-.docalme-document-cell strong {
-    display: block;
-    max-width: 300px;
-    overflow: hidden;
-    color: #4b2108;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-    font-weight: 650;
+.docalme-document-info {
+    min-width: 0;
+
+    > strong {
+        display: block;
+        max-width: 500px;
+        overflow: hidden;
+        color: #4b2108;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px;
+        font-weight: 650;
+    }
 }
 
-.docalme-document-cell span {
-    display: block;
-    max-width: 300px;
-    margin-top: 3px;
-    overflow: hidden;
+.docalme-document-meta {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     color: #999;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 10px;
+    font-size: 9px;
 }
 
 .docalme-type {
     display: inline-flex;
     align-items: center;
-    min-height: 28px;
-    padding: 0 9px;
+    min-height: 23px;
+    padding: 0 7px;
     border-radius: 20px;
-    background: #f4eee8;
+    background: #f1ece6;
     color: #7b573b;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 600;
 }
 
-.docalme-date {
-    color: #777;
-    font-size: 11px;
+.docalme-document-description {
+    max-width: 350px;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .docalme-actions {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .docalme-actions button {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border: 1px solid #e4ddd5;
     border-radius: 8px;
     background: #fff;
@@ -582,8 +832,8 @@
         transform 0.2s ease;
 
     svg {
-        width: 15px;
-        height: 15px;
+        width: 14px;
+        height: 14px;
     }
 
     &:hover {
@@ -626,7 +876,6 @@
         background: #fff5f2 !important;
     }
 }
-
 
 /* =========================================================
    LOADING
@@ -671,7 +920,6 @@
     }
 }
 
-
 /* =========================================================
    EMPTY
 ========================================================= */
@@ -679,6 +927,9 @@
 .docalme-empty {
     min-height: 330px;
     padding: 35px 20px;
+    border: 1px solid #e4ddd5;
+    border-radius: 14px;
+    background: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -744,7 +995,6 @@
         border-color: #632d0a;
     }
 }
-
 
 /* =========================================================
    MODAIS
@@ -837,7 +1087,6 @@
         }
     }
 }
-
 
 /* =========================================================
    SELECTION
@@ -943,16 +1192,7 @@
         margin-bottom: 10px;
         color: #d38a17;
     }
-
-    small {
-        max-width: 400px;
-        margin-top: 8px;
-        color: #aaa;
-        font-size: 10px;
-        line-height: 1.5;
-    }
 }
-
 
 /* =========================================================
    SELECTED WORK
@@ -1017,7 +1257,6 @@
     white-space: nowrap;
     font-size: 10px;
 }
-
 
 /* =========================================================
    FORM
@@ -1145,7 +1384,6 @@
     }
 }
 
-
 /* =========================================================
    MODAL FOOTER
 ========================================================= */
@@ -1214,9 +1452,8 @@
     }
 }
 
-
 /* =========================================================
-   PREVIEW OVERLAY
+   PREVIEW
 ========================================================= */
 
 .docalme-preview-overlay {
@@ -1241,11 +1478,6 @@
     display: flex;
     flex-direction: column;
 }
-
-
-/* =========================================================
-   PREVIEW HEADER
-========================================================= */
 
 .docalme-preview-header {
     min-height: 74px;
@@ -1389,23 +1621,13 @@
     }
 }
 
-
-/* =========================================================
-   PREVIEW CONTENT
-========================================================= */
-
 .docalme-preview-content {
     min-height: 0;
     flex: 1;
+    position: relative;
     background: #f0ece7;
     overflow: hidden;
-    position: relative;
 }
-
-
-/* =========================================================
-   PREVIEW LOADING
-========================================================= */
 
 .docalme-preview-loading {
     width: 100%;
@@ -1418,11 +1640,6 @@
     color: #888;
     font-size: 11px;
 }
-
-
-/* =========================================================
-   PDF
-========================================================= */
 
 .docalme-preview-pdf {
     width: 100%;
@@ -1439,11 +1656,6 @@
     background: #fff;
     box-shadow: 0 10px 30px rgba(40, 19, 7, 0.08);
 }
-
-
-/* =========================================================
-   IMAGE
-========================================================= */
 
 .docalme-preview-image {
     width: 100%;
@@ -1465,11 +1677,6 @@
     box-shadow: 0 15px 45px rgba(40, 19, 7, 0.12);
 }
 
-
-/* =========================================================
-   VIDEO
-========================================================= */
-
 .docalme-preview-video {
     width: 100%;
     height: 100%;
@@ -1489,11 +1696,6 @@
     background: #111;
     box-shadow: 0 15px 45px rgba(20, 10, 5, 0.18);
 }
-
-
-/* =========================================================
-   AUDIO
-========================================================= */
 
 .docalme-preview-audio {
     width: 100%;
@@ -1537,11 +1739,6 @@
     width: min(500px, 90%);
 }
 
-
-/* =========================================================
-   TEXT
-========================================================= */
-
 .docalme-preview-text {
     width: 100%;
     height: 100%;
@@ -1556,11 +1753,6 @@
     border-radius: 10px;
     background: #fff;
 }
-
-
-/* =========================================================
-   UNSUPPORTED
-========================================================= */
 
 .docalme-preview-unsupported {
     width: 100%;
@@ -1634,7 +1826,6 @@
     }
 }
 
-
 /* =========================================================
    RESPONSIVE
 ========================================================= */
@@ -1666,13 +1857,16 @@
     .docalme-preview-modal {
         height: calc(100vh - 24px);
     }
-
 }
 
 @media (max-width: 900px) {
 
     .docalme-summary {
         grid-template-columns: 1fr;
+    }
+
+    .docalme-document-description {
+        display: none;
     }
 
     .docalme-form-grid {
@@ -1692,7 +1886,6 @@
         flex-wrap: wrap;
         justify-content: flex-end;
     }
-
 }
 
 @media (max-width: 700px) {
@@ -1724,6 +1917,24 @@
         width: 100%;
     }
 
+    .docalme-filters {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .docalme-search {
+        max-width: none;
+        width: 100%;
+    }
+
+    .docalme-view-actions {
+        width: 100%;
+
+        button {
+            flex: 1;
+        }
+    }
+
     .docalme-section-title {
         align-items: flex-start;
         flex-direction: column;
@@ -1736,6 +1947,45 @@
         button {
             flex: 0 0 auto;
         }
+    }
+
+    .docalme-obra-header {
+        padding: 14px;
+    }
+
+    .docalme-obra-right {
+        gap: 6px;
+    }
+
+    .docalme-obra-counter span {
+        display: none;
+    }
+
+    .docalme-obra-content {
+        padding: 0 14px 13px;
+    }
+
+    .docalme-document-row {
+        align-items: flex-start;
+    }
+
+    .docalme-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .docalme-no-documents {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .docalme-no-documents > div:nth-child(2) {
+        flex: 1;
+        min-width: 160px;
+    }
+
+    .docalme-no-documents button {
+        margin-left: 50px;
     }
 
     .docalme-modal-overlay {
@@ -1784,7 +2034,6 @@
     .docalme-preview-text {
         padding: 8px;
     }
-
 }
 
 @media (max-width: 480px) {
@@ -1817,6 +2066,59 @@
         flex-basis: 40px;
     }
 
+    .docalme-obra-header {
+        min-height: 78px;
+        padding: 12px;
+    }
+
+    .docalme-obra-main {
+        gap: 9px;
+    }
+
+    .docalme-obra-icon {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    .docalme-obra-info strong {
+        font-size: 11px;
+    }
+
+    .docalme-obra-info span {
+        font-size: 9px;
+    }
+
+    .docalme-obra-upload,
+    .docalme-obra-toggle {
+        width: 31px;
+        height: 31px;
+        flex-basis: 31px;
+    }
+
+    .docalme-document-left {
+        gap: 8px;
+    }
+
+    .docalme-document-icon {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+    }
+
+    .docalme-document-info > strong {
+        max-width: 180px;
+    }
+
+    .docalme-actions {
+        gap: 4px;
+    }
+
+    .docalme-actions button {
+        width: 30px;
+        height: 30px;
+    }
+
     .docalme-modal-footer {
         flex-direction: column-reverse;
         align-items: stretch;
@@ -1846,5 +2148,5 @@
     .docalme-preview-title h2 {
         max-width: 180px;
     }
-
 }
+

@@ -1,13 +1,17 @@
+
 import { useEffect, useMemo, useState } from "react";
 
 import {
     FiArrowLeft,
     FiCheck,
+    FiChevronDown,
+    FiChevronUp,
     FiDownload,
     FiEdit2,
     FiEye,
     FiExternalLink,
     FiFileText,
+    FiFolder,
     FiPlus,
     FiRefreshCw,
     FiSearch,
@@ -60,364 +64,302 @@ const TIPOS_DOCUMENTO = [
 ];
 
 export default function Docalme() {
-
     const navigate = useNavigate();
 
-    const [documentos, setDocumentos] =
-        useState([]);
+    const [documentos, setDocumentos] = useState([]);
+    const [obrasAtivas, setObrasAtivas] = useState([]);
+    const [obrasConcluidas, setObrasConcluidas] = useState([]);
+    const [usuarioAtual, setUsuarioAtual] = useState(null);
 
-    const [obrasAtivas, setObrasAtivas] =
-        useState([]);
+    const [loading, setLoading] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState("");
 
-    const [obrasConcluidas, setObrasConcluidas] =
-        useState([]);
+    const [aba, setAba] = useState("ativas");
+    const [busca, setBusca] = useState("");
 
-    const [usuarioAtual, setUsuarioAtual] =
-        useState(null);
+    const [obrasAbertas, setObrasAbertas] = useState({});
 
-    const [loading, setLoading] =
-        useState(true);
+    const [modalAberto, setModalAberto] = useState(false);
+    const [modalSelecaoObra, setModalSelecaoObra] = useState(false);
 
-    const [salvando, setSalvando] =
-        useState(false);
+    const [documentoSelecionado, setDocumentoSelecionado] = useState(null);
+    const [obraSelecionada, setObraSelecionada] = useState(null);
 
-    const [erro, setErro] =
-        useState("");
+    const [form, setForm] = useState(FORM_INICIAL);
 
-    const [aba, setAba] =
-        useState("ativas");
-
-    const [busca, setBusca] =
-        useState("");
-
-    const [modalAberto, setModalAberto] =
-        useState(false);
-
-    const [modalSelecaoObra, setModalSelecaoObra] =
-        useState(false);
-
-    const [documentoSelecionado, setDocumentoSelecionado] =
-        useState(null);
-
-    const [obraSelecionada, setObraSelecionada] =
-        useState(null);
-
-    const [form, setForm] =
-        useState(FORM_INICIAL);
-
-    /*
-     * Estado da pré-visualização
-     */
-    const [previewAberto, setPreviewAberto] =
-        useState(false);
-
-    const [previewDocumento, setPreviewDocumento] =
-        useState(null);
-
-    const [previewUrl, setPreviewUrl] =
-        useState("");
-
-    const [previewLoading, setPreviewLoading] =
-        useState(false);
-
+    const [previewAberto, setPreviewAberto] = useState(false);
+    const [previewDocumento, setPreviewDocumento] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState("");
+    const [previewLoading, setPreviewLoading] = useState(false);
 
     /* =========================================================
        NORMALIZAÇÃO
     ========================================================= */
 
-    const getObraId = (item) =>
-        item?.obra_id ??
-        item?.obraId ??
-        item?.obra?.id ??
-        "";
+    const getObraId = (item) => {
+        return (
+            item?.obra_id ??
+            item?.obraId ??
+            item?.obra?.id ??
+            ""
+        );
+    };
 
-    const getObraNome = (item) =>
-        item?.obra_nome ??
-        item?.obra?.nome ??
-        item?.obra?.nome_obra ??
-        item?.nome_obra ??
-        "Obra não informada";
+    const getObraNome = (item) => {
+        return (
+            item?.obra_nome ??
+            item?.obra?.nome ??
+            item?.obra?.nome_obra ??
+            item?.nome_obra ??
+            "Obra não informada"
+        );
+    };
 
-    const getArquitetoEmpresa = (item) =>
-        item?.arquiteto_empresa ??
-        item?.obra?.arquiteto_empresa ??
-        item?.arquitetoEmpresa ??
-        item?.obra?.arquitetoEmpresa ??
-        "Não informado";
+    const getArquitetoEmpresa = (item) => {
+        return (
+            item?.arquiteto_empresa ??
+            item?.obra?.arquiteto_empresa ??
+            item?.arquitetoEmpresa ??
+            item?.obra?.arquitetoEmpresa ??
+            "Não informado"
+        );
+    };
 
-    const getDocumentoNome = (item) =>
-        item?.nome ??
-        item?.nome_arquivo ??
-        item?.arquivo_nome ??
-        item?.titulo ??
-        "Documento";
+    const getDocumentoNome = (item) => {
+        return (
+            item?.nome ??
+            item?.nome_arquivo ??
+            item?.arquivo_nome ??
+            item?.titulo ??
+            "Documento"
+        );
+    };
 
-    const getDocumentoTipo = (item) =>
-        item?.tipo ??
-        item?.tipo_documento ??
-        "outros";
+    const getDocumentoTipo = (item) => {
+        return (
+            item?.tipo ??
+            item?.tipo_documento ??
+            "outros"
+        );
+    };
 
-    const getDocumentoDescricao = (item) =>
-        item?.descricao ??
-        item?.observacao ??
-        "";
+    const getDocumentoDescricao = (item) => {
+        return (
+            item?.descricao ??
+            item?.observacao ??
+            ""
+        );
+    };
 
-    const getDocumentoData = (item) =>
-        item?.created_at ??
-        item?.data ??
-        item?.data_criacao ??
-        null;
-
+    const getDocumentoData = (item) => {
+        return (
+            item?.created_at ??
+            item?.data ??
+            item?.data_criacao ??
+            null
+        );
+    };
 
     /* =========================================================
        EXTRAIR ERRO DA EDGE FUNCTION
     ========================================================= */
 
-    const extrairErroFunction = async (
-        error
-    ) => {
-
+    const extrairErroFunction = async (error) => {
         if (
             error?.context &&
-            typeof error.context.json ===
-                "function"
+            typeof error.context.json === "function"
         ) {
-
             try {
-
                 const resposta =
                     await error.context.json();
 
                 return (
-                    resposta?.error ||
-                    resposta?.message ||
-                    error?.message ||
+                    resposta?.error ??
+                    resposta?.message ??
+                    error?.message ??
                     "Erro desconhecido na Edge Function."
                 );
-
             } catch {
-
                 if (
-                    typeof error.context.text ===
-                        "function"
+                    typeof error.context.text === "function"
                 ) {
-
                     try {
-
                         const texto =
                             await error.context.text();
 
                         if (texto) {
                             return texto;
                         }
-
                     } catch {
                         // ignora
                     }
-
                 }
 
                 return (
-                    error?.message ||
+                    error?.message ??
                     "Erro desconhecido na Edge Function."
                 );
-
             }
-
         }
 
         return (
-            error?.message ||
+            error?.message ??
             "Erro desconhecido."
         );
-
     };
-
 
     /* =========================================================
        CARREGAR DADOS
     ========================================================= */
 
     const carregarDados = async () => {
-
         try {
-
             setLoading(true);
             setErro("");
 
             const {
                 data,
                 error
-            } =
-                await supabase.functions.invoke(
-                    "admin-documentos-alme",
-                    {
-                        body: {
-                            action: "list"
-                        }
+            } = await supabase.functions.invoke(
+                "admin-documentos-alme",
+                {
+                    body: {
+                        action: "list"
                     }
-                );
+                }
+            );
 
             if (error) {
-
                 const mensagem =
-                    await extrairErroFunction(
-                        error
-                    );
+                    await extrairErroFunction(error);
 
-                throw new Error(
-                    mensagem
-                );
-
+                throw new Error(mensagem);
             }
 
             if (data?.error) {
-
-                throw new Error(
-                    data.error
-                );
-
+                throw new Error(data.error);
             }
 
-            setDocumentos(
-                Array.isArray(
-                    data?.documentos
-                )
-                    ? data.documentos
-                    : []
-            );
-
-            setObrasAtivas(
-                Array.isArray(
-                    data?.obrasAtivas
-                )
+            const novasObrasAtivas =
+                Array.isArray(data?.obrasAtivas)
                     ? data.obrasAtivas
-                    : []
-            );
+                    : [];
 
-            setObrasConcluidas(
-                Array.isArray(
-                    data?.obrasConcluidas
-                )
+            const novasObrasConcluidas =
+                Array.isArray(data?.obrasConcluidas)
                     ? data.obrasConcluidas
-                    : []
-            );
+                    : [];
 
+            const novosDocumentos =
+                Array.isArray(data?.documentos)
+                    ? data.documentos
+                    : [];
+
+            setObrasAtivas(novasObrasAtivas);
+            setObrasConcluidas(novasObrasConcluidas);
+            setDocumentos(novosDocumentos);
             setUsuarioAtual(
-                data?.usuarioAtual ??
-                null
+                data?.usuarioAtual ?? null
             );
-
         } catch (error) {
-
             console.error(
                 "ERRO AO CARREGAR DOCUMENTOS:",
                 error
             );
 
             setErro(
-                error?.message ||
-                    "Não foi possível carregar os documentos."
+                error?.message ??
+                "Não foi possível carregar os documentos."
             );
-
         } finally {
-
             setLoading(false);
-
         }
-
     };
 
-
     useEffect(() => {
-
         carregarDados();
-
     }, []);
-
 
     /* =========================================================
        OBRAS DA ABA ATUAL
     ========================================================= */
 
-    const obrasExibidas =
-        useMemo(() => {
-
-            return aba === "ativas"
-                ? obrasAtivas
-                : obrasConcluidas;
-
-        }, [
-            aba,
-            obrasAtivas,
-            obrasConcluidas
-        ]);
-
+    const obrasExibidas = useMemo(() => {
+        return aba === "ativas"
+            ? obrasAtivas
+            : obrasConcluidas;
+    }, [
+        aba,
+        obrasAtivas,
+        obrasConcluidas
+    ]);
 
     /* =========================================================
-       IDS DAS OBRAS DA ABA
+       DOCUMENTOS POR OBRA
     ========================================================= */
 
-    const idsObrasExibidas =
-        useMemo(() => {
+    const documentosPorObra = useMemo(() => {
+        const agrupados = {};
 
-            return new Set(
-                obrasExibidas.map(
-                    (obra) =>
-                        String(
-                            obra.id
-                        )
-                )
+        documentos.forEach((documento) => {
+            const obraId =
+                String(
+                    getObraId(documento)
+                );
+
+            if (!obraId) {
+                return;
+            }
+
+            if (!agrupados[obraId]) {
+                agrupados[obraId] = [];
+            }
+
+            agrupados[obraId].push(
+                documento
             );
+        });
 
-        }, [
-            obrasExibidas
-        ]);
-
+        return agrupados;
+    }, [documentos]);
 
     /* =========================================================
-       DOCUMENTOS FILTRADOS
+       OBRAS FILTRADAS
     ========================================================= */
 
-    const documentosFiltrados =
-        useMemo(() => {
+    const obrasFiltradas = useMemo(() => {
+        const termo =
+            busca
+                .trim()
+                .toLowerCase();
 
-            const termo =
-                busca
-                    .trim()
-                    .toLowerCase();
+        if (!termo) {
+            return obrasExibidas;
+        }
 
-            return documentos.filter(
-                (documento) => {
+        return obrasExibidas.filter((obra) => {
+            const obraId =
+                String(
+                    obra?.id ?? ""
+                );
 
-                    const obraId =
-                        String(
-                            getObraId(
-                                documento
-                            )
-                        );
+            const documentosDaObra =
+                documentosPorObra[
+                    obraId
+                ] ?? [];
 
-                    if (
-                        !idsObrasExibidas.has(
-                            obraId
-                        )
-                    ) {
+            const dadosObra = [
+                obra?.nome,
+                obra?.nome_obra,
+                obra?.arquiteto_empresa
+            ]
+                .filter(Boolean)
+                .join(" ");
 
-                        return false;
-
-                    }
-
-                    if (!termo) {
-                        return true;
-                    }
-
-                    const texto = [
-                        getObraNome(
-                            documento
-                        ),
-                        getArquitetoEmpresa(
-                            documento
-                        ),
+            const dadosDocumentos =
+                documentosDaObra
+                    .flatMap((documento) => [
                         getDocumentoNome(
                             documento
                         ),
@@ -427,272 +369,230 @@ export default function Docalme() {
                         getDocumentoDescricao(
                             documento
                         )
-                    ]
-                        .join(" ")
-                        .toLowerCase();
+                    ])
+                    .filter(Boolean)
+                    .join(" ");
 
-                    return texto.includes(
-                        termo
-                    );
+            const texto =
+                `${dadosObra} ${dadosDocumentos}`
+                    .toLowerCase()
+                    .trim();
 
-                }
+            return texto.includes(
+                termo
             );
-
-        }, [
-            documentos,
-            idsObrasExibidas,
-            busca
-        ]);
-
+        });
+    }, [
+        obrasExibidas,
+        documentosPorObra,
+        busca
+    ]);
 
     /* =========================================================
        ESTATÍSTICAS
     ========================================================= */
 
-    const quantidadeDocumentos =
-        documentosFiltrados.length;
+    const documentosDaAba = useMemo(() => {
+        const ids = new Set(
+            obrasExibidas.map(
+                (obra) =>
+                    String(obra.id)
+            )
+        );
 
-    const quantidadeObras =
-        useMemo(() => {
-
-            const termo =
-                busca
-                    .trim()
-                    .toLowerCase();
-
-            if (!termo) {
-
-                return obrasExibidas.length;
-
-            }
-
-            return obrasExibidas.filter(
-                (obra) => {
-
-                    const texto = [
-                        obra?.nome,
-                        obra?.nome_obra,
-                        obra?.arquiteto_empresa
-                    ]
-                        .filter(Boolean)
-                        .join(" ")
-                        .toLowerCase();
-
-                    return texto.includes(
-                        termo
-                    );
-
-                }
-            ).length;
-
-        }, [
-            obrasExibidas,
-            busca
-        ]);
-
-
-    const obrasComDocumentos =
-        useMemo(() => {
-
-            const ids =
-                new Set();
-
-            documentosFiltrados.forEach(
-                (documento) => {
-
-                    const obraId =
+        return documentos.filter(
+            (documento) =>
+                ids.has(
+                    String(
                         getObraId(
                             documento
-                        );
+                        )
+                    )
+                )
+        );
+    }, [
+        documentos,
+        obrasExibidas
+    ]);
 
-                    if (obraId) {
+    const quantidadeDocumentos =
+        documentosDaAba.length;
 
-                        ids.add(
-                            String(
-                                obraId
-                            )
-                        );
+    const quantidadeObras =
+        obrasFiltradas.length;
 
-                    }
+    const obrasComDocumentos =
+        obrasFiltradas.filter((obra) => {
+            return (
+                documentosPorObra[
+                    String(obra.id)
+                ] ?? []
+            ).length > 0;
+        }).length;
 
-                }
-            );
+    /* =========================================================
+       ABRIR / FECHAR OBRA
+    ========================================================= */
 
-            return ids.size;
+    const alternarObra = (obraId) => {
+        const chave =
+            String(obraId);
 
-        }, [
-            documentosFiltrados
-        ]);
+        setObrasAbertas((atual) => ({
+            ...atual,
+            [chave]:
+                !atual[chave]
+        }));
+    };
 
+    const tratarTeclaCabecalhoObra = (
+        e,
+        obraId
+    ) => {
+        if (
+            e.key === "Enter" ||
+            e.key === " "
+        ) {
+            e.preventDefault();
+            alternarObra(obraId);
+        }
+    };
+
+    const abrirTodasObras = () => {
+        const estado = {};
+
+        obrasFiltradas.forEach((obra) => {
+            estado[
+                String(obra.id)
+            ] = true;
+        });
+
+        setObrasAbertas(estado);
+    };
+
+    const fecharTodasObras = () => {
+        setObrasAbertas({});
+    };
 
     /* =========================================================
        MODAIS
     ========================================================= */
 
     const abrirSelecaoObra = () => {
-
         setErro("");
-
-        setModalSelecaoObra(
-            true
-        );
-
+        setModalSelecaoObra(true);
     };
 
-
-    const selecionarObra = (
-        obra
-    ) => {
-
-        setObraSelecionada(
-            obra
-        );
-
-        setForm({
-            ...FORM_INICIAL,
-            obra_id:
-                obra.id
-        });
-
-        setModalSelecaoObra(
-            false
-        );
-
-        setModalAberto(
-            true
-        );
-
-    };
-
-
-    const fecharModal = () => {
-
-        if (salvando) {
+    const selecionarObra = (obra) => {
+        if (!obra) {
             return;
         }
 
-        setModalAberto(
-            false
-        );
+        setErro("");
+
+        setObraSelecionada(obra);
 
         setDocumentoSelecionado(
             null
         );
 
-        setObraSelecionada(
-            null
-        );
+        setForm({
+            ...FORM_INICIAL,
+            obra_id: obra.id
+        });
+
+        setModalSelecaoObra(false);
+        setModalAberto(true);
+    };
+
+    const fecharModal = () => {
+        if (salvando) {
+            return;
+        }
+
+        setModalAberto(false);
+        setDocumentoSelecionado(null);
+        setObraSelecionada(null);
 
         setForm({
             ...FORM_INICIAL
         });
-
     };
 
-
     /* =========================================================
-       EDITAR
+       EDITAR DOCUMENTO
     ========================================================= */
 
     const editarDocumento = (
         documento
     ) => {
-
         const obraId =
-            getObraId(
-                documento
-            );
+            getObraId(documento);
 
         const obra =
             obrasAtivas.find(
                 (item) =>
-                    String(
-                        item.id
-                    ) ===
-                    String(
-                        obraId
-                    )
-            ) ||
+                    String(item.id) ===
+                    String(obraId)
+            ) ??
             obrasConcluidas.find(
                 (item) =>
-                    String(
-                        item.id
-                    ) ===
-                    String(
-                        obraId
-                    )
+                    String(item.id) ===
+                    String(obraId)
             );
+
+        const obraFinal =
+            obra ?? {
+                id: obraId,
+                nome:
+                    documento?.obra_nome ??
+                    "Obra não informada",
+                arquiteto_empresa:
+                    documento?.arquiteto_empresa ??
+                    ""
+            };
 
         setDocumentoSelecionado(
             documento
         );
 
         setObraSelecionada(
-            obra || {
-                id:
-                    obraId,
-
-                nome:
-                    documento?.obra_nome ||
-                    "Obra não informada",
-
-                arquiteto_empresa:
-                    documento?.arquiteto_empresa ||
-                    ""
-            }
+            obraFinal
         );
 
         setForm({
-
-            obra_id:
-                obraId,
-
+            obra_id: obraId,
             nome:
                 getDocumentoNome(
                     documento
                 ),
-
             tipo:
                 getDocumentoTipo(
                     documento
                 ),
-
             descricao:
                 getDocumentoDescricao(
                     documento
                 ),
-
-            arquivo:
-                null
-
+            arquivo: null
         });
 
-        setModalAberto(
-            true
-        );
-
+        setModalAberto(true);
     };
 
-
     /* =========================================================
-       ALTERAR FORM
+       ALTERAR FORMULÁRIO
     ========================================================= */
 
     const alterarCampo = (
         campo,
         valor
     ) => {
-
-        setForm(
-            (atual) => ({
-                ...atual,
-                [campo]:
-                    valor
-            })
-        );
-
+        setForm((atual) => ({
+            ...atual,
+            [campo]: valor
+        }));
     };
-
 
     /* =========================================================
        EXTENSÃO
@@ -701,22 +601,15 @@ export default function Docalme() {
     const obterExtensaoArquivo = (
         arquivo
     ) => {
-
         if (!arquivo?.name) {
             return "";
         }
 
         const partes =
-            arquivo.name.split(
-                "."
-            );
+            arquivo.name.split(".");
 
-        if (
-            partes.length <= 1
-        ) {
-
+        if (partes.length <= 1) {
             return "";
-
         }
 
         return partes
@@ -726,9 +619,7 @@ export default function Docalme() {
                 /[^a-z0-9]/g,
                 ""
             );
-
     };
-
 
     /* =========================================================
        UPLOAD
@@ -739,55 +630,40 @@ export default function Docalme() {
         obraId,
         tipo
     ) => {
-
         if (!arquivo) {
             return null;
         }
 
         try {
-
             const extensao =
                 obterExtensaoArquivo(
                     arquivo
                 );
 
             if (!extensao) {
-
                 throw new Error(
                     "Não foi possível identificar a extensão do arquivo."
                 );
-
             }
-
 
             const {
                 data,
                 error
-            } =
-                await supabase.functions.invoke(
-                    "admin-documentos-alme",
-                    {
-                        body: {
-
-                            action:
-                                "create_upload_url",
-
-                            obra_id:
-                                Number(
-                                    obraId
-                                ),
-
-                            tipo,
-
-                            extensao
-
-                        }
+            } = await supabase.functions.invoke(
+                "admin-documentos-alme",
+                {
+                    body: {
+                        action:
+                            "create_upload_url",
+                        obra_id:
+                            Number(obraId),
+                        tipo,
+                        extensao
                     }
-                );
-
+                }
+            );
 
             if (error) {
-
                 const mensagem =
                     await extrairErroFunction(
                         error
@@ -796,163 +672,102 @@ export default function Docalme() {
                 throw new Error(
                     `Erro ao preparar upload: ${mensagem}`
                 );
-
             }
 
-
-            if (
-                data?.error
-            ) {
-
+            if (data?.error) {
                 throw new Error(
                     data.error
                 );
-
             }
-
 
             if (
                 !data?.path ||
                 !data?.token
             ) {
-
                 throw new Error(
                     "A Edge Function não retornou path/token para o upload."
                 );
-
             }
 
-
             const {
-                error:
-                    uploadError
-            } =
-                await supabase.storage
-                    .from(
-                        BUCKET
-                    )
-                    .uploadToSignedUrl(
-                        data.path,
-                        data.token,
-                        arquivo
-                    );
+                error: uploadError
+            } = await supabase.storage
+                .from(BUCKET)
+                .uploadToSignedUrl(
+                    data.path,
+                    data.token,
+                    arquivo
+                );
 
-
-            if (
-                uploadError
-            ) {
-
+            if (uploadError) {
                 throw new Error(
                     `Erro ao enviar arquivo: ${uploadError.message}`
                 );
-
             }
 
-
             return {
-
-                path:
-                    data.path,
-
+                path: data.path,
                 nomeArquivo:
                     arquivo.name,
-
                 extensao,
-
                 mimeType:
                     arquivo.type ||
                     null,
-
                 tamanho:
                     arquivo.size
-
             };
-
-        } catch (
-            error
-        ) {
-
+        } catch (error) {
             console.error(
                 "ERRO COMPLETO NO UPLOAD:",
                 error
             );
 
             throw error;
-
         }
-
     };
 
-
     /* =========================================================
-       SALVAR
+       SALVAR DOCUMENTO
     ========================================================= */
 
     const salvarDocumento =
         async (e) => {
-
             e.preventDefault();
 
             try {
-
-                setSalvando(
-                    true
-                );
-
+                setSalvando(true);
                 setErro("");
 
-
-                if (
-                    !form.obra_id
-                ) {
-
+                if (!form.obra_id) {
                     throw new Error(
                         "Selecione uma obra."
                     );
-
                 }
 
-
-                if (
-                    !form.nome.trim()
-                ) {
-
+                if (!form.nome.trim()) {
                     throw new Error(
                         "Informe o nome do documento."
                     );
-
                 }
 
-
-                if (
-                    !form.tipo
-                ) {
-
+                if (!form.tipo) {
                     throw new Error(
                         "Selecione o tipo do documento."
                     );
-
                 }
 
-
-                /* =================================================
+                /* =============================================
                    NOVO DOCUMENTO
-                ================================================= */
+                ============================================= */
 
                 if (
                     !documentoSelecionado
                 ) {
-
-                    if (
-                        !form.arquivo
-                    ) {
-
+                    if (!form.arquivo) {
                         throw new Error(
                             "Selecione um arquivo para enviar."
                         );
-
                     }
-
 
                     const upload =
                         await fazerUpload(
@@ -961,15 +776,11 @@ export default function Docalme() {
                             form.tipo
                         );
 
-
                     if (!upload) {
-
                         throw new Error(
                             "O upload do arquivo não foi concluído."
                         );
-
                     }
-
 
                     const {
                         data,
@@ -979,7 +790,6 @@ export default function Docalme() {
                             "admin-documentos-alme",
                             {
                                 body: {
-
                                     action:
                                         "create",
 
@@ -1011,16 +821,11 @@ export default function Docalme() {
 
                                     descricao:
                                         form.descricao.trim()
-
                                 }
                             }
                         );
 
-
-                    if (
-                        error
-                    ) {
-
+                    if (error) {
                         const mensagem =
                             await extrairErroFunction(
                                 error
@@ -1029,49 +834,32 @@ export default function Docalme() {
                         throw new Error(
                             `Erro ao salvar documento: ${mensagem}`
                         );
-
                     }
 
-
-                    if (
-                        data?.error
-                    ) {
-
+                    if (data?.error) {
                         throw new Error(
                             data.error
                         );
-
                     }
-
                 }
 
-
-                /* =================================================
-                   EDITAR
-                ================================================= */
+                /* =============================================
+                   EDITAR DOCUMENTO
+                ============================================= */
 
                 else {
+                    let upload = null;
 
-                    let upload =
-                        null;
-
-
-                    if (
-                        form.arquivo
-                    ) {
-
+                    if (form.arquivo) {
                         upload =
                             await fazerUpload(
                                 form.arquivo,
                                 documentoSelecionado.obra_id,
                                 form.tipo
                             );
-
                     }
 
-
                     const body = {
-
                         action:
                             "update",
 
@@ -1088,14 +876,9 @@ export default function Docalme() {
 
                         descricao:
                             form.descricao.trim()
-
                     };
 
-
-                    if (
-                        upload
-                    ) {
-
+                    if (upload) {
                         body.nome_arquivo =
                             upload.nomeArquivo;
 
@@ -1110,9 +893,7 @@ export default function Docalme() {
 
                         body.storage_path =
                             upload.path;
-
                     }
-
 
                     const {
                         data,
@@ -1125,11 +906,7 @@ export default function Docalme() {
                             }
                         );
 
-
-                    if (
-                        error
-                    ) {
-
+                    if (error) {
                         const mensagem =
                             await extrairErroFunction(
                                 error
@@ -1138,62 +915,52 @@ export default function Docalme() {
                         throw new Error(
                             `Erro ao atualizar documento: ${mensagem}`
                         );
-
                     }
 
-
-                    if (
-                        data?.error
-                    ) {
-
+                    if (data?.error) {
                         throw new Error(
                             data.error
                         );
-
                     }
-
                 }
 
+                const obraIdSalva =
+                    String(
+                        form.obra_id
+                    );
 
                 await carregarDados();
 
+                setObrasAbertas(
+                    (atual) => ({
+                        ...atual,
+                        [obraIdSalva]:
+                            true
+                    })
+                );
+
                 fecharModal();
-
-
-            } catch (
-                error
-            ) {
-
+            } catch (error) {
                 console.error(
                     "ERRO AO SALVAR DOCUMENTO:",
                     error
                 );
 
                 setErro(
-                    error?.message ||
-                        "Não foi possível salvar o documento."
+                    error?.message ??
+                    "Não foi possível salvar o documento."
                 );
-
             } finally {
-
-                setSalvando(
-                    false
-                );
-
+                setSalvando(false);
             }
-
         };
-
 
     /* =========================================================
        EXCLUIR
     ========================================================= */
 
     const excluirDocumento =
-        async (
-            documento
-        ) => {
-
+        async (documento) => {
             const nome =
                 getDocumentoNome(
                     documento
@@ -1204,17 +971,12 @@ export default function Docalme() {
                     `Tem certeza que deseja excluir o documento "${nome}"?`
                 );
 
-            if (
-                !confirmar
-            ) {
+            if (!confirmar) {
                 return;
             }
 
-
             try {
-
                 setErro("");
-
 
                 const {
                     data,
@@ -1224,7 +986,6 @@ export default function Docalme() {
                         "admin-documentos-alme",
                         {
                             body: {
-
                                 action:
                                     "delete",
 
@@ -1232,16 +993,11 @@ export default function Docalme() {
                                     Number(
                                         documento.id
                                     )
-
                             }
                         }
                     );
 
-
-                if (
-                    error
-                ) {
-
+                if (error) {
                     const mensagem =
                         await extrairErroFunction(
                             error
@@ -1250,188 +1006,150 @@ export default function Docalme() {
                     throw new Error(
                         mensagem
                     );
-
                 }
 
-
-                if (
-                    data?.error
-                ) {
-
+                if (data?.error) {
                     throw new Error(
                         data.error
                     );
-
                 }
 
-
                 await carregarDados();
-
-
-            } catch (
-                error
-            ) {
-
+            } catch (error) {
                 console.error(
-                    "Erro ao excluir documento:",
+                    "ERRO AO EXCLUIR DOCUMENTO:",
                     error
                 );
 
                 setErro(
-                    error?.message ||
-                        "Não foi possível excluir o documento."
+                    error?.message ??
+                    "Não foi possível excluir o documento."
                 );
-
             }
-
         };
-
 
     /* =========================================================
        TIPO DE PREVIEW
     ========================================================= */
 
-    const obterTipoPreview = (
-        documento
-    ) => {
-
-        const mime =
-            String(
-                documento?.mime_type ??
+    const obterTipoPreview =
+        (documento) => {
+            const mime =
+                String(
+                    documento?.mime_type ??
                     documento?.mimeType ??
                     ""
-            )
-                .toLowerCase()
-                .trim();
+                )
+                    .toLowerCase()
+                    .trim();
 
-        const extensao =
-            String(
-                documento?.extensao ??
-                    ""
-            )
-                .toLowerCase()
-                .replace(
-                    /^\./,
+            const extensao =
+                String(
+                    documento?.extensao ??
                     ""
                 )
-                .trim();
+                    .toLowerCase()
+                    .replace(
+                        /^\./,
+                        ""
+                    )
+                    .trim();
 
-        const nomeArquivo =
-            String(
-                documento?.nome_arquivo ??
+            const nomeArquivo =
+                String(
+                    documento?.nome_arquivo ??
                     ""
-            )
-                .toLowerCase();
+                ).toLowerCase();
 
+            if (
+                mime ===
+                    "application/pdf" ||
+                extensao === "pdf" ||
+                nomeArquivo.endsWith(
+                    ".pdf"
+                )
+            ) {
+                return "pdf";
+            }
 
-        if (
-            mime ===
-                "application/pdf" ||
-            extensao === "pdf" ||
-            nomeArquivo.endsWith(
-                ".pdf"
-            )
-        ) {
+            if (
+                mime.startsWith(
+                    "image/"
+                ) ||
+                [
+                    "jpg",
+                    "jpeg",
+                    "png",
+                    "gif",
+                    "webp",
+                    "bmp",
+                    "svg"
+                ].includes(
+                    extensao
+                )
+            ) {
+                return "image";
+            }
 
-            return "pdf";
+            if (
+                mime.startsWith(
+                    "video/"
+                ) ||
+                [
+                    "mp4",
+                    "webm",
+                    "ogg"
+                ].includes(
+                    extensao
+                )
+            ) {
+                return "video";
+            }
 
-        }
+            if (
+                mime.startsWith(
+                    "audio/"
+                ) ||
+                [
+                    "mp3",
+                    "wav",
+                    "ogg",
+                    "m4a"
+                ].includes(
+                    extensao
+                )
+            ) {
+                return "audio";
+            }
 
+            if (
+                mime.startsWith(
+                    "text/"
+                ) ||
+                [
+                    "txt",
+                    "csv",
+                    "json",
+                    "xml"
+                ].includes(
+                    extensao
+                )
+            ) {
+                return "text";
+            }
 
-        if (
-            mime.startsWith(
-                "image/"
-            ) ||
-            [
-                "jpg",
-                "jpeg",
-                "png",
-                "gif",
-                "webp",
-                "bmp",
-                "svg"
-            ].includes(
-                extensao
-            )
-        ) {
-
-            return "image";
-
-        }
-
-
-        if (
-            mime.startsWith(
-                "video/"
-            ) ||
-            [
-                "mp4",
-                "webm",
-                "ogg"
-            ].includes(
-                extensao
-            )
-        ) {
-
-            return "video";
-
-        }
-
-
-        if (
-            mime.startsWith(
-                "audio/"
-            ) ||
-            [
-                "mp3",
-                "wav",
-                "ogg",
-                "m4a"
-            ].includes(
-                extensao
-            )
-        ) {
-
-            return "audio";
-
-        }
-
-
-        if (
-            mime.startsWith(
-                "text/"
-            ) ||
-            [
-                "txt",
-                "csv",
-                "json",
-                "xml"
-            ].includes(
-                extensao
-            )
-        ) {
-
-            return "text";
-
-        }
-
-
-        return "unsupported";
-
-    };
-
+            return "unsupported";
+        };
 
     /* =========================================================
-       PRÉ-VISUALIZAR
+       PREVIEW
     ========================================================= */
 
     const visualizarDocumento =
         async (
             documento
         ) => {
-
             try {
-
                 setErro("");
 
                 setPreviewDocumento(
@@ -1439,15 +1157,10 @@ export default function Docalme() {
                 );
 
                 setPreviewUrl("");
-
-                setPreviewAberto(
-                    true
-                );
-
+                setPreviewAberto(true);
                 setPreviewLoading(
                     true
                 );
-
 
                 const {
                     data,
@@ -1457,7 +1170,6 @@ export default function Docalme() {
                         "admin-documentos-alme",
                         {
                             body: {
-
                                 action:
                                     "signed_url",
 
@@ -1468,16 +1180,11 @@ export default function Docalme() {
 
                                 download:
                                     false
-
                             }
                         }
                     );
 
-
-                if (
-                    error
-                ) {
-
+                if (error) {
                     const mensagem =
                         await extrairErroFunction(
                             error
@@ -1486,45 +1193,24 @@ export default function Docalme() {
                     throw new Error(
                         mensagem
                     );
-
                 }
 
-
-                if (
-                    data?.error
-                ) {
-
+                if (data?.error) {
                     throw new Error(
                         data.error
                     );
-
                 }
 
-
-                const url =
-                    data?.url;
-
-
-                if (
-                    !url
-                ) {
-
+                if (!data?.url) {
                     throw new Error(
                         "Não foi possível gerar o link do documento."
                     );
-
                 }
 
-
                 setPreviewUrl(
-                    url
+                    data.url
                 );
-
-
-            } catch (
-                error
-            ) {
-
+            } catch (error) {
                 console.error(
                     "ERRO AO PRÉ-VISUALIZAR DOCUMENTO:",
                     error
@@ -1538,73 +1224,38 @@ export default function Docalme() {
                     null
                 );
 
-                setPreviewUrl(
-                    ""
-                );
+                setPreviewUrl("");
 
                 setErro(
-                    error?.message ||
-                        "Não foi possível visualizar o documento."
+                    error?.message ??
+                    "Não foi possível visualizar o documento."
                 );
-
             } finally {
-
                 setPreviewLoading(
                     false
                 );
-
             }
-
         };
 
-
-    /* =========================================================
-       FECHAR PREVIEW
-    ========================================================= */
-
     const fecharPreview = () => {
-
-        setPreviewAberto(
-            false
-        );
-
-        setPreviewDocumento(
-            null
-        );
-
+        setPreviewAberto(false);
+        setPreviewDocumento(null);
         setPreviewUrl("");
-
-        setPreviewLoading(
-            false
-        );
-
+        setPreviewLoading(false);
     };
-
-
-    /* =========================================================
-       ABRIR ARQUIVO EXTERNAMENTE
-    ========================================================= */
 
     const abrirArquivoEmNovaAba =
         () => {
-
-            if (
-                !previewUrl
-            ) {
-
+            if (!previewUrl) {
                 return;
-
             }
-
 
             window.open(
                 previewUrl,
                 "_blank",
                 "noopener,noreferrer"
             );
-
         };
-
 
     /* =========================================================
        DOWNLOAD
@@ -1614,11 +1265,8 @@ export default function Docalme() {
         async (
             documento
         ) => {
-
             try {
-
                 setErro("");
-
 
                 const {
                     data,
@@ -1628,7 +1276,6 @@ export default function Docalme() {
                         "admin-documentos-alme",
                         {
                             body: {
-
                                 action:
                                     "signed_url",
 
@@ -1639,16 +1286,11 @@ export default function Docalme() {
 
                                 download:
                                     true
-
                             }
                         }
                     );
 
-
-                if (
-                    error
-                ) {
-
+                if (error) {
                     const mensagem =
                         await extrairErroFunction(
                             error
@@ -1657,108 +1299,79 @@ export default function Docalme() {
                     throw new Error(
                         mensagem
                     );
-
                 }
 
-
-                if (
-                    data?.error
-                ) {
-
+                if (data?.error) {
                     throw new Error(
                         data.error
                     );
-
                 }
 
-
-                if (
-                    !data?.url
-                ) {
-
+                if (!data?.url) {
                     throw new Error(
                         "Não foi possível gerar o link para download."
                     );
-
                 }
-
 
                 window.open(
                     data.url,
                     "_blank",
                     "noopener,noreferrer"
                 );
-
-
-            } catch (
-                error
-            ) {
-
+            } catch (error) {
                 console.error(
-                    "Erro ao baixar documento:",
+                    "ERRO AO BAIXAR DOCUMENTO:",
                     error
                 );
 
                 setErro(
-                    error?.message ||
-                        "Não foi possível baixar o documento."
+                    error?.message ??
+                    "Não foi possível baixar o documento."
                 );
-
             }
-
         };
-
 
     /* =========================================================
        FORMATAÇÕES
     ========================================================= */
 
-    const formatarData =
-        (data) => {
+    const formatarData = (
+        data
+    ) => {
+        if (!data) {
+            return "—";
+        }
 
-            if (!data) {
-                return "—";
-            }
+        const dataObj =
+            new Date(data);
 
-            const dataObj =
-                new Date(
-                    data
-                );
+        if (
+            Number.isNaN(
+                dataObj.getTime()
+            )
+        ) {
+            return "—";
+        }
 
-            if (
-                Number.isNaN(
-                    dataObj.getTime()
-                )
-            ) {
+        return dataObj.toLocaleDateString(
+            "pt-BR"
+        );
+    };
 
-                return "—";
-
-            }
-
-            return dataObj.toLocaleDateString(
-                "pt-BR"
+    const formatarTipo = (
+        tipo
+    ) => {
+        const encontrado =
+            TIPOS_DOCUMENTO.find(
+                (item) =>
+                    item.value === tipo
             );
 
-        };
-
-
-    const formatarTipo =
-        (tipo) => {
-
-            const encontrado =
-                TIPOS_DOCUMENTO.find(
-                    (item) =>
-                        item.value ===
-                        tipo
-                );
-
-            return (
-                encontrado?.label ||
-                "Outros"
-            );
-
-        };
-
+        return (
+            encontrado?.label ??
+            "Outros"
+        );
+    };
 
     /* =========================================================
        RENDER
@@ -1767,9 +1380,8 @@ export default function Docalme() {
     return (
         <div className="docalme-page">
 
-
             {/* =================================================
-                CABEÇALHO
+                HEADER
             ================================================= */}
 
             <header className="docalme-header">
@@ -1787,9 +1399,7 @@ export default function Docalme() {
                         <FiArrowLeft />
                     </button>
 
-
                     <div>
-
                         <span className="docalme-eyebrow">
                             ALME
                         </span>
@@ -1801,11 +1411,9 @@ export default function Docalme() {
                         <p>
                             Central de documentos e arquivos das obras
                         </p>
-
                     </div>
 
                 </div>
-
 
                 <div className="docalme-header-actions">
 
@@ -1816,11 +1424,8 @@ export default function Docalme() {
                         }
                         type="button"
                         title="Atualizar"
-                        disabled={
-                            loading
-                        }
+                        disabled={loading}
                     >
-
                         <FiRefreshCw
                             className={
                                 loading
@@ -1832,9 +1437,7 @@ export default function Docalme() {
                         <span>
                             Atualizar
                         </span>
-
                     </button>
-
 
                     <button
                         className="docalme-add"
@@ -1843,26 +1446,22 @@ export default function Docalme() {
                         }
                         type="button"
                     >
-
                         <FiPlus />
 
                         <span>
                             Adicionar documento
                         </span>
-
                     </button>
 
                 </div>
 
             </header>
 
-
             {/* =================================================
                 USUÁRIO
             ================================================= */}
 
             {usuarioAtual?.nome && (
-
                 <div className="docalme-user">
 
                     <span>
@@ -1870,22 +1469,17 @@ export default function Docalme() {
                     </span>
 
                     <strong>
-                        {
-                            usuarioAtual.nome
-                        }
+                        {usuarioAtual.nome}
                     </strong>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 ERRO
             ================================================= */}
 
             {erro && (
-
                 <div className="docalme-error">
 
                     <span>
@@ -1899,15 +1493,11 @@ export default function Docalme() {
                         }
                         title="Fechar"
                     >
-
                         <FiX />
-
                     </button>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 RESUMO
@@ -1928,15 +1518,32 @@ export default function Docalme() {
                         </span>
 
                         <strong>
-                            {
-                                quantidadeDocumentos
-                            }
+                            {quantidadeDocumentos}
                         </strong>
 
                     </div>
 
                 </div>
 
+                <div className="docalme-summary-card">
+
+                    <div className="docalme-summary-icon">
+                        <FiFolder />
+                    </div>
+
+                    <div>
+
+                        <span>
+                            Obras
+                        </span>
+
+                        <strong>
+                            {quantidadeObras}
+                        </strong>
+
+                    </div>
+
+                </div>
 
                 <div className="docalme-summary-card">
 
@@ -1947,36 +1554,11 @@ export default function Docalme() {
                     <div>
 
                         <span>
-                            Obras
-                        </span>
-
-                        <strong>
-                            {
-                                quantidadeObras
-                            }
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div className="docalme-summary-card">
-
-                    <div className="docalme-summary-icon">
-                        <FiFileText />
-                    </div>
-
-                    <div>
-
-                        <span>
                             Obras com documentos
                         </span>
 
                         <strong>
-                            {
-                                obrasComDocumentos
-                            }
+                            {obrasComDocumentos}
                         </strong>
 
                     </div>
@@ -1984,7 +1566,6 @@ export default function Docalme() {
                 </div>
 
             </section>
-
 
             {/* =================================================
                 ABAS
@@ -2000,22 +1581,15 @@ export default function Docalme() {
                             : ""
                     }
                     onClick={() =>
-                        setAba(
-                            "ativas"
-                        )
+                        setAba("ativas")
                     }
                 >
-
                     Obras em andamento
 
                     <span>
-                        {
-                            obrasAtivas.length
-                        }
+                        {obrasAtivas.length}
                     </span>
-
                 </button>
-
 
                 <button
                     type="button"
@@ -2025,24 +1599,17 @@ export default function Docalme() {
                             : ""
                     }
                     onClick={() =>
-                        setAba(
-                            "concluidas"
-                        )
+                        setAba("concluidas")
                     }
                 >
-
                     Obras concluídas
 
                     <span>
-                        {
-                            obrasConcluidas.length
-                        }
+                        {obrasConcluidas.length}
                     </span>
-
                 </button>
 
             </div>
-
 
             {/* =================================================
                 FILTROS
@@ -2057,9 +1624,7 @@ export default function Docalme() {
                     <input
                         type="text"
                         placeholder="Pesquisar obra, arquiteto, empresa ou documento..."
-                        value={
-                            busca
-                        }
+                        value={busca}
                         onChange={(e) =>
                             setBusca(
                                 e.target.value
@@ -2068,7 +1633,6 @@ export default function Docalme() {
                     />
 
                     {busca && (
-
                         <button
                             type="button"
                             onClick={() =>
@@ -2076,17 +1640,38 @@ export default function Docalme() {
                             }
                             title="Limpar pesquisa"
                         >
-
                             <FiX />
-
                         </button>
-
                     )}
 
                 </div>
 
-            </section>
+                {!loading &&
+                    obrasFiltradas.length > 0 && (
+                        <div className="docalme-view-actions">
 
+                            <button
+                                type="button"
+                                onClick={
+                                    abrirTodasObras
+                                }
+                            >
+                                Abrir todas
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={
+                                    fecharTodasObras
+                                }
+                            >
+                                Fechar todas
+                            </button>
+
+                        </div>
+                    )}
+
+            </section>
 
             {/* =================================================
                 TÍTULO
@@ -2097,44 +1682,31 @@ export default function Docalme() {
                 <div>
 
                     <h2>
-
-                        {aba ===
-                        "ativas"
-                            ? "Documentos das obras em andamento"
-                            : "Documentos das obras concluídas"}
-
+                        {aba === "ativas"
+                            ? "Obras em andamento"
+                            : "Obras concluídas"}
                     </h2>
 
                     <p>
-                        Arquivos vinculados às obras selecionadas
+                        Organize e acesse os documentos de cada obra
                     </p>
 
                 </div>
 
-
                 <span>
-
-                    {
-                        documentosFiltrados.length
-                    }{" "}
-
-                    {
-                        documentosFiltrados.length ===
-                        1
-                            ? "documento"
-                            : "documentos"
-                    }
-
+                    {obrasFiltradas.length}{" "}
+                    {obrasFiltradas.length === 1
+                        ? "obra"
+                        : "obras"}
                 </span>
 
             </div>
 
-
             {/* =================================================
-                TABELA
+                LISTA DE OBRAS
             ================================================= */}
 
-            <section className="docalme-table-wrapper">
+            <section className="docalme-obras-wrapper">
 
                 {loading ? (
 
@@ -2143,310 +1715,373 @@ export default function Docalme() {
                         <div className="docalme-spinner" />
 
                         <span>
-                            Carregando documentos...
+                            Carregando obras...
                         </span>
 
                     </div>
 
-                ) : documentosFiltrados.length ===
-                  0 ? (
+                ) : obrasFiltradas.length === 0 ? (
 
                     <div className="docalme-empty">
 
                         <div className="docalme-empty-icon">
-
-                            <FiFileText />
-
+                            <FiFolder />
                         </div>
 
-
                         <h3>
-                            Nenhum documento encontrado
+                            Nenhuma obra encontrada
                         </h3>
 
-
                         <p>
-
                             {busca
                                 ? "Tente alterar os termos da pesquisa."
-                                : "Ainda não existem documentos cadastrados para esta categoria."}
-
+                                : aba === "ativas"
+                                    ? "Não existem obras em andamento disponíveis."
+                                    : "Não existem obras concluídas disponíveis."}
                         </p>
 
-
-                        {!busca && (
-
-                            <button
-                                type="button"
-                                onClick={
-                                    abrirSelecaoObra
-                                }
-                            >
-
-                                <FiPlus />
-
-                                Adicionar documento
-
-                            </button>
-
-                        )}
+                        {!busca &&
+                            aba === "ativas" && (
+                                <button
+                                    type="button"
+                                    onClick={
+                                        abrirSelecaoObra
+                                    }
+                                >
+                                    <FiPlus />
+                                    Adicionar documento
+                                </button>
+                            )}
 
                     </div>
 
                 ) : (
 
-                    <div className="docalme-table-scroll">
+                    <div className="docalme-obras-list">
 
-                        <table className="docalme-table">
+                        {obrasFiltradas.map(
+                            (obra) => {
+                                const obraId =
+                                    String(
+                                        obra.id
+                                    );
 
-                            <thead>
+                                const documentosDaObra =
+                                    documentosPorObra[
+                                        obraId
+                                    ] ?? [];
 
-                                <tr>
+                                const aberta =
+                                    Boolean(
+                                        obrasAbertas[
+                                            obraId
+                                        ]
+                                    );
 
-                                    <th>
-                                        OBRA
-                                    </th>
+                                return (
+                                    <article
+                                        className={
+                                            `docalme-obra-card ${
+                                                aberta
+                                                    ? "open"
+                                                    : ""
+                                            }`
+                                        }
+                                        key={
+                                            obra.id
+                                        }
+                                    >
 
-                                    <th>
-                                        ARQUITETO / EMPRESA
-                                    </th>
+                                        {/* CABEÇALHO DA OBRA */}
 
-                                    <th>
-                                        DOCUMENTO
-                                    </th>
-
-                                    <th>
-                                        TIPO
-                                    </th>
-
-                                    <th>
-                                        DATA
-                                    </th>
-
-                                    <th>
-                                        AÇÕES
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                                {documentosFiltrados.map(
-                                    (
-                                        documento
-                                    ) => (
-
-                                        <tr
-                                            key={
-                                                documento.id
+                                        <div
+                                            className="docalme-obra-header"
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() =>
+                                                alternarObra(
+                                                    obra.id
+                                                )
+                                            }
+                                            onKeyDown={(
+                                                e
+                                            ) =>
+                                                tratarTeclaCabecalhoObra(
+                                                    e,
+                                                    obra.id
+                                                )
                                             }
                                         >
 
-                                            <td>
+                                            <div className="docalme-obra-main">
 
-                                                <div className="docalme-obra-cell">
+                                                <div className="docalme-obra-icon">
+                                                    <FiFolder />
+                                                </div>
+
+                                                <div className="docalme-obra-info">
 
                                                     <strong>
-
-                                                        {
-                                                            getObraNome(
-                                                                documento
-                                                            )
-                                                        }
-
+                                                        {obra.nome ||
+                                                            obra.nome_obra ||
+                                                            "Obra sem nome"}
                                                     </strong>
 
+                                                    <span>
+                                                        {obra.arquiteto_empresa ||
+                                                            "Arquiteto / empresa não informado"}
+                                                    </span>
+
                                                 </div>
 
-                                            </td>
+                                            </div>
 
+                                            <div className="docalme-obra-right">
 
-                                            <td>
+                                                <div className="docalme-obra-counter">
 
-                                                <div className="docalme-arquiteto-cell">
+                                                    <FiFileText />
 
-                                                    {
-                                                        getArquitetoEmpresa(
-                                                            documento
-                                                        )
+                                                    <span>
+                                                        {documentosDaObra.length}{" "}
+                                                        {documentosDaObra.length === 1
+                                                            ? "documento"
+                                                            : "documentos"}
+                                                    </span>
+
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    className="docalme-obra-upload"
+                                                    title="Adicionar arquivo nesta obra"
+                                                    aria-label={`Adicionar arquivo em ${obra.nome || "esta obra"}`}
+                                                    onClick={(
+                                                        e
+                                                    ) => {
+                                                        e.stopPropagation();
+
+                                                        selecionarObra(
+                                                            obra
+                                                        );
+                                                    }}
+                                                >
+                                                    <FiUpload />
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    className="docalme-obra-toggle"
+                                                    title={
+                                                        aberta
+                                                            ? "Fechar obra"
+                                                            : "Abrir obra"
                                                     }
+                                                    aria-label={
+                                                        aberta
+                                                            ? "Fechar obra"
+                                                            : "Abrir obra"
+                                                    }
+                                                    onClick={(
+                                                        e
+                                                    ) => {
+                                                        e.stopPropagation();
 
-                                                </div>
+                                                        alternarObra(
+                                                            obra.id
+                                                        );
+                                                    }}
+                                                >
+                                                    {aberta ? (
+                                                        <FiChevronUp />
+                                                    ) : (
+                                                        <FiChevronDown />
+                                                    )}
+                                                </button>
 
-                                            </td>
+                                            </div>
 
+                                        </div>
 
-                                            <td>
+                                        {/* DOCUMENTOS */}
 
-                                                <div className="docalme-document-cell">
+                                        {aberta && (
+                                            <div className="docalme-obra-content">
 
-                                                    <div className="docalme-document-icon">
+                                                {documentosDaObra.length === 0 ? (
 
-                                                        <FiFileText />
+                                                    <div className="docalme-no-documents">
+
+                                                        <div className="docalme-no-documents-icon">
+                                                            <FiFileText />
+                                                        </div>
+
+                                                        <div>
+                                                            <strong>
+                                                                Nenhum documento cadastrado
+                                                            </strong>
+
+                                                            <span>
+                                                                Esta obra ainda não possui documentos ALME.
+                                                            </span>
+                                                        </div>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                selecionarObra(
+                                                                    obra
+                                                                )
+                                                            }
+                                                        >
+                                                            <FiPlus />
+                                                            Adicionar
+                                                        </button>
 
                                                     </div>
 
+                                                ) : (
 
-                                                    <div>
+                                                    <div className="docalme-documents-list">
 
-                                                        <strong>
+                                                        {documentosDaObra.map(
+                                                            (
+                                                                documento
+                                                            ) => (
+                                                                <div
+                                                                    className="docalme-document-row"
+                                                                    key={
+                                                                        documento.id
+                                                                    }
+                                                                >
 
-                                                            {
-                                                                getDocumentoNome(
-                                                                    documento
-                                                                )
-                                                            }
+                                                                    <div className="docalme-document-left">
 
-                                                        </strong>
+                                                                        <div className="docalme-document-icon">
+                                                                            <FiFileText />
+                                                                        </div>
 
+                                                                        <div className="docalme-document-info">
 
-                                                        {getDocumentoDescricao(
-                                                            documento
-                                                        ) && (
+                                                                            <strong>
+                                                                                {
+                                                                                    getDocumentoNome(
+                                                                                        documento
+                                                                                    )
+                                                                                }
+                                                                            </strong>
 
-                                                            <span>
+                                                                            <div className="docalme-document-meta">
 
-                                                                {
-                                                                    getDocumentoDescricao(
-                                                                        documento
-                                                                    )
-                                                                }
+                                                                                <span className="docalme-type">
+                                                                                    {
+                                                                                        formatarTipo(
+                                                                                            getDocumentoTipo(
+                                                                                                documento
+                                                                                            )
+                                                                                        )
+                                                                                    }
+                                                                                </span>
 
-                                                            </span>
+                                                                                <span>
+                                                                                    {
+                                                                                        formatarData(
+                                                                                            getDocumentoData(
+                                                                                                documento
+                                                                                            )
+                                                                                        )
+                                                                                    }
+                                                                                </span>
 
+                                                                                {getDocumentoDescricao(
+                                                                                    documento
+                                                                                ) && (
+                                                                                    <span className="docalme-document-description">
+                                                                                        {
+                                                                                            getDocumentoDescricao(
+                                                                                                documento
+                                                                                            )
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+
+                                                                            </div>
+
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                    <div className="docalme-actions">
+
+                                                                        <button
+                                                                            type="button"
+                                                                            className="docalme-action-view"
+                                                                            title="Visualizar documento"
+                                                                            onClick={() =>
+                                                                                visualizarDocumento(
+                                                                                    documento
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <FiEye />
+                                                                        </button>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            className="docalme-action-download"
+                                                                            title="Baixar documento"
+                                                                            onClick={() =>
+                                                                                baixarDocumento(
+                                                                                    documento
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <FiDownload />
+                                                                        </button>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            className="docalme-action-edit"
+                                                                            title="Editar documento"
+                                                                            onClick={() =>
+                                                                                editarDocumento(
+                                                                                    documento
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <FiEdit2 />
+                                                                        </button>
+
+                                                                        <button
+                                                                            type="button"
+                                                                            className="docalme-action-delete"
+                                                                            title="Excluir documento"
+                                                                            onClick={() =>
+                                                                                excluirDocumento(
+                                                                                    documento
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <FiTrash2 />
+                                                                        </button>
+
+                                                                    </div>
+
+                                                                </div>
+                                                            )
                                                         )}
 
                                                     </div>
 
-                                                </div>
+                                                )}
 
-                                            </td>
+                                            </div>
+                                        )}
 
-
-                                            <td>
-
-                                                <span className="docalme-type">
-
-                                                    {
-                                                        formatarTipo(
-                                                            getDocumentoTipo(
-                                                                documento
-                                                            )
-                                                        )
-                                                    }
-
-                                                </span>
-
-                                            </td>
-
-
-                                            <td>
-
-                                                <span className="docalme-date">
-
-                                                    {
-                                                        formatarData(
-                                                            getDocumentoData(
-                                                                documento
-                                                            )
-                                                        )
-                                                    }
-
-                                                </span>
-
-                                            </td>
-
-
-                                            <td>
-
-                                                <div className="docalme-actions">
-
-                                                    {/* VISUALIZAR */}
-
-                                                    <button
-                                                        type="button"
-                                                        className="docalme-action-view"
-                                                        title="Visualizar documento"
-                                                        onClick={() =>
-                                                            visualizarDocumento(
-                                                                documento
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <FiEye />
-
-                                                    </button>
-
-
-                                                    {/* DOWNLOAD */}
-
-                                                    <button
-                                                        type="button"
-                                                        className="docalme-action-download"
-                                                        title="Baixar documento"
-                                                        onClick={() =>
-                                                            baixarDocumento(
-                                                                documento
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <FiDownload />
-
-                                                    </button>
-
-
-                                                    {/* EDITAR */}
-
-                                                    <button
-                                                        type="button"
-                                                        className="docalme-action-edit"
-                                                        title="Editar"
-                                                        onClick={() =>
-                                                            editarDocumento(
-                                                                documento
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <FiEdit2 />
-
-                                                    </button>
-
-
-                                                    {/* EXCLUIR */}
-
-                                                    <button
-                                                        type="button"
-                                                        className="docalme-action-delete"
-                                                        title="Excluir"
-                                                        onClick={() =>
-                                                            excluirDocumento(
-                                                                documento
-                                                            )
-                                                        }
-                                                    >
-
-                                                        <FiTrash2 />
-
-                                                    </button>
-
-                                                </div>
-
-                                            </td>
-
-                                        </tr>
-
-                                    )
-                                )}
-
-                            </tbody>
-
-                        </table>
+                                    </article>
+                                );
+                            }
+                        )}
 
                     </div>
 
@@ -2454,33 +2089,26 @@ export default function Docalme() {
 
             </section>
 
-
             {/* =================================================
                 MODAL SELEÇÃO DE OBRA
             ================================================= */}
 
             {modalSelecaoObra && (
-
                 <div
                     className="docalme-modal-overlay"
                     onMouseDown={(e) => {
-
                         if (
                             e.target ===
                             e.currentTarget
                         ) {
-
                             setModalSelecaoObra(
                                 false
                             );
-
                         }
-
                     }}
                 >
 
                     <div className="docalme-modal docalme-selection-modal">
-
 
                         <div className="docalme-modal-header">
 
@@ -2500,7 +2128,6 @@ export default function Docalme() {
 
                             </div>
 
-
                             <button
                                 type="button"
                                 onClick={() =>
@@ -2509,36 +2136,22 @@ export default function Docalme() {
                                     )
                                 }
                             >
-
                                 <FiX />
-
                             </button>
 
                         </div>
 
-
                         <div className="docalme-selection-list">
 
-                            {obrasAtivas.length ===
-                            0 ? (
+                            {obrasAtivas.length === 0 ? (
 
                                 <div className="docalme-selection-empty">
 
-                                    <FiFileText />
+                                    <FiFolder />
 
                                     <span>
                                         Nenhuma obra em andamento encontrada.
                                     </span>
-
-
-                                    {obrasConcluidas.length >
-                                        0 && (
-
-                                        <small>
-                                            As obras concluídas continuam disponíveis na aba de consulta, mas novos documentos são vinculados às obras em andamento.
-                                        </small>
-
-                                    )}
 
                                 </div>
 
@@ -2548,7 +2161,6 @@ export default function Docalme() {
                                     (
                                         obra
                                     ) => (
-
                                         <button
                                             type="button"
                                             className="docalme-selection-card"
@@ -2563,48 +2175,33 @@ export default function Docalme() {
                                         >
 
                                             <div className="docalme-selection-icon">
-
-                                                <FiFileText />
-
+                                                <FiFolder />
                                             </div>
-
 
                                             <div className="docalme-selection-info">
 
                                                 <strong>
-
-                                                    {
-                                                        obra.nome ||
+                                                    {obra.nome ||
                                                         obra.nome_obra ||
-                                                        "Obra sem nome"
-                                                    }
-
+                                                        "Obra sem nome"}
                                                 </strong>
 
-
                                                 <span>
-
-                                                    {
-                                                        obra.arquiteto_empresa ||
-                                                        "Arquiteto / empresa não informado"
-                                                    }
-
+                                                    {obra.arquiteto_empresa ||
+                                                        "Arquiteto / empresa não informado"}
                                                 </span>
 
                                             </div>
 
-
                                             <FiPlus />
 
                                         </button>
-
                                     )
                                 )
 
                             )}
 
                         </div>
-
 
                         <div className="docalme-modal-footer">
 
@@ -2625,63 +2222,48 @@ export default function Docalme() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 MODAL DOCUMENTO
             ================================================= */}
 
             {modalAberto && (
-
                 <div
                     className="docalme-modal-overlay"
                     onMouseDown={(e) => {
-
                         if (
                             e.target ===
                             e.currentTarget
                         ) {
-
                             fecharModal();
-
                         }
-
                     }}
                 >
 
                     <div className="docalme-modal">
-
 
                         <div className="docalme-modal-header">
 
                             <div>
 
                                 <span>
-
                                     {documentoSelecionado
                                         ? "EDITAR DOCUMENTO"
                                         : "NOVO DOCUMENTO"}
-
                                 </span>
 
-
                                 <h2>
-
                                     {documentoSelecionado
                                         ? "Editar documento"
                                         : "Adicionar documento"}
-
                                 </h2>
-
 
                                 <p>
                                     Preencha as informações do arquivo.
                                 </p>
 
                             </div>
-
 
                             <button
                                 type="button"
@@ -2692,24 +2274,17 @@ export default function Docalme() {
                                     salvando
                                 }
                             >
-
                                 <FiX />
-
                             </button>
 
                         </div>
 
-
                         {obraSelecionada && (
-
                             <div className="docalme-selected-work">
 
                                 <div className="docalme-selected-work-icon">
-
                                     <FiCheck />
-
                                 </div>
-
 
                                 <div>
 
@@ -2717,33 +2292,21 @@ export default function Docalme() {
                                         OBRA SELECIONADA
                                     </span>
 
-
                                     <strong>
-
-                                        {
-                                            obraSelecionada.nome ||
+                                        {obraSelecionada.nome ||
                                             obraSelecionada.nome_obra ||
-                                            "Obra sem nome"
-                                        }
-
+                                            "Obra sem nome"}
                                     </strong>
 
-
                                     <small>
-
-                                        {
-                                            obraSelecionada.arquiteto_empresa ||
-                                            "Arquiteto / empresa não informado"
-                                        }
-
+                                        {obraSelecionada.arquiteto_empresa ||
+                                            "Arquiteto / empresa não informado"}
                                     </small>
 
                                 </div>
 
                             </div>
-
                         )}
-
 
                         <form
                             className="docalme-form"
@@ -2754,13 +2317,11 @@ export default function Docalme() {
 
                             <div className="docalme-form-grid">
 
-
                                 <div className="docalme-field docalme-field-full">
 
                                     <label>
                                         Nome do documento
                                     </label>
-
 
                                     <input
                                         type="text"
@@ -2781,13 +2342,11 @@ export default function Docalme() {
 
                                 </div>
 
-
                                 <div className="docalme-field">
 
                                     <label>
                                         Tipo
                                     </label>
-
 
                                     <select
                                         value={
@@ -2808,12 +2367,10 @@ export default function Docalme() {
                                             Selecione
                                         </option>
 
-
                                         {TIPOS_DOCUMENTO.map(
                                             (
                                                 tipo
                                             ) => (
-
                                                 <option
                                                     key={
                                                         tipo.value
@@ -2822,13 +2379,8 @@ export default function Docalme() {
                                                         tipo.value
                                                     }
                                                 >
-
-                                                    {
-                                                        tipo.label
-                                                    }
-
+                                                    {tipo.label}
                                                 </option>
-
                                             )
                                         )}
 
@@ -2836,36 +2388,31 @@ export default function Docalme() {
 
                                 </div>
 
-
                                 <div className="docalme-field">
 
                                     <label>
                                         Arquivo
                                     </label>
 
-
                                     <label className="docalme-file-input">
 
                                         <FiUpload />
 
-
                                         <span>
-
                                             {form.arquivo
                                                 ? form.arquivo.name
                                                 : documentoSelecionado
                                                     ? "Selecionar novo arquivo"
                                                     : "Selecionar arquivo"}
-
                                         </span>
-
 
                                         <input
                                             type="file"
                                             onChange={(e) =>
                                                 alterarCampo(
                                                     "arquivo",
-                                                    e.target.files?.[0] ||
+                                                    e.target
+                                                        .files?.[0] ??
                                                         null
                                                 )
                                             }
@@ -2878,7 +2425,6 @@ export default function Docalme() {
 
                                 </div>
 
-
                                 <div className="docalme-field docalme-field-full">
 
                                     <label>
@@ -2890,7 +2436,6 @@ export default function Docalme() {
                                         </small>
 
                                     </label>
-
 
                                     <textarea
                                         value={
@@ -2913,7 +2458,6 @@ export default function Docalme() {
 
                             </div>
 
-
                             <div className="docalme-modal-footer">
 
                                 <button
@@ -2929,7 +2473,6 @@ export default function Docalme() {
                                     Cancelar
                                 </button>
 
-
                                 <button
                                     type="submit"
                                     className="docalme-btn-primary"
@@ -2939,27 +2482,18 @@ export default function Docalme() {
                                 >
 
                                     {salvando ? (
-
                                         <>
-
                                             <span className="docalme-button-spinner" />
-
                                             Salvando...
-
                                         </>
-
                                     ) : (
-
                                         <>
-
                                             <FiCheck />
 
                                             {documentoSelecionado
                                                 ? "Salvar alterações"
                                                 : "Adicionar documento"}
-
                                         </>
-
                                     )}
 
                                 </button>
@@ -2971,47 +2505,34 @@ export default function Docalme() {
                     </div>
 
                 </div>
-
             )}
-
 
             {/* =================================================
                 MODAL DE PRÉ-VISUALIZAÇÃO
             ================================================= */}
 
             {previewAberto && (
-
                 <div
                     className="docalme-preview-overlay"
                     onMouseDown={(e) => {
-
                         if (
                             e.target ===
                             e.currentTarget
                         ) {
-
                             fecharPreview();
-
                         }
-
                     }}
                 >
 
                     <div className="docalme-preview-modal">
-
-
-                        {/* HEADER */}
 
                         <div className="docalme-preview-header">
 
                             <div className="docalme-preview-title">
 
                                 <div className="docalme-preview-title-icon">
-
                                     <FiFileText />
-
                                 </div>
-
 
                                 <div>
 
@@ -3020,38 +2541,28 @@ export default function Docalme() {
                                     </span>
 
                                     <h2>
-                                        {
-                                            previewDocumento
-                                                ? getDocumentoNome(
-                                                    previewDocumento
-                                                )
-                                                : "Documento"
-                                        }
+                                        {previewDocumento
+                                            ? getDocumentoNome(
+                                                previewDocumento
+                                            )
+                                            : "Documento"}
                                     </h2>
 
                                     {previewDocumento && (
-
                                         <small>
-
-                                            {
-                                                getObraNome(
-                                                    previewDocumento
-                                                )
-                                            }
-
+                                            {getObraNome(
+                                                previewDocumento
+                                            )}
                                         </small>
-
                                     )}
 
                                 </div>
 
                             </div>
 
-
                             <div className="docalme-preview-header-actions">
 
                                 {previewUrl && (
-
                                     <button
                                         type="button"
                                         className="docalme-preview-open"
@@ -3060,20 +2571,15 @@ export default function Docalme() {
                                         }
                                         title="Abrir em nova aba"
                                     >
-
                                         <FiExternalLink />
 
                                         <span>
                                             Abrir
                                         </span>
-
                                     </button>
-
                                 )}
 
-
                                 {previewDocumento && (
-
                                     <button
                                         type="button"
                                         className="docalme-preview-download"
@@ -3084,17 +2590,13 @@ export default function Docalme() {
                                         }
                                         title="Baixar"
                                     >
-
                                         <FiDownload />
 
                                         <span>
                                             Baixar
                                         </span>
-
                                     </button>
-
                                 )}
-
 
                                 <button
                                     type="button"
@@ -3104,17 +2606,12 @@ export default function Docalme() {
                                     }
                                     title="Fechar"
                                 >
-
                                     <FiX />
-
                                 </button>
 
                             </div>
 
                         </div>
-
-
-                        {/* CONTENT */}
 
                         <div className="docalme-preview-content">
 
@@ -3133,13 +2630,11 @@ export default function Docalme() {
                             ) : previewDocumento && previewUrl ? (
 
                                 <>
+
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "pdf" && (
-
+                                    ) === "pdf" && (
                                         <div className="docalme-preview-pdf">
-
                                             <iframe
                                                 src={
                                                     previewUrl
@@ -3150,19 +2645,13 @@ export default function Docalme() {
                                                     )
                                                 }
                                             />
-
                                         </div>
-
                                     )}
-
 
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "image" && (
-
+                                    ) === "image" && (
                                         <div className="docalme-preview-image">
-
                                             <img
                                                 src={
                                                     previewUrl
@@ -3173,94 +2662,68 @@ export default function Docalme() {
                                                     )
                                                 }
                                             />
-
                                         </div>
-
                                     )}
-
 
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "video" && (
-
+                                    ) === "video" && (
                                         <div className="docalme-preview-video">
-
                                             <video
                                                 controls
                                                 autoPlay
                                             >
-
                                                 <source
                                                     src={
                                                         previewUrl
                                                     }
                                                     type={
-                                                        previewDocumento.mime_type ||
+                                                        previewDocumento.mime_type ??
                                                         undefined
                                                     }
                                                 />
 
                                                 Seu navegador não suporta reprodução de vídeo.
-
                                             </video>
-
                                         </div>
-
                                     )}
-
 
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "audio" && (
-
+                                    ) === "audio" && (
                                         <div className="docalme-preview-audio">
 
                                             <div className="docalme-preview-media-icon">
-
                                                 <FiFileText />
-
                                             </div>
 
                                             <h3>
-                                                {
-                                                    getDocumentoNome(
-                                                        previewDocumento
-                                                    )
-                                                }
+                                                {getDocumentoNome(
+                                                    previewDocumento
+                                                )}
                                             </h3>
 
-                                            <audio
-                                                controls
-                                            >
-
+                                            <audio controls>
                                                 <source
                                                     src={
                                                         previewUrl
                                                     }
                                                     type={
-                                                        previewDocumento.mime_type ||
+                                                        previewDocumento.mime_type ??
                                                         undefined
                                                     }
                                                 />
 
                                                 Seu navegador não suporta reprodução de áudio.
-
                                             </audio>
 
                                         </div>
-
                                     )}
-
 
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "text" && (
-
+                                    ) === "text" && (
                                         <div className="docalme-preview-text">
-
                                             <iframe
                                                 src={
                                                     previewUrl
@@ -3271,37 +2734,25 @@ export default function Docalme() {
                                                     )
                                                 }
                                             />
-
                                         </div>
-
                                     )}
-
 
                                     {obterTipoPreview(
                                         previewDocumento
-                                    ) ===
-                                    "unsupported" && (
-
+                                    ) === "unsupported" && (
                                         <div className="docalme-preview-unsupported">
 
                                             <div className="docalme-preview-unsupported-icon">
-
                                                 <FiFileText />
-
                                             </div>
-
 
                                             <h3>
                                                 Pré-visualização não disponível
                                             </h3>
 
-
                                             <p>
-
                                                 Este formato não possui visualização nativa no navegador.
-
                                             </p>
-
 
                                             <button
                                                 type="button"
@@ -3309,15 +2760,11 @@ export default function Docalme() {
                                                     abrirArquivoEmNovaAba
                                                 }
                                             >
-
                                                 <FiExternalLink />
-
                                                 Abrir arquivo
-
                                             </button>
 
                                         </div>
-
                                     )}
 
                                 </>
@@ -3327,9 +2774,7 @@ export default function Docalme() {
                                 <div className="docalme-preview-unsupported">
 
                                     <div className="docalme-preview-unsupported-icon">
-
                                         <FiFileText />
-
                                     </div>
 
                                     <h3>
@@ -3349,9 +2794,9 @@ export default function Docalme() {
                     </div>
 
                 </div>
-
             )}
 
         </div>
     );
 }
+
