@@ -1,3 +1,4 @@
+
 import {
     useCallback,
     useEffect,
@@ -44,7 +45,7 @@ const LINHAS_INICIAIS = [
         data_prevista: "",
         data_realizada: "",
         observacoes: "",
-        tipo: "normal"
+        tipo: "singular"
     },
     {
         item: "MEDIÇÃO - PISO/FORRO",
@@ -58,7 +59,7 @@ const LINHAS_INICIAIS = [
         data_prevista: "",
         data_realizada: "",
         observacoes: "",
-        tipo: "normal"
+        tipo: "singular"
     },
     {
         item: "APROVAÇÃO DO PROJETO PELO CLIENTE FINAL",
@@ -196,8 +197,8 @@ TIPOS DE LINHA
 
 const TIPOS_LINHA = [
     {
-        valor: "normal",
-        nome: "Normal"
+        valor: "singular",
+        nome: "Singular"
     },
     {
         valor: "azul",
@@ -205,7 +206,7 @@ const TIPOS_LINHA = [
     },
     {
         valor: "amarela",
-        nome: "Conferência com cliente"
+        nome: "Validação do cliente"
     },
     {
         valor: "laranja",
@@ -236,6 +237,23 @@ function criarLinhasIniciais() {
             id: gerarIdLinha()
         })
     );
+}
+
+function normalizarTipoLinha(tipo) {
+    /*
+     * Compatibilidade com cronogramas antigos:
+     * "normal" passa a ser "singular".
+     */
+    if (tipo === "normal") {
+        return "singular";
+    }
+
+    return TIPOS_LINHA.some(
+        item =>
+            item.valor === tipo
+    )
+        ? tipo
+        : "singular";
 }
 
 function normalizarLinhas(lista) {
@@ -271,13 +289,9 @@ function normalizarLinhas(lista) {
                 ),
 
             tipo:
-                TIPOS_LINHA.some(
-                    tipo =>
-                        tipo.valor ===
-                        linha?.tipo
+                normalizarTipoLinha(
+                    linha?.tipo
                 )
-                    ? linha.tipo
-                    : "normal"
         })
     );
 }
@@ -358,13 +372,18 @@ NOME DO TIPO
 */
 
 function obterNomeTipo(tipo) {
+    const tipoNormalizado =
+        tipo === "normal"
+            ? "singular"
+            : tipo;
+
     return (
         TIPOS_LINHA.find(
             item =>
                 item.valor ===
-                tipo
+                tipoNormalizado
         )?.nome ||
-        "Normal"
+        "Singular"
     );
 }
 
@@ -736,7 +755,7 @@ export default function Cronograma() {
                                 if (
                                     parsed &&
                                     typeof parsed ===
-                                        "object"
+                                    "object"
                                 ) {
                                     rascunhoLocal =
                                         parsed;
@@ -796,7 +815,7 @@ export default function Cronograma() {
 
                         setLinhas(
                             linhasServidor.length >
-                                0
+                            0
                                 ? linhasServidor
                                 : criarLinhasIniciais()
                         );
@@ -1002,7 +1021,9 @@ export default function Cronograma() {
         alterarLinha(
             id,
             "tipo",
-            tipo
+            normalizarTipoLinha(
+                tipo
+            )
         );
     }
 
@@ -1019,16 +1040,21 @@ export default function Cronograma() {
                 {
                     id:
                         gerarIdLinha(),
+
                     item:
                         "",
+
                     data_prevista:
                         "",
+
                     data_realizada:
                         "",
+
                     observacoes:
                         "",
+
                     tipo:
-                        "normal"
+                        "singular"
                 }
             ]
         );
@@ -1214,8 +1240,9 @@ export default function Cronograma() {
                                 ).trim(),
 
                             tipo:
-                                linha.tipo ||
-                                "normal"
+                                normalizarTipoLinha(
+                                    linha.tipo
+                                )
                         })
                     )
             };
@@ -1587,8 +1614,9 @@ export default function Cronograma() {
                     index
                 ) => {
                     const tipo =
-                        linha.tipo ||
-                        "normal";
+                        normalizarTipoLinha(
+                            linha.tipo
+                        );
 
                     const tipoNome =
                         obterNomeTipo(
@@ -2067,7 +2095,7 @@ export default function Cronograma() {
                     =================================
                     */
 
-                    .row-normal {
+                    .row-singular {
                         background:
                             #ffffff;
                     }
@@ -2132,7 +2160,7 @@ export default function Cronograma() {
                             #59402a;
                     }
 
-                    .row-normal .color-badge {
+                    .row-singular .color-badge {
                         background:
                             #ffffff;
                     }
@@ -2377,7 +2405,7 @@ export default function Cronograma() {
                             <div>
 
                                 <span class="field-label">
-                                    ID SHAREPOINT
+                                    ID DO PROJETO
                                 </span>
 
                                 <div class="field-value">
@@ -2392,7 +2420,7 @@ export default function Cronograma() {
                             <div>
 
                                 <span class="field-label">
-                                    FINALIZAÇÃO CONTRATUAL
+                                   PREVISÃO DE FINALIZAÇÃO CONTRATUAL
                                 </span>
 
                                 <div class="field-value">
@@ -2504,15 +2532,15 @@ export default function Cronograma() {
                                 <th>
                                     DATA DE FINALIZAÇÃO
                                     <br />
-                                    REALIZADA
+                                   
                                 </th>
 
                                 <th>
-                                    OBSERVAÇÕES
+                                    STATUS
                                 </th>
 
                                 <th>
-                                    COR / ETAPA
+                                   ETAPA
                                 </th>
 
                             </tr>
@@ -2530,7 +2558,7 @@ export default function Cronograma() {
                     <section class="final-date">
 
                         <div class="final-label">
-                            DATA FINAL DE ENTREGA DO PROJETO
+                            DATA FINAL PREVISTA DE ENTREGA DO PROJETO
                         </div>
 
                         <div class="final-value">
@@ -2899,7 +2927,7 @@ export default function Cronograma() {
                         >
 
                             <label>
-                                ID SHAREPOINT
+                                ID DO PROJETO
                             </label>
 
                             <input
@@ -2922,7 +2950,7 @@ export default function Cronograma() {
                         >
 
                             <label>
-                                FINALIZAÇÃO CONTRATUAL
+                                PREVISÃO DE FINALIZAÇÃO CONTRATUAL
                             </label>
 
                             <input
@@ -3061,11 +3089,11 @@ export default function Cronograma() {
                                     </th>
 
                                     <th className="col-obs">
-                                        OBSERVAÇÕES
+                                        STATUS
                                     </th>
 
                                     <th className="col-color">
-                                        COR
+                                        LEGENDA
                                     </th>
 
                                     <th className="col-action">
@@ -3103,7 +3131,9 @@ export default function Cronograma() {
                                                             linha.id
                                                         }
                                                         className={
-                                                            `cronograma-row tipo-${linha.tipo}`
+                                                            `cronograma-row tipo-${normalizarTipoLinha(
+                                                                linha.tipo
+                                                            )}`
                                                         }
                                                     >
 
@@ -3195,7 +3225,9 @@ export default function Cronograma() {
 
                                                             <div
                                                                 className={
-                                                                    `cronograma-color-control tipo-${linha.tipo}`
+                                                                    `cronograma-color-control tipo-${normalizarTipoLinha(
+                                                                        linha.tipo
+                                                                    )}`
                                                                 }
                                                             >
 
@@ -3206,7 +3238,9 @@ export default function Cronograma() {
                                                                 <select
                                                                     className="cronograma-tipo-select"
                                                                     value={
-                                                                        linha.tipo
+                                                                        normalizarTipoLinha(
+                                                                            linha.tipo
+                                                                        )
                                                                     }
                                                                     onChange={e =>
                                                                         alterarTipoLinha(
@@ -3278,11 +3312,11 @@ export default function Cronograma() {
                         <div>
 
                             <span
-                                className="legend-color legend-normal"
+                                className="legend-color legend-singular"
                             />
 
                             <span>
-                                Etapa geral
+                                Singular
                             </span>
 
                         </div>
@@ -3306,7 +3340,7 @@ export default function Cronograma() {
                             />
 
                             <span>
-                                Conferência com cliente
+                                Validação do cliente
                             </span>
 
                         </div>
@@ -3348,7 +3382,7 @@ export default function Cronograma() {
                 >
 
                     <div>
-                        Data Final de entrega do Projeto:
+                        Data Final prevista de entrega do Projeto:
                     </div>
 
                     <strong>
@@ -3389,3 +3423,4 @@ export default function Cronograma() {
         </section>
     );
 }
+
