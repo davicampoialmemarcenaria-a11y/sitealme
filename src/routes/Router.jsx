@@ -92,6 +92,15 @@ import DocumentosCliente
 
 /*
 =====================================================
+DOC ALME
+=====================================================
+*/
+
+import Docalme
+    from "../pages/admin/Producao/Docalme/Docalme";
+
+/*
+=====================================================
 CRONOGRAMAS
 =====================================================
 */
@@ -171,9 +180,11 @@ function AdminInicio() {
     if (
         role === "Administrativo Geral"
     ) {
+
         return (
             <Dashboard />
         );
+
     }
 
     /*
@@ -185,12 +196,14 @@ function AdminInicio() {
     if (
         role === "comercial"
     ) {
+
         return (
             <Navigate
                 to="/admin/comercial"
                 replace
             />
         );
+
     }
 
     /*
@@ -202,12 +215,14 @@ function AdminInicio() {
     if (
         role === "producao"
     ) {
+
         return (
             <Navigate
                 to="/admin/producao"
                 replace
             />
         );
+
     }
 
     /*
@@ -219,12 +234,14 @@ function AdminInicio() {
     if (
         role === "financeiro"
     ) {
+
         return (
             <Navigate
                 to="/admin/financeiro"
                 replace
             />
         );
+
     }
 
     /*
@@ -473,6 +490,27 @@ export default function Router() {
                                 ]}
                             >
                                 <DocumentosCliente />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* =================================================
+                        DOC ALME
+
+                        URL:
+                        /admin/producao/docalme
+                    ================================================= */}
+
+                    <Route
+                        path="producao/docalme"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "producao"
+                                ]}
+                            >
+                                <Docalme />
                             </ProtectedRoute>
                         }
                     />

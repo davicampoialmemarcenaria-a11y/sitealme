@@ -3,7 +3,8 @@ import {
     FiBox,
     FiCalendar,
     FiDollarSign,
-    FiFolder
+    FiFolder,
+    FiFileText
 } from "react-icons/fi";
 
 import {
@@ -12,17 +13,14 @@ import {
 
 import "./Producao.scss";
 
-
 export default function Producao() {
 
     const navigate =
         useNavigate();
 
-
     return (
 
         <section className="producao-page">
-
 
             {/* =================================================
                 CABEÇALHO
@@ -120,15 +118,6 @@ export default function Producao() {
                     className="producao-card"
                     onClick={() => {
 
-                        console.log(
-                            "CLICOU CRONOGRAMAS"
-                        );
-
-                        console.log(
-                            "INDO PARA:",
-                            "/admin/cronogramas"
-                        );
-
                         navigate(
                             "/admin/cronogramas"
                         );
@@ -184,15 +173,6 @@ export default function Producao() {
                     type="button"
                     className="producao-card"
                     onClick={() => {
-
-                        console.log(
-                            "CLICOU INFORMAÇÕES FINANCEIRAS"
-                        );
-
-                        console.log(
-                            "INDO PARA:",
-                            "/admin/producao/inforfi"
-                        );
 
                         navigate(
                             "/admin/producao/inforfi"
@@ -250,15 +230,6 @@ export default function Producao() {
                     className="producao-card"
                     onClick={() => {
 
-                        console.log(
-                            "CLICOU DOCUMENTOS DO CLIENTE"
-                        );
-
-                        console.log(
-                            "INDO PARA:",
-                            "/admin/producao/documentos-cliente"
-                        );
-
                         navigate(
                             "/admin/producao/documentos-cliente"
                         );
@@ -306,11 +277,61 @@ export default function Producao() {
                 </button>
 
 
-            </section>
+                {/* =================================================
+                    CARD DOCUMENTOS ALME
+                ================================================= */}
 
+                <button
+                    type="button"
+                    className="producao-card"
+                    onClick={() => {
+    navigate("/admin/producao/docalme");
+}}
+                >
+
+                    <div
+                        className="producao-card-icon"
+                    >
+
+                        <FiFileText />
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-content"
+                    >
+
+                        <span>
+                            PRODUÇÃO
+                        </span>
+
+                        <h2>
+                            Documentos ALME
+                        </h2>
+
+                        <p>
+                            Organize, consulte e gerencie os
+                            documentos internos relacionados às obras.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="producao-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
+            </section>
 
         </section>
 
     );
-
 }

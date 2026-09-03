@@ -1,10 +1,14 @@
+/* =====================================================
+   PÁGINA
+===================================================== */
+
 .producao-page {
 
     width: 100%;
+
     min-height: 100%;
 
 }
-
 
 /* =====================================================
    HEADER
@@ -15,7 +19,6 @@
     margin-bottom: 45px;
 
 }
-
 
 .producao-header span {
 
@@ -33,7 +36,6 @@
 
 }
 
-
 .producao-header h1 {
 
     margin: 0;
@@ -45,7 +47,6 @@
     font-weight: 500;
 
 }
-
 
 .producao-header p {
 
@@ -60,7 +61,6 @@
     line-height: 1.7;
 
 }
-
 
 /* =====================================================
    CONTEÚDO
@@ -84,7 +84,6 @@
     align-items: stretch;
 
 }
-
 
 /* =====================================================
    CARDS
@@ -119,12 +118,11 @@
     cursor: pointer;
 
     transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        border-color .25s ease;
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 
 }
-
 
 .producao-card:hover {
 
@@ -138,11 +136,10 @@
             75,
             33,
             8,
-            .10
+            0.10
         );
 
 }
-
 
 /* =====================================================
    ÍCONE
@@ -172,6 +169,13 @@
 
 }
 
+.producao-card-icon svg {
+
+    width: 27px;
+
+    height: 27px;
+
+}
 
 /* =====================================================
    CONTEÚDO DO CARD
@@ -184,7 +188,6 @@
     min-width: 0;
 
 }
-
 
 .producao-card-content span {
 
@@ -202,7 +205,6 @@
 
 }
 
-
 .producao-card-content h2 {
 
     margin: 0;
@@ -213,8 +215,9 @@
 
     font-weight: 500;
 
-}
+    line-height: 1.25;
 
+}
 
 .producao-card-content p {
 
@@ -227,7 +230,6 @@
     line-height: 1.6;
 
 }
-
 
 /* =====================================================
    SETA
@@ -242,18 +244,25 @@
     font-size: 23px;
 
     transition:
-        transform .25s ease;
+        transform 0.25s ease;
 
 }
-
 
 .producao-card:hover
 .producao-card-arrow {
 
-    transform: translateX(5px);
+    transform:
+        translateX(5px);
 
 }
 
+.producao-card-arrow svg {
+
+    width: 23px;
+
+    height: 23px;
+
+}
 
 /* =====================================================
    ESTADO VAZIO
@@ -267,20 +276,17 @@
 
 }
 
-
 .producao-empty h1 {
 
     color: #4b2108;
 
 }
 
-
 .producao-empty p {
 
     color: #777;
 
 }
-
 
 /* =====================================================
    RESPONSIVO
@@ -303,7 +309,6 @@
 
 }
 
-
 @media (max-width: 768px) {
 
     .producao-header h1 {
@@ -312,13 +317,12 @@
 
     }
 
-
     .producao-content {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
 
     }
-
 
     .producao-card {
 
@@ -327,7 +331,6 @@
     }
 
 }
-
 
 @media (max-width: 480px) {
 
@@ -339,7 +342,6 @@
 
     }
 
-
     .producao-card-icon {
 
         width: 52px;
@@ -350,6 +352,13 @@
 
     }
 
+    .producao-card-icon svg {
+
+        width: 24px;
+
+        height: 24px;
+
+    }
 
     .producao-card-content h2 {
 
@@ -357,17 +366,23 @@
 
     }
 
-
     .producao-card-content p {
 
         font-size: 12px;
 
     }
 
-
     .producao-card-arrow {
 
         font-size: 20px;
+
+    }
+
+    .producao-card-arrow svg {
+
+        width: 20px;
+
+        height: 20px;
 
     }
 
