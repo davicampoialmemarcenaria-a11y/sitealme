@@ -1,1492 +1,1046 @@
 /* =====================================================
-PÁGINA
+   PÁGINA
 ===================================================== */
 
 .tabela-preco-page {
 
-width: 100%;
-min-height: 100%;
+    width: 100%;
+
+    min-height: 100%;
 
 }
 
+
 /* =====================================================
-HEADER
+   HEADER
 ===================================================== */
 
 .tabela-preco-header {
 
-display: flex;
+    display: flex;
 
-align-items: flex-end;
+    align-items: flex-end;
 
-justify-content: space-between;
+    justify-content: space-between;
 
-gap: 30px;
+    gap: 30px;
 
-margin-bottom: 35px;
+    margin-bottom: 35px;
 
 }
+
 
 .tabela-preco-header span {
 
-display: block;
+    display: block;
 
-margin-bottom: 8px;
+    margin-bottom: 8px;
 
-color: #d38a17;
+    color: #d38a17;
 
-font-size: 12px;
+    font-size: 12px;
 
-font-weight: 600;
+    font-weight: 600;
 
-letter-spacing: 2px;
+    letter-spacing: 2px;
 
 }
+
 
 .tabela-preco-header h1 {
 
-margin: 0;
+    margin: 0;
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 40px;
+    font-size: 40px;
 
-font-weight: 500;
+    font-weight: 500;
 
 }
+
 
 .tabela-preco-header p {
 
-margin: 10px 0 0;
+    margin: 10px 0 0;
 
-color: #777;
+    color: #777;
 
-font-size: 14px;
+    font-size: 14px;
 
 }
 
+
 /* =====================================================
-BOTÃO NOVO
+   BOTÃO NOVO
 ===================================================== */
 
 .tabela-preco-novo {
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-gap: 9px;
+    gap: 9px;
 
-min-height: 46px;
+    min-height: 46px;
 
-padding: 0 20px;
+    padding: 0 20px;
 
-border: none;
+    border: none;
 
-border-radius: 9px;
+    border-radius: 9px;
 
-background: #4b2108;
+    background: #4b2108;
 
-color: white;
+    color: white;
 
-cursor: pointer;
+    cursor: pointer;
 
-font-family: inherit;
+    font-family: inherit;
 
-font-size: 14px;
+    font-size: 14px;
 
-transition:
-    background .25s ease,
-    transform .2s ease;
+    transition:
+        background .25s ease,
+        transform .2s ease;
+
+}
+
+
+.tabela-preco-novo:hover {
+
+    background: #6a3518;
+
+    transform: translateY(-2px);
 
 }
 
-.tabela-preco-novo {
-
-background: #6a3518;
-
-transform: translateY(-2px);
-
-}
 
 .tabela-preco-novo svg {
 
-width: 17px;
+    width: 17px;
 
-height: 17px;
+    height: 17px;
 
 }
 
+
 /* =====================================================
-FILTROS
+   FILTROS
 ===================================================== */
 
 .tabela-preco-filtros {
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-gap: 12px;
+    gap: 12px;
 
-margin-bottom: 20px;
+    margin-bottom: 20px;
 
 }
+
 
 .tabela-preco-search {
 
-flex: 1;
+    flex: 1;
 
-min-width: 250px;
+    min-width: 250px;
 
-height: 45px;
+    height: 45px;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-gap: 10px;
+    gap: 10px;
 
-padding: 0 14px;
+    padding: 0 14px;
 
-box-sizing: border-box;
+    box-sizing: border-box;
 
-border: 1px solid #e1d9d0;
+    border: 1px solid #e1d9d0;
 
-border-radius: 9px;
+    border-radius: 9px;
 
-background: white;
+    background: white;
 
 }
+
 
 .tabela-preco-search svg {
 
-flex-shrink: 0;
+    flex-shrink: 0;
 
-color: #9b8e83;
+    color: #9b8e83;
 
-width: 18px;
+    width: 18px;
 
-height: 18px;
+    height: 18px;
 
 }
+
 
 .tabela-preco-search input {
 
-width: 100%;
+    width: 100%;
 
-border: none;
+    border: none;
 
-outline: none;
+    outline: none;
 
-background: transparent;
+    background: transparent;
 
-color: #4b2108;
+    color: #4b2108;
 
-font-family: inherit;
+    font-family: inherit;
 
-font-size: 14px;
+    font-size: 14px;
 
 }
+
 
 .tabela-preco-filtros select {
 
-height: 45px;
+    height: 45px;
 
-padding: 0 35px 0 13px;
+    padding: 0 35px 0 13px;
 
-border: 1px solid #e1d9d0;
+    border: 1px solid #e1d9d0;
 
-border-radius: 9px;
+    border-radius: 9px;
 
-background: white;
+    background: white;
 
-color: #4b2108;
+    color: #4b2108;
 
-outline: none;
+    outline: none;
 
-cursor: pointer;
+    cursor: pointer;
 
-font-family: inherit;
+    font-family: inherit;
 
-font-size: 13px;
+    font-size: 13px;
 
 }
+
 
 .tabela-preco-refresh {
 
-width: 45px;
+    width: 45px;
 
-height: 45px;
+    height: 45px;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-border: 1px solid #e1d9d0;
+    border: 1px solid #e1d9d0;
 
-border-radius: 9px;
+    border-radius: 9px;
 
-background: white;
+    background: white;
 
-color: #4b2108;
+    color: #4b2108;
 
-cursor: pointer;
+    cursor: pointer;
 
-transition: .2s ease;
+    transition: .2s ease;
+
+}
+
+
+.tabela-preco-refresh:hover {
+
+    border-color: #d38a17;
+
+    color: #d38a17;
 
 }
 
-.tabela-preco-refresh {
-
-border-color: #d38a17;
-
-color: #d38a17;
-
-}
 
 .tabela-preco-refresh svg {
 
-width: 17px;
+    width: 17px;
 
-height: 17px;
+    height: 17px;
 
 }
 
+
 /* =====================================================
-INFORMAÇÕES
+   INFORMAÇÕES
 ===================================================== */
 
 .tabela-preco-info {
 
-display: flex;
+    display: flex;
 
-align-items: baseline;
+    align-items: baseline;
 
-gap: 4px;
+    gap: 4px;
 
-margin-bottom: 12px;
+    margin-bottom: 12px;
 
-color: #888;
+    color: #888;
 
-font-size: 12px;
+    font-size: 12px;
 
 }
+
 
 .tabela-preco-info strong {
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 15px;
+    font-size: 15px;
 
 }
 
+
 /* =====================================================
-LISTA
+   LISTA
 ===================================================== */
 
 .tabela-preco-lista {
 
-width: 100%;
+    width: 100%;
 
-border: 1px solid #e4ddd5;
+    border: 1px solid #e4ddd5;
 
-border-radius: 14px;
+    border-radius: 14px;
 
-background: white;
+    background: white;
 
-overflow: hidden;
+    overflow: hidden;
 
 }
+
+
+/* =====================================================
+   BARRA HORIZONTAL SUPERIOR DA TABELA
+===================================================== */
+
+.tabela-preco-scroll-superior {
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 20;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 5px 8px;
+
+    background: white;
+
+    border-bottom: 1px solid #eee8e2;
+
+}
+
+
+.tabela-preco-scroll-superior-barra {
+
+    width: 100%;
+
+    height: 14px;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    box-sizing: border-box;
+
+    scrollbar-width: auto;
+
+    scrollbar-color:
+        #b99f8d
+        #eee6df;
+
+}
+
+
+.tabela-preco-scroll-superior-barra::-webkit-scrollbar {
+
+    height: 10px;
+
+}
+
+
+.tabela-preco-scroll-superior-barra::-webkit-scrollbar-track {
+
+    background: #eee6df;
+
+    border-radius: 10px;
+
+}
+
+
+.tabela-preco-scroll-superior-barra::-webkit-scrollbar-thumb {
+
+    background: #b99f8d;
+
+    border-radius: 10px;
+
+    border: 2px solid #eee6df;
+
+}
+
+
+.tabela-preco-scroll-superior-barra::-webkit-scrollbar-thumb:hover {
+
+    background: #8f715d;
+
+}
+
+
+/* =====================================================
+   WRAPPER DA TABELA
+===================================================== */
 
 .tabela-preco-table-wrapper {
 
-width: 100%;
+    width: 100%;
 
-overflow-x: auto;
+    overflow-x: auto;
+
+    overflow-y: visible;
+
+    box-sizing: border-box;
+
+    scrollbar-width: auto;
+
+    scrollbar-color:
+        #b99f8d
+        #eee6df;
 
 }
+
+
+.tabela-preco-table-wrapper::-webkit-scrollbar {
+
+    height: 10px;
+
+}
+
+
+.tabela-preco-table-wrapper::-webkit-scrollbar-track {
+
+    background: #eee6df;
+
+    border-radius: 10px;
+
+}
+
+
+.tabela-preco-table-wrapper::-webkit-scrollbar-thumb {
+
+    background: #b99f8d;
+
+    border-radius: 10px;
+
+    border: 2px solid #eee6df;
+
+}
+
+
+.tabela-preco-table-wrapper::-webkit-scrollbar-thumb:hover {
+
+    background: #8f715d;
+
+}
+
 
 .tabela-preco-table {
 
-width: 100%;
+    width: 100%;
 
-border-collapse: collapse;
+    border-collapse: collapse;
 
-min-width: 900px;
+    min-width: 900px;
 
 }
+
 
 .tabela-preco-table th {
 
-padding: 14px 18px;
+    padding: 14px 18px;
 
-border-bottom: 1px solid #e8e2dc;
+    border-bottom: 1px solid #e8e2dc;
 
-background: #faf8f6;
+    background: #faf8f6;
 
-color: #8a7c70;
+    color: #8a7c70;
 
-font-size: 10px;
+    font-size: 10px;
 
-font-weight: 600;
+    font-weight: 600;
 
-letter-spacing: 1.1px;
+    letter-spacing: 1.1px;
 
-text-align: left;
+    text-align: left;
 
-text-transform: uppercase;
+    text-transform: uppercase;
 
-white-space: nowrap;
+    white-space: nowrap;
 
 }
+
 
 .tabela-preco-table td {
 
-padding: 16px 18px;
+    padding: 16px 18px;
 
-border-bottom: 1px solid #eee9e4;
+    border-bottom: 1px solid #eee9e4;
 
-color: #555;
+    color: #555;
 
-font-size: 13px;
+    font-size: 13px;
 
-vertical-align: middle;
+    vertical-align: middle;
 
 }
+
 
 .tabela-preco-table tbody tr td {
 
-border-bottom: none;
+    border-bottom: none;
 
 }
+
 
 .tabela-preco-table tbody tr {
 
-background: #fdfbf9;
+    background: #fdfbf9;
 
 }
 
+
 /* =====================================================
-ITEM
+   DESCRIÇÃO DA TABELA
+===================================================== */
+
+.tabela-preco-matriz-principal
+.coluna-descricao {
+
+    max-width: 220px;
+
+    color: #756960;
+
+    font-size: 10.5px;
+
+    line-height: 1.45;
+
+}
+
+
+/* =====================================================
+   ITEM
 ===================================================== */
 
 .tabela-preco-item {
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-gap: 12px;
+    gap: 12px;
 
-min-width: 250px;
+    min-width: 250px;
 
 }
+
 
 .tabela-preco-thumb {
 
-width: 48px;
+    width: 48px;
 
-height: 48px;
+    height: 48px;
 
-flex-shrink: 0;
+    flex-shrink: 0;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-overflow: hidden;
+    overflow: hidden;
 
-border-radius: 8px;
+    border-radius: 8px;
 
-background: #f3e5d2;
+    background: #f3e5d2;
 
-color: #8c715d;
+    color: #8c715d;
 
 }
+
 
 .tabela-preco-thumb img {
 
-width: 100%;
+    width: 100%;
 
-height: 100%;
+    height: 100%;
 
-object-fit: cover;
+    object-fit: cover;
 
 }
+
 
 .tabela-preco-thumb svg {
 
-width: 20px;
+    width: 20px;
 
-height: 20px;
+    height: 20px;
 
 }
+
 
 .tabela-preco-item > div {
 
-display: flex;
+    display: flex;
 
-flex-direction: column;
+    flex-direction: column;
 
-gap: 4px;
+    gap: 4px;
 
-min-width: 0;
+    min-width: 0;
 
 }
+
 
 .tabela-preco-item strong {
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 14px;
+    font-size: 14px;
 
-font-weight: 600;
+    font-weight: 600;
 
 }
+
 
 .tabela-preco-item span {
 
-max-width: 300px;
+    max-width: 300px;
 
-overflow: hidden;
+    overflow: hidden;
 
-color: #888;
+    color: #888;
 
-font-size: 11px;
+    font-size: 11px;
 
-text-overflow: ellipsis;
+    text-overflow: ellipsis;
 
-white-space: nowrap;
+    white-space: nowrap;
 
 }
 
+
 /* =====================================================
-GRUPO
+   GRUPO
 ===================================================== */
 
 .tabela-preco-grupo {
 
-display: inline-flex;
+    display: inline-flex;
 
-padding: 6px 9px;
+    padding: 6px 9px;
 
-border-radius: 6px;
+    border-radius: 6px;
 
-background: #f3e5d2;
+    background: #f3e5d2;
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 11px;
+    font-size: 11px;
 
-font-weight: 600;
+    font-weight: 600;
 
 }
 
+
 /* =====================================================
-STATUS
+   STATUS
 ===================================================== */
 
 .status {
 
-padding: 6px 10px;
+    padding: 6px 10px;
 
-border: none;
+    border: none;
 
-border-radius: 20px;
+    border-radius: 20px;
 
-cursor: pointer;
+    cursor: pointer;
 
-font-family: inherit;
+    font-family: inherit;
 
-font-size: 11px;
+    font-size: 11px;
 
-font-weight: 600;
+    font-weight: 600;
 
 }
+
 
 .status.ativo {
 
-background: #edf6ed;
+    background: #edf6ed;
 
-color: #477147;
+    color: #477147;
 
 }
+
 
 .status.inativo {
 
-background: #f1eeee;
+    background: #f1eeee;
 
-color: #8b7777;
+    color: #8b7777;
 
 }
 
+
 /* =====================================================
-AÇÕES
+   AÇÕES
 ===================================================== */
 
 .tabela-preco-acoes {
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-gap: 7px;
+    gap: 7px;
 
 }
+
 
 .tabela-preco-acoes button {
 
-width: 34px;
+    width: 34px;
 
-height: 34px;
+    height: 34px;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-border: 1px solid #e4ddd5;
+    border: 1px solid #e4ddd5;
 
-border-radius: 7px;
+    border-radius: 7px;
 
-background: white;
+    background: white;
 
-color: #5b4637;
+    color: #5b4637;
 
-cursor: pointer;
+    cursor: pointer;
 
-transition: .2s ease;
+    transition: .2s ease;
+
+}
+
+
+.tabela-preco-acoes button:hover {
+
+    border-color: #d38a17;
+
+    color: #d38a17;
 
 }
 
-.tabela-preco-acoes button {
-
-border-color: #d38a17;
-
-color: #d38a17;
-
-}
 
 .tabela-preco-acoes button.perigo {
 
-border-color: #bd6565;
+    border-color: #bd6565;
 
-color: #bd6565;
+    color: #bd6565;
 
 }
+
+
+.tabela-preco-acoes button.perigo:hover {
+
+    background: #fff7f7;
+
+    border-color: #a95353;
+
+    color: #a95353;
+
+}
+
 
 .tabela-preco-acoes svg {
 
-width: 15px;
+    width: 15px;
 
-height: 15px;
+    height: 15px;
 
 }
 
+
 /* =====================================================
-VAZIO
+   VAZIO
 ===================================================== */
 
 .tabela-preco-vazio {
 
-min-height: 300px;
+    min-height: 300px;
 
-display: flex;
+    display: flex;
 
-flex-direction: column;
+    flex-direction: column;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-padding: 40px;
+    padding: 40px;
 
-color: #999;
+    color: #999;
 
-text-align: center;
+    text-align: center;
 
 }
+
 
 .tabela-preco-vazio > svg {
 
-width: 35px;
+    width: 35px;
 
-height: 35px;
+    height: 35px;
 
-margin-bottom: 15px;
+    margin-bottom: 15px;
 
-color: #d38a17;
+    color: #d38a17;
 
 }
+
 
 .tabela-preco-vazio h2 {
 
-margin: 0;
+    margin: 0;
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 20px;
+    font-size: 20px;
 
-font-weight: 500;
+    font-weight: 500;
 
 }
+
 
 .tabela-preco-vazio p {
 
-margin: 8px 0 0;
+    margin: 8px 0 0;
 
-font-size: 13px;
+    font-size: 13px;
 
 }
 
+
 /* =====================================================
-OVERLAY
+   OVERLAY
 ===================================================== */
 
 .tabela-preco-overlay {
 
-position: fixed;
+    position: fixed;
 
-inset: 0;
+    inset: 0;
 
-z-index: 5000;
+    z-index: 5000;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-padding: 25px;
+    padding: 25px;
 
-box-sizing: border-box;
+    box-sizing: border-box;
 
-background: rgba(
-    35,
-    22,
-    12,
-    .55
-);
+    background:
+        rgba(
+            35,
+            22,
+            12,
+            .55
+        );
 
-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
 
 }
 
+
 /* =====================================================
-MODAL
+   MODAL
 ===================================================== */
 
 .tabela-preco-modal {
 
-width: min(
-    1250px,
-    100%
-);
+    width:
+        min(
+            1250px,
+            100%
+        );
 
-max-height: calc(
-    100vh - 50px
-);
+    max-height:
+        calc(
+            100vh - 50px
+        );
 
-overflow-y: auto;
+    overflow-y: auto;
 
-border-radius: 16px;
+    border-radius: 16px;
 
-background: #fdfcfb;
+    background: #fdfcfb;
 
-box-shadow:
-    0 30px 80px
-    rgba(
-        0,
-        0,
-        0,
-        .25
-    );
+    box-shadow:
+        0 30px 80px
+        rgba(
+            0,
+            0,
+            0,
+            .25
+        );
 
 }
 
+
 /* =====================================================
-HEADER MODAL
+   HEADER MODAL
 ===================================================== */
 
 .tabela-preco-modal-header {
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: space-between;
+    justify-content: space-between;
 
-padding: 24px 28px;
+    padding: 24px 28px;
 
-border-bottom: 1px solid #e9e2db;
+    border-bottom: 1px solid #e9e2db;
 
 }
+
 
 .tabela-preco-modal-header span {
 
-display: block;
+    display: block;
 
-margin-bottom: 5px;
+    margin-bottom: 5px;
 
-color: #d38a17;
+    color: #d38a17;
 
-font-size: 10px;
+    font-size: 10px;
 
-font-weight: 600;
+    font-weight: 600;
 
-letter-spacing: 1.8px;
+    letter-spacing: 1.8px;
 
 }
+
 
 .tabela-preco-modal-header h2 {
 
-margin: 0;
+    margin: 0;
 
-color: #4b2108;
+    color: #4b2108;
 
-font-size: 25px;
+    font-size: 25px;
 
-font-weight: 500;
+    font-weight: 500;
 
 }
+
 
 .tabela-preco-modal-header > button {
 
-width: 38px;
+    width: 38px;
 
-height: 38px;
+    height: 38px;
 
-display: flex;
+    display: flex;
 
-align-items: center;
+    align-items: center;
 
-justify-content: center;
+    justify-content: center;
 
-border: 1px solid #e4ddd5;
+    border: 1px solid #e4ddd5;
 
-border-radius: 8px;
+    border-radius: 8px;
 
-background: white;
+    background: white;
 
-color: #5b4637;
+    color: #5b4637;
 
-cursor: pointer;
+    cursor: pointer;
+
+    transition: .2s ease;
+
+}
+
+
+.tabela-preco-modal-header > button:hover {
+
+    border-color: #d38a17;
+
+    color: #d38a17;
 
 }
 
-.tabela-preco-modal-header > button {
-
-border-color: #d38a17;
-
-color: #d38a17;
-
-}
 
 /* =====================================================
-FORM
+   FORM
 ===================================================== */
 
 .tabela-preco-modal form {
 
-padding: 28px;
-
-}
-
-.tabela-preco-form-grid {
-
-display: grid;
-
-grid-template-columns:
-    repeat(
-        3,
-        minmax(
-            0,
-            1fr
-        )
-    );
-
-gap: 18px;
-
-}
-
-.campo {
-
-display: flex;
-
-flex-direction: column;
-
-gap: 7px;
-
-}
-
-.campo-grande {
-
-grid-column:
-    span 2;
-
-}
-
-.campo label {
-
-color: #604b3a;
-
-font-size: 11px;
-
-font-weight: 600;
-
-}
-
-.campo input,
-.campo select,
-.campo textarea {
-
-width: 100%;
-
-box-sizing: border-box;
-
-border: 1px solid #ddd5cd;
-
-border-radius: 8px;
-
-outline: none;
-
-background: white;
-
-color: #4b2108;
-
-font-family: inherit;
-
-font-size: 13px;
-
-transition:
-    border-color .2s ease,
-    box-shadow .2s ease;
-
-}
-
-.campo input,
-.campo select {
-
-height: 43px;
-
-padding: 0 12px;
-
-}
-
-.campo textarea {
-
-padding: 11px 12px;
-
-resize: vertical;
-
-}
-
-.campo input,
-.campo select,
-.campo textarea {
-
-border-color: #d38a17;
-
-box-shadow:
-    0 0 0 3px
-    rgba(
-        211,
-        138,
-        23,
-        .08
-    );
-
-}
-
-/* =====================================================
-UPLOAD
-===================================================== */
-
-.campo-imagem {
-
-grid-column:
-    span 1;
-
-}
-
-.tabela-preco-upload {
-
-min-height: 130px;
-
-display: flex;
-
-align-items: center;
-
-gap: 15px;
-
-}
-
-.tabela-preco-upload > label {
-
-min-height: 100px;
-
-flex: 1;
-
-display: flex;
-
-flex-direction: column;
-
-align-items: center;
-
-justify-content: center;
-
-gap: 7px;
-
-border: 1px dashed #d8cec4;
-
-border-radius: 9px;
-
-background: #faf8f6;
-
-color: #8c7c6e;
-
-cursor: pointer;
-
-font-size: 11px;
-
-}
-
-.tabela-preco-upload > label svg {
-
-width: 22px;
-
-height: 22px;
-
-}
-
-.tabela-preco-upload input {
-
-display: none;
-
-}
-
-.tabela-preco-preview {
-
-width: 100px;
-
-height: 100px;
-
-flex-shrink: 0;
-
-overflow: hidden;
-
-border-radius: 9px;
-
-background: #eee;
-
-}
-
-.tabela-preco-preview img {
-
-width: 100%;
-
-height: 100%;
-
-object-fit: cover;
-
-}
-.tabela-preco-remover-imagem {
-
-width: 100%;
-
-min-height: 34px;
-
-display: flex;
-
-align-items: center;
-
-justify-content: center;
-
-gap: 6px;
-
-margin-top: 8px;
-
-padding: 0 8px;
-
-box-sizing: border-box;
-
-border: 1px solid #e0cfc2;
-
-border-radius: 7px;
-
-background: white;
-
-color: #8b5d45;
-
-cursor: pointer;
-
-font-family: inherit;
-
-font-size: 10px;
-
-font-weight: 600;
-
-transition:
-
-    background .2s ease,
-
-    border-color .2s ease,
-
-    color .2s ease;
-
-}
-
-.tabela-preco-remover-imagem:hover {
-
-border-color: #bd6565;
-
-background: #fff7f7;
-
-color: #bd6565;
-
-}
-
-.tabela-preco-remover-imagem:disabled {
-
-opacity: .5;
-
-cursor: not-allowed;
-
-}
-
-.tabela-preco-remover-imagem svg {
-
-width: 13px;
-
-height: 13px;
-
-flex-shrink: 0;
-
-}
-
-/* =====================================================
-MATRIZ
-===================================================== */
-
-.tabela-preco-matriz {
-
-margin-top: 35px;
-
-}
-
-.tabela-preco-matriz > header {
-
-margin-bottom: 16px;
-
-}
-
-.tabela-preco-matriz > header span {
-
-display: block;
-
-margin-bottom: 5px;
-
-color: #d38a17;
-
-font-size: 10px;
-
-font-weight: 600;
-
-letter-spacing: 1.7px;
-
-}
-
-.tabela-preco-matriz > header h3 {
-
-margin: 0;
-
-color: #4b2108;
-
-font-size: 21px;
-
-font-weight: 500;
-
-}
-
-.tabela-preco-matriz > header p {
-
-margin: 7px 0 0;
-
-color: #888;
-
-font-size: 12px;
-
-}
-
-/* =====================================================
-MATRIZ TABLE
-===================================================== */
-
-.tabela-preco-matriz-wrapper {
-
-width: 100%;
-
-overflow-x: auto;
-
-border: 1px solid #e4ddd5;
-
-border-radius: 10px;
-
-background: white;
-
-}
-
-.tabela-preco-matriz-table {
-
-width: 100%;
-
-min-width: 1050px;
-
-border-collapse: collapse;
-
-}
-
-.tabela-preco-matriz-table th {
-
-padding: 12px;
-
-border-right: 1px solid #e9e3dd;
-
-border-bottom: 1px solid #e4ddd5;
-
-background: #f8f5f2;
-
-color: #604b3a;
-
-font-size: 10px;
-
-font-weight: 600;
-
-text-align: center;
-
-white-space: nowrap;
-
-}
-
-.tabela-preco-matriz-table thead th {
-
-width: 75px;
-
-}
-
-.tabela-preco-matriz-table td {
-
-min-width: 210px;
-
-padding: 8px;
-
-border-right: 1px solid #eee9e4;
-
-border-bottom: 1px solid #eee9e4;
-
-vertical-align: top;
-
-}
-
-.tabela-preco-matriz-table tr td,
-.tabela-preco-matriz-table tr th {
-
-border-bottom: none;
-
-}
-
-.tabela-preco-matriz-table th,
-.tabela-preco-matriz-table td {
-
-border-right: none;
-
-}
-
-/* =====================================================
-CÉLULA
-===================================================== */
-
-.matriz-celula {
-
-display: flex;
-
-flex-direction: column;
-
-gap: 7px;
-
-}
-
-.matriz-celula > input {
-
-width: 100%;
-
-height: 34px;
-
-box-sizing: border-box;
-
-padding: 0 8px;
-
-border: 1px solid #ddd5cd;
-
-border-radius: 6px;
-
-outline: none;
-
-color: #4b2108;
-
-font-family:
-    "Courier New",
-    monospace;
-
-font-size: 10px;
-
-}
-
-.matriz-celula > input:first-child {
-
-border-color: #d38a17;
-
-}
-
-.matriz-resultado {
-
-display: flex;
-
-align-items: center;
-
-justify-content: space-between;
-
-gap: 8px;
-
-padding: 7px 8px;
-
-border-radius: 6px;
-
-background: #f7f3ef;
-
-}
-
-.matriz-resultado span {
-
-color: #8c7c6e;
-
-font-size: 9px;
-
-text-transform: uppercase;
-
-}
-
-.matriz-resultado strong {
-
-color: #4b2108;
-
-font-size: 11px;
-
-}
-
-.matriz-manual {
-
-display: flex;
-
-align-items: center;
-
-gap: 6px;
-
-color: #777;
-
-cursor: pointer;
-
-font-size: 10px;
-
-}
-
-.matriz-manual input {
-
-accent-color: #d38a17;
-
-}
-
-.matriz-input-manual {
-
-width: 100%;
-
-height: 33px;
-
-box-sizing: border-box;
-
-padding: 0 8px;
-
-border: 1px solid #d38a17;
-
-border-radius: 6px;
-
-outline: none;
-
-color: #4b2108;
-
-font-family: inherit;
-
-font-size: 11px;
-
-}
-
-/* =====================================================
-AJUDA DAS FÓRMULAS
-===================================================== */
-
-.tabela-preco-formula-ajuda {
-
-display: flex;
-
-align-items: center;
-
-flex-wrap: wrap;
-
-gap: 8px;
-
-margin-top: 12px;
-
-}
-
-.tabela-preco-formula-ajuda strong {
-
-margin-right: 5px;
-
-color: #604b3a;
-
-font-size: 11px;
-
-}
-
-.tabela-preco-formula-ajuda span {
-
-padding: 5px 8px;
-
-border-radius: 5px;
-
-background: #f3e5d2;
-
-color: #5b3b24;
-
-font-family:
-    "Courier New",
-    monospace;
-
-font-size: 10px;
-
-}
-
-/* =====================================================
-FOOTER MODAL
-===================================================== */
-
-.tabela-preco-modal-footer {
-
-display: flex;
-
-align-items: center;
-
-justify-content: flex-end;
-
-gap: 10px;
-
-margin-top: 30px;
-
-padding-top: 20px;
-
-border-top: 1px solid #e9e2db;
-
-}
-
-.tabela-preco-modal-footer button {
-
-min-height: 43px;
-
-padding: 0 18px;
-
-border-radius: 8px;
-
-cursor: pointer;
-
-font-family: inherit;
-
-font-size: 13px;
-
-}
-
-.botao-cancelar {
-
-border: 1px solid #ddd5cd;
-
-background: white;
-
-color: #66564a;
-
-}
-
-.botao-salvar {
-
-display: flex;
-
-align-items: center;
-
-gap: 8px;
-
-border: none;
-
-background: #4b2108;
-
-color: white;
-
-}
-
-.botao-salvar {
-
-background: #6a3518;
-
-}
-
-.botao-salvar svg {
-
-width: 16px;
-
-height: 16px;
-
-}
-
-/* =====================================================
-RESPONSIVO
-===================================================== */
-
-@media (max-width: 900px) {
-
-.tabela-preco-header {
-
-    align-items: flex-start;
-
-    flex-direction: column;
+    padding: 28px;
 
 }
 
 
 .tabela-preco-form-grid {
+
+    display: grid;
 
     grid-template-columns:
         repeat(
-            2,
+            3,
             minmax(
                 0,
                 1fr
             )
         );
+
+    gap: 18px;
+
+}
+
+
+.campo {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
 
 }
 
@@ -1499,53 +1053,88 @@ RESPONSIVO
 }
 
 
-.tabela-preco-filtros {
+.campo label {
 
-    flex-wrap: wrap;
+    color: #604b3a;
 
-}
+    font-size: 11px;
 
-
-.tabela-preco-search {
-
-    flex-basis: 100%;
-
-}
-
-}
-
-@media (max-width: 600px) {
-
-.tabela-preco-header h1 {
-
-    font-size: 30px;
+    font-weight: 600;
 
 }
 
 
-.tabela-preco-novo {
+.campo input,
+.campo select,
+.campo textarea {
 
     width: 100%;
 
+    box-sizing: border-box;
+
+    border: 1px solid #ddd5cd;
+
+    border-radius: 8px;
+
+    outline: none;
+
+    background: white;
+
+    color: #4b2108;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+
 }
 
 
-.tabela-preco-filtros select {
+.campo input,
+.campo select {
 
-    flex: 1;
+    height: 43px;
 
-}
-
-
-.tabela-preco-form-grid {
-
-    grid-template-columns:
-        1fr;
+    padding: 0 12px;
 
 }
 
 
-.campo-grande {
+.campo textarea {
+
+    padding: 11px 12px;
+
+    resize: vertical;
+
+}
+
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+
+    border-color: #d38a17;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(
+            211,
+            138,
+            23,
+            .08
+        );
+
+}
+
+
+/* =====================================================
+   UPLOAD
+===================================================== */
+
+.campo-imagem {
 
     grid-column:
         span 1;
@@ -1553,36 +1142,640 @@ RESPONSIVO
 }
 
 
-.tabela-preco-modal {
+.tabela-preco-upload {
 
-    max-height: calc(
-        100vh - 20px
-    );
+    min-height: 130px;
 
-}
+    display: flex;
 
+    align-items: center;
 
-.tabela-preco-overlay {
+    gap: 15px;
 
-    padding: 10px;
-
-}
-
-
-.tabela-preco-modal form {
-
-    padding: 20px;
+    flex-wrap: wrap;
 
 }
 
 
-.tabela-preco-modal-header {
+.tabela-preco-upload > label {
 
-    padding: 20px;
+    min-height: 100px;
+
+    flex: 1;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    border: 1px dashed #d8cec4;
+
+    border-radius: 9px;
+
+    background: #faf8f6;
+
+    color: #8c7c6e;
+
+    cursor: pointer;
+
+    font-size: 11px;
 
 }
 
+
+.tabela-preco-upload > label svg {
+
+    width: 22px;
+
+    height: 22px;
+
 }
+
+
+.tabela-preco-upload input {
+
+    display: none;
+
+}
+
+
+.tabela-preco-preview-wrap {
+
+    width: 100px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+}
+
+
+.tabela-preco-preview {
+
+    width: 100px;
+
+    height: 100px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+    border-radius: 9px;
+
+    background: #eee;
+
+}
+
+
+.tabela-preco-preview img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+}
+
+
+.tabela-preco-remover-imagem {
+
+    width: 100%;
+
+    min-height: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    margin-top: 8px;
+
+    padding: 0 8px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e0cfc2;
+
+    border-radius: 7px;
+
+    background: white;
+
+    color: #8b5d45;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    transition:
+        background .2s ease,
+        border-color .2s ease,
+        color .2s ease;
+
+}
+
+
+.tabela-preco-remover-imagem:hover {
+
+    border-color: #bd6565;
+
+    background: #fff7f7;
+
+    color: #bd6565;
+
+}
+
+
+.tabela-preco-remover-imagem:disabled {
+
+    opacity: .5;
+
+    cursor: not-allowed;
+
+}
+
+
+.tabela-preco-remover-imagem svg {
+
+    width: 13px;
+
+    height: 13px;
+
+    flex-shrink: 0;
+
+}
+
+
+/* =====================================================
+   MATRIZ
+===================================================== */
+
+.tabela-preco-matriz {
+
+    margin-top: 35px;
+
+}
+
+
+.tabela-preco-matriz > header {
+
+    margin-bottom: 16px;
+
+}
+
+
+.tabela-preco-matriz > header span {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #d38a17;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    letter-spacing: 1.7px;
+
+}
+
+
+.tabela-preco-matriz > header h3 {
+
+    margin: 0;
+
+    color: #4b2108;
+
+    font-size: 21px;
+
+    font-weight: 500;
+
+}
+
+
+.tabela-preco-matriz > header p {
+
+    margin: 7px 0 0;
+
+    color: #888;
+
+    font-size: 12px;
+
+}
+
+
+/* =====================================================
+   MATRIZ TABLE
+===================================================== */
+
+.tabela-preco-matriz-wrapper {
+
+    width: 100%;
+
+    overflow-x: auto;
+
+    border: 1px solid #e4ddd5;
+
+    border-radius: 10px;
+
+    background: white;
+
+}
+
+
+.tabela-preco-matriz-table {
+
+    width: 100%;
+
+    min-width: 1050px;
+
+    border-collapse: collapse;
+
+}
+
+
+.tabela-preco-matriz-table th {
+
+    padding: 12px;
+
+    border-right: 1px solid #e9e3dd;
+
+    border-bottom: 1px solid #e4ddd5;
+
+    background: #f8f5f2;
+
+    color: #604b3a;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    text-align: center;
+
+    white-space: nowrap;
+
+}
+
+
+.tabela-preco-matriz-table thead th {
+
+    width: 75px;
+
+}
+
+
+.tabela-preco-matriz-table td {
+
+    min-width: 210px;
+
+    padding: 8px;
+
+    border-right: 1px solid #eee9e4;
+
+    border-bottom: 1px solid #eee9e4;
+
+    vertical-align: top;
+
+}
+
+
+.tabela-preco-matriz-table tr td,
+.tabela-preco-matriz-table tr th {
+
+    border-bottom: none;
+
+}
+
+
+.tabela-preco-matriz-table th,
+.tabela-preco-matriz-table td {
+
+    border-right: none;
+
+}
+
+
+/* =====================================================
+   CÉLULA
+===================================================== */
+
+.matriz-celula {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+}
+
+
+.matriz-celula > input {
+
+    width: 100%;
+
+    height: 34px;
+
+    box-sizing: border-box;
+
+    padding: 0 8px;
+
+    border: 1px solid #ddd5cd;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    color: #4b2108;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+
+}
+
+
+.matriz-celula > input:first-child:focus {
+
+    border-color: #d38a17;
+
+    box-shadow:
+        0 0 0 2px
+        rgba(
+            211,
+            138,
+            23,
+            .08
+        );
+
+}
+
+
+.matriz-resultado {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 8px;
+
+    padding: 7px 8px;
+
+    border-radius: 6px;
+
+    background: #f7f3ef;
+
+}
+
+
+.matriz-resultado span {
+
+    color: #8c7c6e;
+
+    font-size: 9px;
+
+    text-transform: uppercase;
+
+}
+
+
+.matriz-resultado strong {
+
+    color: #4b2108;
+
+    font-size: 11px;
+
+}
+
+
+.matriz-manual {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    color: #777;
+
+    cursor: pointer;
+
+    font-size: 10px;
+
+}
+
+
+.matriz-manual input {
+
+    accent-color: #d38a17;
+
+}
+
+
+.matriz-input-manual {
+
+    width: 100%;
+
+    height: 33px;
+
+    box-sizing: border-box;
+
+    padding: 0 8px;
+
+    border: 1px solid #d38a17;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    color: #4b2108;
+
+    font-family: inherit;
+
+    font-size: 11px;
+
+}
+
+
+/* =====================================================
+   AJUDA DAS FÓRMULAS
+===================================================== */
+
+.tabela-preco-formula-ajuda {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 12px;
+
+}
+
+
+.tabela-preco-formula-ajuda strong {
+
+    margin-right: 5px;
+
+    color: #604b3a;
+
+    font-size: 11px;
+
+}
+
+
+.tabela-preco-formula-ajuda span {
+
+    padding: 5px 8px;
+
+    border-radius: 5px;
+
+    background: #f3e5d2;
+
+    color: #5b3b24;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+
+}
+
+
+/* =====================================================
+   FOOTER MODAL
+===================================================== */
+
+.tabela-preco-modal-footer {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 30px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #e9e2db;
+
+}
+
+
+.tabela-preco-modal-footer button {
+
+    min-height: 43px;
+
+    padding: 0 18px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+}
+
+
+.botao-cancelar {
+
+    border: 1px solid #ddd5cd;
+
+    background: white;
+
+    color: #66564a;
+
+}
+
+
+.botao-cancelar:hover {
+
+    border-color: #c8b9ad;
+
+    background: #faf7f4;
+
+}
+
+
+.botao-salvar {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    border: none;
+
+    background: #4b2108;
+
+    color: white;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+
+}
+
+
+.botao-salvar:hover {
+
+    background: #6a3518;
+
+    transform: translateY(-1px);
+
+}
+
+
+.botao-salvar:disabled {
+
+    opacity: .55;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+}
+
+
+.botao-salvar svg {
+
+    width: 16px;
+
+    height: 16px;
+
+}
+
 
 /* =====================================================
    POPUP PERSONALIZADO
@@ -2009,9 +2202,143 @@ RESPONSIVO
 }
 
 
-@media (
-    max-width: 600px
-) {
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .tabela-preco-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+
+    .tabela-preco-form-grid {
+
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
+
+    }
+
+
+    .campo-grande {
+
+        grid-column:
+            span 2;
+
+    }
+
+
+    .tabela-preco-filtros {
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .tabela-preco-search {
+
+        flex-basis: 100%;
+
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .tabela-preco-header h1 {
+
+        font-size: 30px;
+
+    }
+
+
+    .tabela-preco-novo {
+
+        width: 100%;
+
+    }
+
+
+    .tabela-preco-filtros select {
+
+        flex: 1;
+
+    }
+
+
+    .tabela-preco-form-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .campo-grande {
+
+        grid-column:
+            span 1;
+
+    }
+
+
+    .tabela-preco-modal {
+
+        max-height:
+            calc(
+                100vh - 20px
+            );
+
+    }
+
+
+    .tabela-preco-overlay {
+
+        padding: 10px;
+
+    }
+
+
+    .tabela-preco-modal form {
+
+        padding: 20px;
+
+    }
+
+
+    .tabela-preco-modal-header {
+
+        padding: 20px;
+
+    }
+
+
+    .tabela-preco-scroll-superior {
+
+        padding:
+            4px 5px;
+
+    }
+
+
+    .tabela-preco-scroll-superior-barra {
+
+        height: 13px;
+
+    }
+
 
     .tabela-preco-popup {
 

@@ -1,6 +1,7 @@
 import {
     useEffect,
     useMemo,
+    useRef,
     useState
 } from "react";
 
@@ -678,7 +679,7 @@ function calcularFormula(
 
 
     return Number(
-        resultado.toFixed(2)
+        resultado.toFixed(3)
     );
 
 }
@@ -716,6 +717,22 @@ export default function TabelaPreco() {
 
     const [popupProcessando, setPopupProcessando] =
         useState(false);
+
+
+    /*
+    =================================================
+    SCROLL HORIZONTAL DA TABELA
+    =================================================
+    */
+
+    const tabelaScrollRef =
+        useRef(null);
+
+    const tabelaScrollSuperiorRef =
+        useRef(null);
+
+    const [larguraTabela, setLarguraTabela] =
+        useState(0);
 
 
     /*
@@ -1310,13 +1327,6 @@ export default function TabelaPreco() {
             );
 
 
-            /*
-            NOVO:
-            restaura o estado de remoção da imagem.
-            Compatibilidade com rascunhos antigos:
-            se não existir, será false.
-            */
-
             setImagemRemovida(
                 Boolean(
                     rascunho.imagemRemovida
@@ -1538,6 +1548,115 @@ export default function TabelaPreco() {
 
     /*
     =================================================
+    ATUALIZAR LARGURA DA BARRA SUPERIOR
+    =================================================
+    */
+
+    useEffect(() => {
+
+        function atualizarLarguraTabela() {
+
+            if (
+                !tabelaScrollRef.current
+            ) {
+
+                return;
+
+            }
+
+
+            const largura =
+                tabelaScrollRef.current.scrollWidth;
+
+
+            setLarguraTabela(
+                largura
+            );
+
+        }
+
+
+        const frame =
+            requestAnimationFrame(
+                atualizarLarguraTabela
+            );
+
+
+        window.addEventListener(
+            "resize",
+            atualizarLarguraTabela
+        );
+
+
+        return () => {
+
+            cancelAnimationFrame(
+                frame
+            );
+
+
+            window.removeEventListener(
+                "resize",
+                atualizarLarguraTabela
+            );
+
+        };
+
+    }, [
+        itensFiltrados.length
+    ]);
+
+
+    /*
+    =================================================
+    SINCRONIZAR SCROLL SUPERIOR
+    =================================================
+    */
+
+    function sincronizarScrollSuperior() {
+
+        if (
+            !tabelaScrollSuperiorRef.current ||
+            !tabelaScrollRef.current
+        ) {
+
+            return;
+
+        }
+
+
+        tabelaScrollSuperiorRef.current.scrollLeft =
+            tabelaScrollRef.current.scrollLeft;
+
+    }
+
+
+    /*
+    =================================================
+    SINCRONIZAR SCROLL DA TABELA
+    =================================================
+    */
+
+    function sincronizarScrollTabela() {
+
+        if (
+            !tabelaScrollSuperiorRef.current ||
+            !tabelaScrollRef.current
+        ) {
+
+            return;
+
+        }
+
+
+        tabelaScrollRef.current.scrollLeft =
+            tabelaScrollSuperiorRef.current.scrollLeft;
+
+    }
+
+
+    /*
+    =================================================
     ABRIR NOVO
     =================================================
     */
@@ -1648,11 +1767,6 @@ export default function TabelaPreco() {
         );
 
 
-        /*
-        Ao abrir uma edição, a foto existente
-        começa normalmente ativa.
-        */
-
         setImagemRemovida(
             false
         );
@@ -1705,13 +1819,6 @@ export default function TabelaPreco() {
             }
         );
 
-
-        /*
-        IMPORTANTE:
-
-        Ao abrir uma edição, recalculamos
-        a matriz usando as fórmulas atuais.
-        */
 
         const matrizCalculada =
             recalcularMatriz(
@@ -1775,20 +1882,10 @@ export default function TabelaPreco() {
 
     function removerImagem() {
 
-        /*
-        Remove qualquer arquivo novo selecionado.
-        */
-
         setImagemArquivo(
             null
         );
 
-
-        /*
-        Remove a URL existente da interface
-        e marca a imagem para ser removida
-        no próximo salvamento.
-        */
 
         setImagemUrl("");
 
@@ -1807,11 +1904,6 @@ export default function TabelaPreco() {
     */
 
     async function enviarImagem() {
-
-        /*
-        Se o usuário marcou a imagem para remover,
-        não enviamos nenhuma imagem.
-        */
 
         if (imagemRemovida) {
 
@@ -1977,12 +2069,6 @@ export default function TabelaPreco() {
         matrizOriginal
     ) {
 
-        /*
-        =============================================
-        CLONAR A MATRIZ COMPLETAMENTE
-        =============================================
-        */
-
         const matriz = {};
 
 
@@ -2001,12 +2087,6 @@ export default function TabelaPreco() {
         );
 
 
-        /*
-        =============================================
-        CONTROLE DE CÁLCULO
-        =============================================
-        */
-
         const calculando =
             new Set();
 
@@ -2014,12 +2094,6 @@ export default function TabelaPreco() {
         const calculados =
             new Set();
 
-
-        /*
-        =============================================
-        FUNÇÃO PRINCIPAL
-        =============================================
-        */
 
         function calcularCelula(
             cor,
@@ -2037,24 +2111,12 @@ export default function TabelaPreco() {
                 matriz[chave];
 
 
-            /*
-            -----------------------------------------
-            CÉLULA INEXISTENTE
-            -----------------------------------------
-            */
-
             if (!celula) {
 
                 return 0;
 
             }
 
-
-            /*
-            -----------------------------------------
-            VALOR MANUAL
-            -----------------------------------------
-            */
 
             if (
                 celula.usar_valor_manual
@@ -2080,12 +2142,6 @@ export default function TabelaPreco() {
             }
 
 
-            /*
-            -----------------------------------------
-            JÁ CALCULADO
-            -----------------------------------------
-            */
-
             if (
                 calculados.has(
                     chave
@@ -2098,12 +2154,6 @@ export default function TabelaPreco() {
 
             }
 
-
-            /*
-            -----------------------------------------
-            SEM FÓRMULA
-            -----------------------------------------
-            */
 
             if (
                 !celula.formula ||
@@ -2129,12 +2179,6 @@ export default function TabelaPreco() {
             }
 
 
-            /*
-            -----------------------------------------
-            REFERÊNCIA CIRCULAR
-            -----------------------------------------
-            */
-
             if (
                 calculando.has(
                     chave
@@ -2152,12 +2196,6 @@ export default function TabelaPreco() {
                 chave
             );
 
-
-            /*
-            =========================================
-            CONTEXTO DINÂMICO
-            =========================================
-            */
 
             const contexto = {
 
@@ -2216,12 +2254,6 @@ export default function TabelaPreco() {
 
             try {
 
-                /*
-                =====================================
-                CALCULAR FÓRMULA
-                =====================================
-                */
-
                 const resultado =
                     calcularFormula(
                         celula.formula,
@@ -2260,12 +2292,6 @@ export default function TabelaPreco() {
 
         }
 
-
-        /*
-        =============================================
-        RECALCULAR TODAS AS CÉLULAS
-        =============================================
-        */
 
         CORES.forEach(
             cor => {
@@ -2526,12 +2552,6 @@ export default function TabelaPreco() {
 
         try {
 
-            /*
-            =========================================
-            IMAGEM
-            =========================================
-            */
-
             const imagemFinal =
                 await enviarImagem();
 
@@ -2539,12 +2559,6 @@ export default function TabelaPreco() {
             let itemId =
                 itemSelecionado?.id;
 
-
-            /*
-            =========================================
-            USUÁRIO
-            =========================================
-            */
 
             const {
                 data: usuarioAtual
@@ -2561,12 +2575,6 @@ export default function TabelaPreco() {
                 null;
 
 
-            /*
-            =========================================
-            DADOS DO ITEM
-            =========================================
-            */
-
             const dadosItem = {
 
                 nome:
@@ -2575,17 +2583,6 @@ export default function TabelaPreco() {
                 descricao:
                     descricao.trim() ||
                     null,
-
-                /*
-                Se imagemRemovida = true,
-                imagemFinal será null.
-
-                Se foi escolhida uma nova imagem,
-                imagemFinal será a nova URL.
-
-                Se nada foi alterado,
-                imagemFinal continua sendo a URL antiga.
-                */
 
                 imagem_url:
                     imagemFinal ||
@@ -2616,12 +2613,6 @@ export default function TabelaPreco() {
             };
 
 
-            /*
-            =========================================
-            ATUALIZAR ITEM
-            =========================================
-            */
-
             if (
                 itemSelecionado
             ) {
@@ -2647,16 +2638,7 @@ export default function TabelaPreco() {
 
                 }
 
-            }
-
-
-            /*
-            =========================================
-            INSERIR ITEM
-            =========================================
-            */
-
-            else {
+            } else {
 
                 const {
                     data,
@@ -2692,23 +2674,11 @@ export default function TabelaPreco() {
             }
 
 
-            /*
-            =========================================
-            RECALCULAR MATRIZ
-            =========================================
-            */
-
             const matriz =
                 recalcularMatriz(
                     celulas
                 );
 
-
-            /*
-            =========================================
-            SALVAR 24 CÉLULAS
-            =========================================
-            */
 
             const registros =
                 Object.values(
@@ -2755,12 +2725,6 @@ export default function TabelaPreco() {
                         };
 
 
-                        /*
-                        IMPORTANTE:
-
-                        Não enviamos id null.
-                        */
-
                         if (
                             celula.id
                         ) {
@@ -2801,12 +2765,6 @@ export default function TabelaPreco() {
 
             }
 
-
-            /*
-            =========================================
-            SUCESSO
-            =========================================
-            */
 
             limparRascunho();
 
@@ -3278,152 +3236,254 @@ export default function TabelaPreco() {
 
                     ) : (
 
-                        <div
-                            className="tabela-preco-table-wrapper"
-                        >
+                        <>
+                            {/* =================================================
+                                BARRA HORIZONTAL SUPERIOR
+                            ================================================= */}
 
-                            <table
-                                className="tabela-preco-table tabela-preco-matriz-principal"
+                            <div
+                                className="tabela-preco-scroll-superior"
                             >
 
-                                <thead>
+                                <div
+                                    ref={
+                                        tabelaScrollSuperiorRef
+                                    }
+                                    className="tabela-preco-scroll-superior-barra"
+                                    onScroll={
+                                        sincronizarScrollTabela
+                                    }
+                                >
 
-                                    <tr>
+                                    <div
+                                        style={{
+                                            width:
+                                                `${larguraTabela}px`,
+                                            height:
+                                                "1px"
+                                        }}
+                                    />
 
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-item"
-                                        >
-                                            Item
-                                        </th>
+                                </div>
 
-
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-descricao"
-                                        >
-                                            Descrição
-                                        </th>
-
-
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-imagem"
-                                        >
-                                            Imagem
-                                        </th>
+                            </div>
 
 
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-medicao"
-                                        >
-                                            Padrão de medição
-                                        </th>
+                            {/* =================================================
+                                TABELA
+                            ================================================= */}
+
+                            <div
+                                ref={
+                                    tabelaScrollRef
+                                }
+                                className="tabela-preco-table-wrapper"
+                                onScroll={
+                                    sincronizarScrollSuperior
+                                }
+                            >
+
+                                <table
+                                    className="tabela-preco-table tabela-preco-matriz-principal"
+                                >
+
+                                    <thead>
+
+                                        <tr>
+
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-item"
+                                            >
+                                                Item
+                                            </th>
 
 
-                                        {
-                                            CORES.map(
-                                                cor => (
-
-                                                    <th
-                                                        key={
-                                                            `cabecalho-cor-${cor}`
-                                                        }
-                                                        colSpan={
-                                                            COMPLEXIDADES.length
-                                                        }
-                                                        className="coluna-cor"
-                                                    >
-
-                                                        COR {cor}
-
-                                                    </th>
-
-                                                )
-                                            )
-                                        }
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-descricao"
+                                            >
+                                                Descrição
+                                            </th>
 
 
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-status"
-                                        >
-                                            Status
-                                        </th>
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-imagem"
+                                            >
+                                                Imagem
+                                            </th>
 
 
-                                        <th
-                                            rowSpan="2"
-                                            className="coluna-acoes"
-                                        >
-                                            Ações
-                                        </th>
-
-                                    </tr>
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-medicao"
+                                            >
+                                                Padrão de medição
+                                            </th>
 
 
-                                    <tr>
+                                            {
+                                                CORES.map(
+                                                    cor => (
 
-                                        {
-                                            CORES.map(
-                                                cor => (
+                                                        <th
+                                                            key={
+                                                                `cabecalho-cor-${cor}`
+                                                            }
+                                                            colSpan={
+                                                                COMPLEXIDADES.length
+                                                            }
+                                                            className="coluna-cor"
+                                                        >
 
-                                                    COMPLEXIDADES.map(
-                                                        complexidade => (
+                                                            COR {cor}
 
-                                                            <th
-                                                                key={
-                                                                    `cabecalho-${cor}-${complexidade}`
-                                                                }
-                                                                className="coluna-complexidade"
-                                                            >
+                                                        </th>
 
-                                                                Complexidade {
-                                                                    complexidade
-                                                                }
-
-                                                            </th>
-
-                                                        )
                                                     )
-
                                                 )
-                                            )
-                                        }
-
-                                    </tr>
-
-                                </thead>
+                                            }
 
 
-                                <tbody>
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-status"
+                                            >
+                                                Status
+                                            </th>
 
-                                    {
-                                        itensFiltrados.map(
-                                            item => (
 
-                                                <tr
-                                                    key={
-                                                        item.id
-                                                    }
-                                                >
+                                            <th
+                                                rowSpan="2"
+                                                className="coluna-acoes"
+                                            >
+                                                Ações
+                                            </th>
 
-                                                    <td
-                                                        className="coluna-item"
+                                        </tr>
+
+
+                                        <tr>
+
+                                            {
+                                                CORES.map(
+                                                    cor => (
+
+                                                        COMPLEXIDADES.map(
+                                                            complexidade => (
+
+                                                                <th
+                                                                    key={
+                                                                        `cabecalho-${cor}-${complexidade}`
+                                                                    }
+                                                                    className="coluna-complexidade"
+                                                                >
+
+                                                                    Complexidade {
+                                                                        complexidade
+                                                                    }
+
+                                                                </th>
+
+                                                            )
+                                                        )
+
+                                                    )
+                                                )
+                                            }
+
+                                        </tr>
+
+                                    </thead>
+
+
+                                    <tbody>
+
+                                        {
+                                            itensFiltrados.map(
+                                                item => (
+
+                                                    <tr
+                                                        key={
+                                                            item.id
+                                                        }
                                                     >
 
-                                                        <div
-                                                            className="tabela-preco-item"
+                                                        <td
+                                                            className="coluna-item"
                                                         >
 
                                                             <div
-                                                                className="tabela-preco-thumb"
+                                                                className="tabela-preco-item"
                                                             >
 
-                                                                {
-                                                                    item.imagem_url
-                                                                        ? (
+                                                                <div
+                                                                    className="tabela-preco-thumb"
+                                                                >
+
+                                                                    {
+                                                                        item.imagem_url
+                                                                            ? (
+
+                                                                                <img
+                                                                                    src={
+                                                                                        item.imagem_url
+                                                                                    }
+                                                                                    alt={
+                                                                                        item.nome
+                                                                                    }
+                                                                                />
+
+                                                                            )
+                                                                            : (
+
+                                                                                <FiImage />
+
+                                                                            )
+                                                                    }
+
+                                                                </div>
+
+
+                                                                <div>
+
+                                                                    <strong>
+                                                                        {
+                                                                            item.nome
+                                                                        }
+                                                                    </strong>
+
+                                                                </div>
+
+                                                            </div>
+
+                                                        </td>
+
+
+                                                        <td
+                                                            className="coluna-descricao"
+                                                        >
+
+                                                            {
+                                                                item.descricao ||
+                                                                "—"
+                                                            }
+
+                                                        </td>
+
+
+                                                        <td
+                                                            className="coluna-imagem"
+                                                        >
+
+                                                            {
+                                                                item.imagem_url
+                                                                    ? (
+
+                                                                        <div
+                                                                            className="tabela-preco-imagem-tabela"
+                                                                        >
 
                                                                             <img
                                                                                 src={
@@ -3434,289 +3494,231 @@ export default function TabelaPreco() {
                                                                                 }
                                                                             />
 
-                                                                        )
-                                                                        : (
+                                                                        </div>
 
-                                                                            <FiImage />
+                                                                    )
+                                                                    : (
 
-                                                                        )
-                                                                }
+                                                                        <span>
+                                                                            —
+                                                                        </span>
 
-                                                            </div>
-
-
-                                                            <div>
-
-                                                                <strong>
-                                                                    {
-                                                                        item.nome
-                                                                    }
-                                                                </strong>
-
-                                                            </div>
-
-                                                        </div>
-
-                                                    </td>
-
-
-                                                    <td
-                                                        className="coluna-descricao"
-                                                    >
-
-                                                        {
-                                                            item.descricao ||
-                                                            "—"
-                                                        }
-
-                                                    </td>
-
-
-                                                    <td
-                                                        className="coluna-imagem"
-                                                    >
-
-                                                        {
-                                                            item.imagem_url
-                                                                ? (
-
-                                                                    <div
-                                                                        className="tabela-preco-imagem-tabela"
-                                                                    >
-
-                                                                        <img
-                                                                            src={
-                                                                                item.imagem_url
-                                                                            }
-                                                                            alt={
-                                                                                item.nome
-                                                                            }
-                                                                        />
-
-                                                                    </div>
-
-                                                                )
-                                                                : (
-
-                                                                    <span>
-                                                                        —
-                                                                    </span>
-
-                                                                )
-                                                        }
-
-                                                    </td>
-
-
-                                                    <td
-                                                        className="coluna-medicao"
-                                                    >
-
-                                                        {
-                                                            item.padrao_medicao ||
-                                                            "—"
-                                                        }
-
-                                                    </td>
-
-
-                                                    {
-                                                        CORES.map(
-                                                            cor => (
-
-                                                                COMPLEXIDADES.map(
-                                                                    complexidade => {
-
-                                                                        const valor =
-                                                                            obterValorCelula(
-                                                                                item,
-                                                                                cor,
-                                                                                complexidade
-                                                                            );
-
-
-                                                                        const possui =
-                                                                            possuiValorCelula(
-                                                                                item,
-                                                                                cor,
-                                                                                complexidade
-                                                                            );
-
-
-                                                                        const registro =
-                                                                            (
-                                                                                item.valores ||
-                                                                                []
-                                                                            ).find(
-                                                                                itemValor =>
-                                                                                    Number(
-                                                                                        itemValor.cor
-                                                                                    ) === Number(
-                                                                                        cor
-                                                                                    ) &&
-
-                                                                                    Number(
-                                                                                        itemValor.complexidade
-                                                                                    ) === Number(
-                                                                                        complexidade
-                                                                                    )
-                                                                            );
-
-
-                                                                        const manual =
-                                                                            registro?.usar_valor_manual;
-
-
-                                                                        return (
-
-                                                                            <td
-                                                                                key={
-                                                                                    `${item.id}-${cor}-${complexidade}`
-                                                                                }
-                                                                                className={
-                                                                                    manual
-                                                                                        ? "preco-celula preco-manual"
-                                                                                        : "preco-celula"
-                                                                                }
-                                                                            >
-
-                                                                                {
-                                                                                    possui
-                                                                                        ? (
-
-                                                                                            <div
-                                                                                                className="preco-celula-conteudo"
-                                                                                            >
-
-                                                                                                <strong>
-                                                                                                    {
-                                                                                                        formatarMoeda(
-                                                                                                            valor
-                                                                                                        )
-                                                                                                    }
-                                                                                                </strong>
-
-
-                                                                                                {
-                                                                                                    manual && (
-
-                                                                                                        <span
-                                                                                                            className="preco-manual-label"
-                                                                                                        >
-                                                                                                            Manual
-                                                                                                        </span>
-
-                                                                                                    )
-                                                                                                }
-
-                                                                                            </div>
-
-                                                                                        )
-                                                                                        : (
-
-                                                                                            <span
-                                                                                                className="preco-vazio"
-                                                                                            >
-                                                                                                —
-                                                                                            </span>
-
-                                                                                        )
-                                                                                }
-
-                                                                            </td>
-
-                                                                        );
-
-                                                                    }
-                                                                )
-
-                                                            )
-                                                        )
-                                                    }
-
-
-                                                    <td
-                                                        className="coluna-status"
-                                                    >
-
-                                                        <button
-                                                            type="button"
-                                                            className={
-                                                                item.ativo
-                                                                    ? "status ativo"
-                                                                    : "status inativo"
+                                                                    )
                                                             }
-                                                            onClick={() =>
-                                                                alternarAtivo(
-                                                                    item
-                                                                )
-                                                            }
+
+                                                        </td>
+
+
+                                                        <td
+                                                            className="coluna-medicao"
                                                         >
 
                                                             {
-                                                                item.ativo
-                                                                    ? "Ativo"
-                                                                    : "Inativo"
+                                                                item.padrao_medicao ||
+                                                                "—"
                                                             }
 
-                                                        </button>
-
-                                                    </td>
+                                                        </td>
 
 
-                                                    <td
-                                                        className="coluna-acoes"
-                                                    >
+                                                        {
+                                                            CORES.map(
+                                                                cor => (
 
-                                                        <div
-                                                            className="tabela-preco-acoes"
+                                                                    COMPLEXIDADES.map(
+                                                                        complexidade => {
+
+                                                                            const valor =
+                                                                                obterValorCelula(
+                                                                                    item,
+                                                                                    cor,
+                                                                                    complexidade
+                                                                                );
+
+
+                                                                            const possui =
+                                                                                possuiValorCelula(
+                                                                                    item,
+                                                                                    cor,
+                                                                                    complexidade
+                                                                                );
+
+
+                                                                            const registro =
+                                                                                (
+                                                                                    item.valores ||
+                                                                                    []
+                                                                                ).find(
+                                                                                    itemValor =>
+                                                                                        Number(
+                                                                                            itemValor.cor
+                                                                                        ) === Number(
+                                                                                            cor
+                                                                                        ) &&
+
+                                                                                        Number(
+                                                                                            itemValor.complexidade
+                                                                                        ) === Number(
+                                                                                            complexidade
+                                                                                        )
+                                                                                );
+
+
+                                                                            const manual =
+                                                                                registro?.usar_valor_manual;
+
+
+                                                                            return (
+
+                                                                                <td
+                                                                                    key={
+                                                                                        `${item.id}-${cor}-${complexidade}`
+                                                                                    }
+                                                                                    className={
+                                                                                        manual
+                                                                                            ? "preco-celula preco-manual"
+                                                                                            : "preco-celula"
+                                                                                    }
+                                                                                >
+
+                                                                                    {
+                                                                                        possui
+                                                                                            ? (
+
+                                                                                                <div
+                                                                                                    className="preco-celula-conteudo"
+                                                                                                >
+
+                                                                                                    <strong>
+                                                                                                        {
+                                                                                                            formatarMoeda(
+                                                                                                                valor
+                                                                                                            )
+                                                                                                        }
+                                                                                                    </strong>
+
+
+                                                                                                    {
+                                                                                                        manual && (
+
+                                                                                                            <span
+                                                                                                                className="preco-manual-label"
+                                                                                                            >
+                                                                                                                Manual
+                                                                                                            </span>
+
+                                                                                                        )
+                                                                                                    }
+
+                                                                                                </div>
+
+                                                                                            )
+                                                                                            : (
+
+                                                                                                <span
+                                                                                                    className="preco-vazio"
+                                                                                                >
+                                                                                                    —
+                                                                                                </span>
+
+                                                                                            )
+                                                                                    }
+
+                                                                                </td>
+
+                                                                            );
+
+                                                                        }
+                                                                    )
+
+                                                                )
+                                                            )
+                                                        }
+
+
+                                                        <td
+                                                            className="coluna-status"
                                                         >
 
                                                             <button
                                                                 type="button"
-                                                                title="Editar"
+                                                                className={
+                                                                    item.ativo
+                                                                        ? "status ativo"
+                                                                        : "status inativo"
+                                                                }
                                                                 onClick={() =>
-                                                                    abrirEdicao(
+                                                                    alternarAtivo(
                                                                         item
                                                                     )
                                                                 }
                                                             >
 
-                                                                <FiEdit2 />
+                                                                {
+                                                                    item.ativo
+                                                                        ? "Ativo"
+                                                                        : "Inativo"
+                                                                }
 
                                                             </button>
 
+                                                        </td>
 
-                                                            <button
-                                                                type="button"
-                                                                className="perigo"
-                                                                title="Excluir"
-                                                                onClick={() =>
-                                                                    excluir(
-                                                                        item
-                                                                    )
-                                                                }
+
+                                                        <td
+                                                            className="coluna-acoes"
+                                                        >
+
+                                                            <div
+                                                                className="tabela-preco-acoes"
                                                             >
 
-                                                                <FiTrash2 />
+                                                                <button
+                                                                    type="button"
+                                                                    title="Editar"
+                                                                    onClick={() =>
+                                                                        abrirEdicao(
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                >
 
-                                                            </button>
+                                                                    <FiEdit2 />
 
-                                                        </div>
+                                                                </button>
 
-                                                    </td>
 
-                                                </tr>
+                                                                <button
+                                                                    type="button"
+                                                                    className="perigo"
+                                                                    title="Excluir"
+                                                                    onClick={() =>
+                                                                        excluir(
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                >
 
+                                                                    <FiTrash2 />
+
+                                                                </button>
+
+                                                            </div>
+
+                                                        </td>
+
+                                                    </tr>
+
+                                                )
                                             )
-                                        )
-                                    }
+                                        }
 
-                                </tbody>
+                                    </tbody>
 
-                            </table>
+                                </table>
 
-                        </div>
+                            </div>
+                        </>
 
                     )
                 }
@@ -3797,10 +3799,6 @@ export default function TabelaPreco() {
                                     salvar
                                 }
                             >
-
-                                {/* =================================================
-                                    DADOS DO ITEM
-                                ================================================= */}
 
                                 <section
                                     className="tabela-preco-form-grid"
@@ -4036,13 +4034,6 @@ export default function TabelaPreco() {
                                                         );
 
 
-                                                        /*
-                                                        Se o usuário escolher
-                                                        uma nova imagem depois
-                                                        de remover a antiga,
-                                                        cancela a remoção.
-                                                        */
-
                                                         if (arquivo) {
 
                                                             setImagemRemovida(
@@ -4084,11 +4075,6 @@ export default function TabelaPreco() {
                                             }
 
 
-                                            {/* =================================================
-                                                NOVO:
-                                                BOTÃO REMOVER FOTO
-                                            ================================================= */}
-
                                             {
                                                 (
                                                     imagemArquivo ||
@@ -4121,10 +4107,6 @@ export default function TabelaPreco() {
 
                                 </section>
 
-
-                                {/* =================================================
-                                    MATRIZ DO MODAL
-                                ================================================= */}
 
                                 <section
                                     className="tabela-preco-matriz"
@@ -4397,10 +4379,6 @@ export default function TabelaPreco() {
 
                                 </section>
 
-
-                                {/* =================================================
-                                    RODAPÉ
-                                ================================================= */}
 
                                 <footer
                                     className="tabela-preco-modal-footer"
