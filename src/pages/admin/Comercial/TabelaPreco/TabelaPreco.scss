@@ -310,6 +310,8 @@
 
 .tabela-preco-lista {
 
+    position: relative;
+
     width: 100%;
 
     border: 1px solid #e4ddd5;
@@ -318,7 +320,14 @@
 
     background: white;
 
-    overflow: hidden;
+    /*
+    IMPORTANTE:
+    não usar overflow: hidden aqui,
+    pois isso impede o sticky de acompanhar
+    a rolagem vertical da página.
+    */
+
+    overflow: visible;
 
 }
 
@@ -333,7 +342,7 @@
 
     top: 0;
 
-    z-index: 20;
+    z-index: 100;
 
     width: 100%;
 
