@@ -72,6 +72,11 @@ import Producao
 import Obras
     from "../pages/admin/Producao/Obras/Obras";
 
+import Comercial
+    from "../pages/admin/Comercial/Comercial";
+import TabelaPreco
+    from "../pages/admin/Comercial/TabelaPreco/TabelaPreco";
+
 /*
 =====================================================
 INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
@@ -398,23 +403,39 @@ export default function Router() {
                         COMERCIAL
                     ================================================= */}
 
-                    <Route
-                        path="comercial"
-                        element={
-                            <ProtectedRoute
-                                allowedRoles={[
-                                    "Administrativo Geral",
-                                    "comercial"
-                                ]}
-                            >
-                                <div>
-                                    <h1>
-                                        Comercial
-                                    </h1>
-                                </div>
-                            </ProtectedRoute>
-                        }
-                    />
+       <Route
+    path="comercial"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "comercial"
+            ]}
+        >
+            <Comercial />
+        </ProtectedRoute>
+    }
+/>
+{/* =================================================
+    TABELA DE PREÇOS
+================================================= */}
+
+<Route
+    path="comercial/tabela-preco"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "comercial"
+            ]}
+        >
+            <TabelaPreco />
+        </ProtectedRoute>
+    }
+/>
+
+
+
 
                     {/* =================================================
                         PRODUÇÃO

@@ -3216,7 +3216,7 @@ export default function Cronograma() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                placeholder="Observação"
+                                                                placeholder="Status"
                                                             />
 
                                                         </td>
@@ -3382,7 +3382,7 @@ export default function Cronograma() {
                 >
 
                     <div>
-                        Data Final prevista de entrega do Projeto:
+                        Data final prevista de entrega do projeto:
                     </div>
 
                     <strong>
