@@ -32,6 +32,14 @@ const DRAFT_STORAGE_KEY =
 
 const MAX_COMPLEMENTOS = 5;
 
+const VALOR_POR_LED = 50;
+
+const VALOR_POR_METALON = 400;
+
+const MAX_LED = 5;
+
+const MAX_METALON = 30;
+
 
 /*
 =====================================================
@@ -315,10 +323,24 @@ const novoItem = () => ({
     complementos:
         [],
 
-    desconto_adicional:
+        desconto_adicional:
+        0,
+
+    possui_led:
+        false,
+
+    quantidade_led:
+        0,
+
+    possui_metalon:
+        false,
+
+    quantidade_metalon:
         0
 
 });
+
+
 
 
 /*
@@ -1473,6 +1495,156 @@ export default function TabelaOrcamento() {
         };
 
 
+
+/*
+=================================================
+ATUALIZAR QUANTIDADE DE LED / METALON
+=================================================
+*/
+
+const atualizarQuantidadeExtra =
+    (
+        ambienteId,
+        itemId,
+        campo,
+        valor,
+        maximo
+    ) => {
+
+    const quantidade =
+        Math.min(
+            maximo,
+            Math.max(
+                0,
+                Number(
+                    valor
+                ) || 0
+            )
+        );
+
+    setAmbientes(
+        atual =>
+            atual.map(
+                ambiente => {
+
+                    if (
+                        ambiente.id !==
+                        ambienteId
+                    ) {
+
+                        return ambiente;
+
+                    }
+
+                    return {
+
+                        ...ambiente,
+
+                        itens:
+                            ambiente.itens.map(
+                                item =>
+
+                                    item.id ===
+                                    itemId
+
+                                        ? {
+
+                                            ...item,
+
+                                            [campo]:
+                                                quantidade
+
+                                        }
+
+                                        : item
+                            )
+
+                    };
+
+                }
+            )
+    );
+
+};
+
+
+/*
+=================================================
+ATIVAR / DESATIVAR LED / METALON
+=================================================
+*/
+
+const alternarExtra =
+    (
+        ambienteId,
+        itemId,
+        campoPossui,
+        campoQuantidade,
+        ativo
+    ) => {
+
+    setAmbientes(
+        atual =>
+            atual.map(
+                ambiente => {
+
+                    if (
+                        ambiente.id !==
+                        ambienteId
+                    ) {
+
+                        return ambiente;
+
+                    }
+
+                    return {
+
+                        ...ambiente,
+
+                        itens:
+                            ambiente.itens.map(
+                                item => {
+
+                                    if (
+                                        item.id !==
+                                        itemId
+                                    ) {
+
+                                        return item;
+
+                                    }
+
+                                    return {
+
+                                        ...item,
+
+                                        [campoPossui]:
+                                            ativo,
+
+                                        [campoQuantidade]:
+                                            ativo
+                                                ? Math.max(
+                                                    1,
+                                                    Number(
+                                                        item[
+                                                            campoQuantidade
+                                                        ]
+                                                    ) || 1
+                                                )
+                                                : 0
+
+                                    };
+
+                                }
+                            )
+
+                    };
+
+                }
+            )
+    );
+
+};
     /*
     =================================================
     ADICIONAR COMPLEMENTO
@@ -2673,34 +2845,110 @@ const valorUnitario =
     m2Total *
     valorComDescontoAdicional;
 
+    /*
+=====================================================
+LED
+=====================================================
+*/
 
-                                    return {
+const quantidadeLed =
+    item.possui_led
+        ? Math.min(
+            MAX_LED,
+            Math.max(
+                0,
+                numberValue(
+                    item.quantidade_led
+                )
+            )
+        )
+        : 0;
 
-                                        ...item,
+const valorLed =
+    quantidadeLed *
+    VALOR_POR_LED;
 
-                                        calculadoM2:
-                                            m2,
 
-                                        calculadoM2Total:
-                                            m2Total,
+/*
+=====================================================
+METALON
+=====================================================
+*/
 
-                                        calculadoValorM2:
-                                            valorM2,
+const quantidadeMetalon =
+    item.possui_metalon
+        ? Math.min(
+            MAX_METALON,
+            Math.max(
+                0,
+                numberValue(
+                    item.quantidade_metalon
+                )
+            )
+        )
+        : 0;
 
-                                        calculadoValorM2Complementos:
-                                            valorM2Complementos,
+const valorMetalon =
+    quantidadeMetalon *
+    VALOR_POR_METALON;
 
-                                        calculadoValorFinalM2:
-                                            valorFinalM2,
 
-                                        calculadoValorUnitario:
-                                            valorUnitario,
+/*
+=====================================================
+VALOR MÍNIMO DA PROPOSTA ALME
+=====================================================
+*/
 
-                                        calculadoDescontoAdicional:
-                                            descontoAdicional,
+const valorMinimoPropostaAlme =
+    valorUnitario +
+    valorLed +
+    valorMetalon;
 
-                                        calculadoValorComDescontoAdicional:
-                                            valorComDescontoAdicional
+
+                                  return {
+
+    ...item,
+
+    calculadoM2:
+        m2,
+
+    calculadoM2Total:
+        m2Total,
+
+    calculadoValorM2:
+        valorM2,
+
+    calculadoValorM2Complementos:
+        valorM2Complementos,
+
+    calculadoValorFinalM2:
+        valorFinalM2,
+
+    calculadoValorUnitario:
+        valorUnitario,
+
+    calculadoQuantidadeLed:
+        quantidadeLed,
+
+    calculadoValorLed:
+        valorLed,
+
+    calculadoQuantidadeMetalon:
+        quantidadeMetalon,
+
+    calculadoValorMetalon:
+        valorMetalon,
+
+    calculadoValorMinimoPropostaAlme:
+        valorMinimoPropostaAlme,
+
+    calculadoDescontoAdicional:
+        descontoAdicional,
+
+    calculadoValorComDescontoAdicional:
+        valorComDescontoAdicional
+
+
 
                                     };
 
@@ -3184,7 +3432,9 @@ const valorUnitario =
                                                 <th>
                                                     Valor com desconto ou adicional
                                                 </th>
-
+<th>
+    Valor mínimo da proposta ALME
+</th>
                                                 <th>
                                                     Ação
                                                 </th>
@@ -3203,7 +3453,7 @@ const valorUnitario =
 
                                                     <tr className="orcamento-tabela-vazia">
 
-                                                        <td colSpan="19">
+                                                        <td colSpan="20">
 
                                                             Nenhum item adicionado neste ambiente.
 
@@ -3714,7 +3964,19 @@ const valorUnitario =
                                                                         </div>
 
                                                                     </td>
+<td>
 
+    <div className="orcamento-resultado orcamento-resultado-proposta-alme">
+
+        {
+            money(
+                item.calculadoValorMinimoPropostaAlme
+            )
+        }
+
+    </div>
+
+</td>
 
                                                                     <td>
 
@@ -3857,7 +4119,237 @@ const valorUnitario =
                                                                     )
                                                                 }
 
+{/* =================================================
+    LED / METALON
+================================================= */}
 
+<tr className="orcamento-extras-linha">
+
+    <td colSpan="20">
+
+        <div className="orcamento-extras">
+
+            {/* LED */}
+
+            <div className="orcamento-extra-bloco">
+
+                <label className="orcamento-checkbox-label">
+
+                    <input
+                        type="checkbox"
+                        checked={
+                            Boolean(
+                                item.possui_led
+                            )
+                        }
+                        onChange={
+                            event =>
+                                alternarExtra(
+                                    ambiente.id,
+                                    item.id,
+                                    "possui_led",
+                                    "quantidade_led",
+                                    event.target.checked
+                                )
+                        }
+                    />
+
+                    <span>
+                        Esse item vai LED?
+                    </span>
+
+                </label>
+
+
+                {
+                    item.possui_led && (
+
+                        <div className="orcamento-extra-campo">
+
+                            <label>
+                                Quantidade de LED
+                            </label>
+
+                            <input
+                                className="orcamento-tabela-input input-number"
+                                type="number"
+                                min="1"
+                                max={
+                                    MAX_LED
+                                }
+                                step="1"
+                                value={
+                                    item.quantidade_led || ""
+                                }
+                                onChange={
+                                    event =>
+                                        atualizarQuantidadeExtra(
+                                            ambiente.id,
+                                            item.id,
+                                            "quantidade_led",
+                                            event.target.value,
+                                            MAX_LED
+                                        )
+                                }
+                            />
+
+                            <small>
+                                1 a {MAX_LED} unidades • {money(VALOR_POR_LED)} por unidade
+                            </small>
+
+                        </div>
+
+                    )
+                }
+
+
+                {
+                    item.possui_led && (
+
+                        <div className="orcamento-extra-valor">
+
+                            <span>
+                                Adicional LED
+                            </span>
+
+                            <strong>
+                                {
+                                    money(
+                                        item.calculadoValorLed
+                                    )
+                                }
+                            </strong>
+
+                        </div>
+
+                    )
+                }
+
+            </div>
+
+
+            {/* METALON */}
+
+            <div className="orcamento-extra-bloco">
+
+                <label className="orcamento-checkbox-label">
+
+                    <input
+                        type="checkbox"
+                        checked={
+                            Boolean(
+                                item.possui_metalon
+                            )
+                        }
+                        onChange={
+                            event =>
+                                alternarExtra(
+                                    ambiente.id,
+                                    item.id,
+                                    "possui_metalon",
+                                    "quantidade_metalon",
+                                    event.target.checked
+                                )
+                        }
+                    />
+
+                    <span>
+                        Esse item vai metalon?
+                    </span>
+
+                </label>
+
+
+                {
+                    item.possui_metalon && (
+
+                        <div className="orcamento-extra-campo">
+
+                            <label>
+                                Quantidade de metalon
+                            </label>
+
+                            <input
+                                className="orcamento-tabela-input input-number"
+                                type="number"
+                                min="1"
+                                max={
+                                    MAX_METALON
+                                }
+                                step="1"
+                                value={
+                                    item.quantidade_metalon || ""
+                                }
+                                onChange={
+                                    event =>
+                                        atualizarQuantidadeExtra(
+                                            ambiente.id,
+                                            item.id,
+                                            "quantidade_metalon",
+                                            event.target.value,
+                                            MAX_METALON
+                                        )
+                                }
+                            />
+
+                            <small>
+                                1 a {MAX_METALON} unidades • {money(VALOR_POR_METALON)} por unidade
+                            </small>
+
+                        </div>
+
+                    )
+                }
+
+
+                {
+                    item.possui_metalon && (
+
+                        <div className="orcamento-extra-valor">
+
+                            <span>
+                                Adicional metalon
+                            </span>
+
+                            <strong>
+                                {
+                                    money(
+                                        item.calculadoValorMetalon
+                                    )
+                                }
+                            </strong>
+
+                        </div>
+
+                    )
+                }
+
+            </div>
+
+
+            {/* RESUMO */}
+
+            <div className="orcamento-extra-resumo">
+
+                <span>
+                    Valor mínimo da proposta ALME
+                </span>
+
+                <strong>
+                    {
+                        money(
+                            item.calculadoValorMinimoPropostaAlme
+                        )
+                    }
+                </strong>
+
+            </div>
+
+        </div>
+
+    </td>
+
+</tr>
                                                                 {/* =================================================
                                                                     COMPLEMENTOS
                                                                 ================================================= */}

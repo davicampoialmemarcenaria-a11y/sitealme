@@ -384,7 +384,7 @@
 
 .orcamento-tabela {
     width: 100%;
-    min-width: 2350px;
+    min-width: 2650px;
     border-collapse: separate;
     border-spacing: 0;
     table-layout: fixed;
@@ -521,6 +521,11 @@
 
 .orcamento-tabela th:nth-child(19),
 .orcamento-tabela td:nth-child(19) {
+    width: 220px;
+}
+
+.orcamento-tabela th:nth-child(20),
+.orcamento-tabela td:nth-child(20) {
     width: 75px;
 }
 
@@ -638,6 +643,13 @@
     font-weight: 800;
 }
 
+.orcamento-resultado-proposta-alme {
+    border-color: #8c5a24;
+    background: #f3e5d2;
+    color: #4b2108;
+    font-weight: 900;
+}
+
 
 /* =====================================================
    EXCLUIR ITEM
@@ -725,6 +737,101 @@
 .orcamento-detalhe-info strong {
     color: #4b2108;
     font-size: 12px;
+}
+
+
+/* =====================================================
+   LED / METALON
+===================================================== */
+
+.orcamento-extras-linha td {
+    padding: 0 !important;
+    border-bottom: 1px solid #e8ded5;
+    background: #f8f3ee !important;
+}
+
+.orcamento-extras {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    padding: 14px 15px;
+}
+
+.orcamento-extra-bloco {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #e3d6ca;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.orcamento-extra-campo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.orcamento-extra-campo label {
+    color: #765c4a;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.orcamento-extra-campo input {
+    width: 90px;
+}
+
+.orcamento-extra-campo small {
+    color: #9a897b;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.orcamento-extra-valor {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-left: 4px;
+}
+
+.orcamento-extra-valor span {
+    color: #8a7768;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.orcamento-extra-valor strong {
+    color: #4b2108;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.orcamento-extra-resumo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    padding: 9px 12px;
+    border: 1px solid #d9c1a5;
+    border-radius: 9px;
+    background: #fff9f1;
+}
+
+.orcamento-extra-resumo span {
+    color: #765c4a;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.orcamento-extra-resumo strong {
+    color: #4b2108;
+    font-size: 13px;
+    font-weight: 900;
 }
 
 
@@ -1132,6 +1239,22 @@
         flex-direction: column;
     }
 
+    .orcamento-extras {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .orcamento-extra-bloco,
+    .orcamento-extra-resumo {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .orcamento-extra-resumo {
+        margin-left: 0;
+        justify-content: space-between;
+    }
+
 }
 
 
@@ -1187,6 +1310,26 @@
 
     .orcamento-adicionar-complemento {
         width: 100%;
+    }
+
+    .orcamento-extra-bloco {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .orcamento-extra-campo {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .orcamento-extra-campo input {
+        width: 100%;
+    }
+
+    .orcamento-extra-campo small {
+        white-space: normal;
     }
 
 }
