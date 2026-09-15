@@ -1,3 +1,4 @@
+
 import {
     BrowserRouter,
     Routes,
@@ -8,6 +9,7 @@ import {
 import {
     useAuth
 } from "../contexts/AuthContext";
+
 
 /*
 =====================================================
@@ -36,6 +38,7 @@ import Marceneiro
 import Login
     from "../pages/Login/Login";
 
+
 /*
 =====================================================
 LAYOUT ADMINISTRATIVO
@@ -44,6 +47,7 @@ LAYOUT ADMINISTRATIVO
 
 import AdminLayout
     from "../pages/admin/Layout/AdminLayout";
+
 
 /*
 =====================================================
@@ -74,8 +78,16 @@ import Obras
 
 import Comercial
     from "../pages/admin/Comercial/Comercial";
+
 import TabelaPreco
     from "../pages/admin/Comercial/TabelaPreco/TabelaPreco";
+
+import TabelaCores
+    from "../pages/admin/Comercial/TabelaCores/TabelaCores";
+
+import TabelaOrcamento
+    from "../pages/admin/Comercial/TabelaOrcamento/TabelaOrcamento";
+
 
 /*
 =====================================================
@@ -86,6 +98,7 @@ INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
 import InforFi
     from "../pages/admin/Producao/InforFi/InforFi";
 
+
 /*
 =====================================================
 DOCUMENTOS DO CLIENTE
@@ -94,6 +107,7 @@ DOCUMENTOS DO CLIENTE
 
 import DocumentosCliente
     from "../pages/admin/Producao/DocumentosCliente/DocumentosCliente";
+
 
 /*
 =====================================================
@@ -104,6 +118,7 @@ DOC ALME
 import Docalme
     from "../pages/admin/Producao/Docalme/Docalme";
 
+
 /*
 =====================================================
 CRONOGRAMAS
@@ -113,6 +128,7 @@ CRONOGRAMAS
 import Cronogramas
     from "../pages/admin/Producao/Cronogramas/Cronogramas";
 
+
 /*
 =====================================================
 CRONOGRAMA INDIVIDUAL
@@ -121,6 +137,7 @@ CRONOGRAMA INDIVIDUAL
 
 import Cronograma
     from "../pages/admin/Producao/Cronogramas/Cronograma";
+
 
 /*
 =====================================================
@@ -134,6 +151,7 @@ import Newsu
 import NewsPage
     from "../pages/Newsu/NewsPage/NewsPage";
 
+
 /*
 =====================================================
 PÁGINAS PÚBLICAS DE PROJETOS
@@ -146,6 +164,7 @@ import Projetosu
 import ProjetosPage
     from "../pages/Projetosu/ProjetosPage/ProjetosPage";
 
+
 /*
 =====================================================
 PROTEÇÃO
@@ -155,6 +174,7 @@ PROTEÇÃO
 import ProtectedRoute
     from "../components/ProtectedRoute";
 
+
 /*
 =====================================================
 SCROLL
@@ -163,6 +183,7 @@ SCROLL
 
 import ScrollToTop
     from "../components/ScrollToTop/ScrollToTop";
+
 
 /*
 =====================================================
@@ -175,6 +196,7 @@ function AdminInicio() {
     const {
         role
     } = useAuth();
+
 
     /*
     =================================================
@@ -191,6 +213,7 @@ function AdminInicio() {
         );
 
     }
+
 
     /*
     =================================================
@@ -211,6 +234,7 @@ function AdminInicio() {
 
     }
 
+
     /*
     =================================================
     PRODUÇÃO
@@ -229,6 +253,7 @@ function AdminInicio() {
         );
 
     }
+
 
     /*
     =================================================
@@ -249,6 +274,7 @@ function AdminInicio() {
 
     }
 
+
     /*
     =================================================
     ROLE DESCONHECIDA
@@ -261,7 +287,9 @@ function AdminInicio() {
             replace
         />
     );
+
 }
+
 
 /*
 =====================================================
@@ -278,6 +306,7 @@ export default function Router() {
             <ScrollToTop />
 
             <Routes>
+
 
                 {/* =================================================
                     SITE
@@ -332,6 +361,7 @@ export default function Router() {
                     }
                 />
 
+
                 {/* =================================================
                     NEWS PÚBLICO
                 ================================================= */}
@@ -350,6 +380,7 @@ export default function Router() {
                     }
                 />
 
+
                 {/* =================================================
                     PROJETOS PÚBLICOS
                 ================================================= */}
@@ -367,6 +398,7 @@ export default function Router() {
                         <ProjetosPage />
                     }
                 />
+
 
                 {/* =================================================
                     ADMINISTRATIVO
@@ -388,6 +420,7 @@ export default function Router() {
                     }
                 >
 
+
                     {/* =================================================
                         INÍCIO DO ADMIN
                     ================================================= */}
@@ -399,42 +432,90 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         COMERCIAL
                     ================================================= */}
 
-       <Route
-    path="comercial"
-    element={
-        <ProtectedRoute
-            allowedRoles={[
-                "Administrativo Geral",
-                "comercial"
-            ]}
-        >
-            <Comercial />
-        </ProtectedRoute>
-    }
-/>
-{/* =================================================
-    TABELA DE PREÇOS
-================================================= */}
-
-<Route
-    path="comercial/tabela-preco"
-    element={
-        <ProtectedRoute
-            allowedRoles={[
-                "Administrativo Geral",
-                "comercial"
-            ]}
-        >
-            <TabelaPreco />
-        </ProtectedRoute>
-    }
-/>
+                    <Route
+                        path="comercial"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "comercial"
+                                ]}
+                            >
+                                <Comercial />
+                            </ProtectedRoute>
+                        }
+                    />
 
 
+                    {/* =================================================
+                        TABELA DE PREÇOS
+
+                        URL:
+                        /admin/comercial/tabela-preco
+                    ================================================= */}
+
+                    <Route
+                        path="comercial/tabela-preco"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "comercial"
+                                ]}
+                            >
+                                <TabelaPreco />
+                            </ProtectedRoute>
+                        }
+                    />
+
+
+                    {/* =================================================
+                        TABELA DE CORES
+
+                        URL:
+                        /admin/comercial/tabela-cores
+                    ================================================= */}
+
+                    <Route
+                        path="comercial/tabela-cores"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "comercial"
+                                ]}
+                            >
+                                <TabelaCores />
+                            </ProtectedRoute>
+                        }
+                    />
+
+
+                    {/* =================================================
+                        TABELA DE ORÇAMENTO
+
+                        URL:
+                        /admin/comercial/tabela-orcamento
+                    ================================================= */}
+
+                    <Route
+                        path="comercial/tabela-orcamento"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "comercial"
+                                ]}
+                            >
+                                <TabelaOrcamento />
+                            </ProtectedRoute>
+                        }
+                    />
 
 
                     {/* =================================================
@@ -455,6 +536,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         OBRAS
                     ================================================= */}
@@ -472,6 +554,7 @@ export default function Router() {
                             </ProtectedRoute>
                         }
                     />
+
 
                     {/* =================================================
                         INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
@@ -494,6 +577,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         DOCUMENTOS DO CLIENTE
 
@@ -514,6 +598,7 @@ export default function Router() {
                             </ProtectedRoute>
                         }
                     />
+
 
                     {/* =================================================
                         DOC ALME
@@ -536,6 +621,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         CRONOGRAMAS
                     ================================================= */}
@@ -554,6 +640,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         CRONOGRAMA INDIVIDUAL
                     ================================================= */}
@@ -571,6 +658,7 @@ export default function Router() {
                             </ProtectedRoute>
                         }
                     />
+
 
                     {/* =================================================
                         FINANCEIRO
@@ -594,6 +682,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         ESTOQUE
                     ================================================= */}
@@ -612,6 +701,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         NEWS
                     ================================================= */}
@@ -628,6 +718,7 @@ export default function Router() {
                             </ProtectedRoute>
                         }
                     />
+
 
                     {/* =================================================
                         PROJETOS
@@ -646,6 +737,7 @@ export default function Router() {
                         }
                     />
 
+
                     {/* =================================================
                         USUÁRIOS
                     ================================================= */}
@@ -663,7 +755,9 @@ export default function Router() {
                         }
                     />
 
+
                 </Route>
+
 
                 {/* =====================================================
                     ROTA NÃO ENCONTRADA
@@ -679,8 +773,12 @@ export default function Router() {
                     }
                 />
 
+
             </Routes>
 
         </BrowserRouter>
+
     );
+
 }
+

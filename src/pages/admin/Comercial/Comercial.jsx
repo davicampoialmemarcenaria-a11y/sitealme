@@ -1,6 +1,9 @@
+
 import {
     FiArrowRight,
-    FiUsers
+    FiUsers,
+    FiDroplet,
+    FiFileText
 } from "react-icons/fi";
 
 import {
@@ -23,23 +26,24 @@ export default function Comercial() {
     } = useAuth();
 
 
-    /*
-    =====================================================
-    SEGURANÇA
-    =====================================================
-    */
+    /* =====================================================
+       SEGURANÇA
+    ===================================================== */
 
     if (
         role !== "Administrativo Geral" &&
         role !== "comercial"
     ) {
+
         return null;
+
     }
 
 
     return (
 
         <section className="comercial-page">
+
 
             {/* =================================================
                 CABEÇALHO
@@ -128,6 +132,114 @@ export default function Comercial() {
                 </button>
 
 
+                {/* =================================================
+                    CARD TABELA DE CORES
+                ================================================= */}
+
+                <button
+                    type="button"
+                    className="comercial-card"
+                    onClick={() =>
+                        navigate(
+                            "/admin/comercial/tabela-cores"
+                        )
+                    }
+                >
+
+                    <div
+                        className="comercial-card-icon"
+                    >
+
+                        <FiDroplet />
+
+                    </div>
+
+
+                    <div
+                        className="comercial-card-content"
+                    >
+
+                        <span>
+                            COMERCIAL
+                        </span>
+
+                        <h2>
+                            Tabela de cores
+                        </h2>
+
+                        <p>
+                            Cadastre, consulte e gerencie
+                            as opções de cores disponíveis na ALME.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="comercial-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
+                {/* =================================================
+                    CARD ORÇAMENTO
+                ================================================= */}
+
+                <button
+                    type="button"
+                    className="comercial-card"
+                    onClick={() =>
+                        navigate(
+                            "/admin/comercial/tabela-orcamento"
+                        )
+                    }
+                >
+
+                    <div
+                        className="comercial-card-icon"
+                    >
+
+                        <FiFileText />
+
+                    </div>
+
+
+                    <div
+                        className="comercial-card-content"
+                    >
+
+                        <span>
+                            COMERCIAL
+                        </span>
+
+                        <h2>
+                            Orçamento
+                        </h2>
+
+                        <p>
+                            Cadastre, consulte e gerencie
+                            os orçamentos comerciais da ALME.
+                        </p>
+
+                    </div>
+
+
+                    <div
+                        className="comercial-card-arrow"
+                    >
+
+                        <FiArrowRight />
+
+                    </div>
+
+                </button>
+
+
             </section>
 
         </section>
@@ -135,3 +247,4 @@ export default function Comercial() {
     );
 
 }
+
