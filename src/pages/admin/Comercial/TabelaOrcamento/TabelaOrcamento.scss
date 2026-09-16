@@ -384,7 +384,7 @@
 
 .orcamento-tabela {
     width: 100%;
-    min-width: 2650px;
+    min-width: 3650px;
     border-collapse: separate;
     border-spacing: 0;
     table-layout: fixed;
@@ -433,23 +433,30 @@
 
 /* =====================================================
    LARGURAS DAS COLUNAS
+   27 COLUNAS
 ===================================================== */
 
+/* 1 - # */
 .orcamento-tabela th:nth-child(1),
 .orcamento-tabela td:nth-child(1) {
     width: 50px;
 }
 
+/* 2 - Quantidade */
 .orcamento-tabela th:nth-child(2),
 .orcamento-tabela td:nth-child(2) {
     width: 105px;
 }
 
+/* 3 - Nome do item */
 .orcamento-tabela th:nth-child(3),
 .orcamento-tabela td:nth-child(3) {
     width: 235px;
 }
 
+/* 4 - Altura
+   5 - Largura
+   6 - Profundidade */
 .orcamento-tabela th:nth-child(4),
 .orcamento-tabela td:nth-child(4),
 .orcamento-tabela th:nth-child(5),
@@ -459,73 +466,129 @@
     width: 105px;
 }
 
+/* 7 - Item da base */
 .orcamento-tabela th:nth-child(7),
 .orcamento-tabela td:nth-child(7) {
     width: 230px;
 }
 
+/* 8 - Cor de MDF */
 .orcamento-tabela th:nth-child(8),
 .orcamento-tabela td:nth-child(8) {
     width: 185px;
 }
 
+/* 9 - Padrão de medição */
 .orcamento-tabela th:nth-child(9),
 .orcamento-tabela td:nth-child(9) {
     width: 185px;
 }
 
+/* 10 - Cor */
 .orcamento-tabela th:nth-child(10),
 .orcamento-tabela td:nth-child(10) {
     width: 80px;
 }
 
+/* 11 - Cor complexidade */
 .orcamento-tabela th:nth-child(11),
 .orcamento-tabela td:nth-child(11) {
     width: 190px;
 }
 
+/* 12 - M² */
 .orcamento-tabela th:nth-child(12),
 .orcamento-tabela td:nth-child(12) {
     width: 100px;
 }
 
+/* 13 - M² total */
 .orcamento-tabela th:nth-child(13),
 .orcamento-tabela td:nth-child(13) {
     width: 110px;
 }
 
+/* 14 - Valor do m² */
 .orcamento-tabela th:nth-child(14),
 .orcamento-tabela td:nth-child(14) {
     width: 130px;
 }
 
+/* 15 - Valor final do m² */
 .orcamento-tabela th:nth-child(15),
 .orcamento-tabela td:nth-child(15) {
     width: 160px;
 }
 
+/* 16 - Valor unitário */
 .orcamento-tabela th:nth-child(16),
 .orcamento-tabela td:nth-child(16) {
     width: 150px;
 }
 
+/* 17 - Desconto ou adicional */
 .orcamento-tabela th:nth-child(17),
 .orcamento-tabela td:nth-child(17) {
     width: 160px;
 }
 
+/* 18 - Valor com desconto ou adicional */
 .orcamento-tabela th:nth-child(18),
 .orcamento-tabela td:nth-child(18) {
     width: 220px;
 }
 
+/* 19 - Valor mínimo da proposta ALME */
 .orcamento-tabela th:nth-child(19),
 .orcamento-tabela td:nth-child(19) {
+    width: 225px;
+}
+
+/* 20 - Valor para memorial descritivo */
+.orcamento-tabela th:nth-child(20),
+.orcamento-tabela td:nth-child(20) {
     width: 220px;
 }
 
-.orcamento-tabela th:nth-child(20),
-.orcamento-tabela td:nth-child(20) {
+/* 21 - Valor de over do analista (%) */
+.orcamento-tabela th:nth-child(21),
+.orcamento-tabela td:nth-child(21) {
+    width: 180px;
+}
+
+/* 22 - Valor com over do analista */
+.orcamento-tabela th:nth-child(22),
+.orcamento-tabela td:nth-child(22) {
+    width: 220px;
+}
+
+/* 23 - Over para o analista */
+.orcamento-tabela th:nth-child(23),
+.orcamento-tabela td:nth-child(23) {
+    width: 180px;
+}
+
+/* 24 - % de RT para o arquiteto */
+.orcamento-tabela th:nth-child(24),
+.orcamento-tabela td:nth-child(24) {
+    width: 170px;
+}
+
+/* 25 - Valor com RT */
+.orcamento-tabela th:nth-child(25),
+.orcamento-tabela td:nth-child(25) {
+    width: 190px;
+}
+
+/* 26 - RT */
+.orcamento-tabela th:nth-child(26),
+.orcamento-tabela td:nth-child(26) {
+    width: 160px;
+}
+
+/* 27 - Ação */
+.orcamento-tabela th:nth-child(27),
+.orcamento-tabela td:nth-child(27) {
     width: 75px;
 }
 
@@ -565,6 +628,12 @@
     cursor: pointer;
 }
 
+.orcamento-tabela-select:disabled {
+    background: #f7f4f1;
+    color: #a29488;
+    cursor: not-allowed;
+}
+
 .orcamento-readonly {
     background: #faf8f6;
     color: #715f51;
@@ -584,6 +653,52 @@
 .orcamento-input-ajuste:focus {
     border-color: #d38a17;
     box-shadow: 0 0 0 2px rgba(211, 138, 23, .10);
+}
+
+
+/* =====================================================
+   CAMPOS DE PERCENTUAL
+===================================================== */
+
+.orcamento-percentual-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.orcamento-percentual-wrapper .orcamento-tabela-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.orcamento-percentual-wrapper > span {
+    flex-shrink: 0;
+    color: #765c4a;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+
+/* =====================================================
+   VALOR PARA MEMORIAL DESCRITIVO
+===================================================== */
+
+.orcamento-resultado-memorial {
+    min-height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid #d8cbbd;
+    border-radius: 6px;
+    background: #f8f5f1;
+    color: #5d493a;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: right;
+    white-space: nowrap;
 }
 
 
@@ -643,9 +758,62 @@
     font-weight: 800;
 }
 
+
+/* =====================================================
+   VALOR MÍNIMO DA PROPOSTA ALME
+===================================================== */
+
 .orcamento-resultado-proposta-alme {
     border-color: #8c5a24;
     background: #f3e5d2;
+    color: #4b2108;
+    font-weight: 900;
+}
+
+
+/* =====================================================
+   VALOR COM OVER DO ANALISTA
+===================================================== */
+
+.orcamento-resultado-over {
+    border-color: #d9c8ae;
+    background: #fff9ef;
+    color: #6d481c;
+    font-weight: 800;
+}
+
+
+/* =====================================================
+   OVER PARA O ANALISTA
+===================================================== */
+
+.orcamento-resultado-over-valor {
+    border-color: #e0c39c;
+    background: #fff5e6;
+    color: #87541a;
+    font-weight: 900;
+}
+
+
+/* =====================================================
+   VALOR COM RT
+===================================================== */
+
+.orcamento-resultado-rt {
+    border-color: #d7c1a8;
+    background: #f9f1e7;
+    color: #5e3c1c;
+    font-weight: 800;
+}
+
+
+/* =====================================================
+   RT
+===================================================== */
+
+.orcamento-resultado-rt-valor {
+    border-color: #cba878;
+    background: #f6e8d3;
     color: #4b2108;
     font-weight: 900;
 }
@@ -1330,6 +1498,10 @@
 
     .orcamento-extra-campo small {
         white-space: normal;
+    }
+
+    .orcamento-percentual-wrapper {
+        width: 100%;
     }
 
 }

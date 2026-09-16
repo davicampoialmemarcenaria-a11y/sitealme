@@ -167,6 +167,22 @@ const decimal = (
         )
     );
 
+const percentualExibicao = (
+    value
+) => {
+
+    const percentual =
+        numberValue(
+            value
+        ) * 100;
+
+    return Number.isFinite(
+        percentual
+    )
+        ? percentual
+        : 0;
+
+};
 
 const normalizeText = (
     value = ""
@@ -323,7 +339,7 @@ const novoItem = () => ({
     complementos:
         [],
 
-        desconto_adicional:
+    desconto_adicional:
         0,
 
     possui_led:
@@ -336,10 +352,27 @@ const novoItem = () => ({
         false,
 
     quantidade_metalon:
+        0,
+
+    /*
+    =====================================================
+    OVER DO ANALISTA
+    =====================================================
+    */
+
+    over_analista_percentual:
+        0,
+
+    /*
+    =====================================================
+    RT DO ARQUITETO
+    =====================================================
+    */
+
+    rt_arquiteto_percentual:
         0
 
 });
-
 
 
 
@@ -2694,273 +2727,427 @@ const alternarExtra =
 
         };
 
-
-    /*
-    =================================================
-    CÁLCULOS
-    =================================================
-    */
-
-    const ambientesCalculados =
-        useMemo(
-            () =>
-                ambientes.map(
-                    ambiente => ({
-
-                        ...ambiente,
-
-                        itens:
-                            ambiente.itens.map(
-                                item => {
-
-                                    /*
-                                    ==============================
-                                    M²
-                                    ==============================
-                                    */
-
-                                    const m2 =
-                                        calcularM2(
-                                            item
-                                        );
-
-
-                                    /*
-                                    ==============================
-                                    QUANTIDADE
-                                    ==============================
-                                    */
-
-                                    const quantidade =
-                                        Math.max(
-                                            0,
-                                            numberValue(
-                                                item.quantidade
-                                            )
-                                        );
-
-
-                                    /*
-                                    ==============================
-                                    M² TOTAL
-                                    ==============================
-                                    */
-
-                                    const m2Total =
-                                        m2 *
-                                        quantidade;
-
-
-                                    /*
-                                    ==============================
-                                    VALOR DO M² DO ITEM PRINCIPAL
-                                    ==============================
-                                    */
-
-                                    const valorM2 =
-                                        numberValue(
-                                            item.valor_m2
-                                        );
-
-
-                                    /*
-                                    ==============================
-                                    SOMA DOS COMPLEMENTOS
-                                    ==============================
-                                    */
-
-                                    const valorM2Complementos =
-                                        (
-                                            item.complementos ||
-                                            []
-                                        ).reduce(
-                                            (
-                                                total,
-                                                complemento
-                                            ) =>
-                                                total +
-                                                numberValue(
-                                                    complemento.valor_m2
-                                                ),
-                                            0
-                                        );
-
-
-                                    /*
-                                    ==============================
-                                    VALOR FINAL DO M²
-                                    ==============================
-
-                                    Valor m² principal
-                                    +
-                                    Valor m² dos complementos
-                                    */
-
-                                    const valorFinalM2 =
-                                        valorM2 +
-                                        valorM2Complementos;
-
-
-                                    /*
-=====================================================
-DESCONTO / ADICIONAL
-=====================================================
-
-Positivo = adicional
-Negativo = desconto
+/*
+=================================================
+CÁLCULOS
+=================================================
 */
 
-const descontoAdicional =
-    numberValue(
-        item.desconto_adicional
+const ambientesCalculados =
+    useMemo(
+        () =>
+            ambientes.map(
+                ambiente => ({
+
+                    ...ambiente,
+
+                    itens:
+                        ambiente.itens.map(
+                            item => {
+
+                                /*
+                                ==============================
+                                M²
+                                ==============================
+                                */
+
+                                const m2 =
+                                    calcularM2(
+                                        item
+                                    );
+
+
+                                /*
+                                ==============================
+                                QUANTIDADE
+                                ==============================
+                                */
+
+                                const quantidade =
+                                    Math.max(
+                                        0,
+                                        numberValue(
+                                            item.quantidade
+                                        )
+                                    );
+
+
+                                /*
+                                ==============================
+                                M² TOTAL
+                                ==============================
+                                */
+
+                                const m2Total =
+                                    m2 *
+                                    quantidade;
+
+
+                                /*
+                                ==============================
+                                VALOR DO M² DO ITEM PRINCIPAL
+                                ==============================
+                                */
+
+                                const valorM2 =
+                                    numberValue(
+                                        item.valor_m2
+                                    );
+
+
+                                /*
+                                ==============================
+                                SOMA DOS COMPLEMENTOS
+                                ==============================
+                                */
+
+                                const valorM2Complementos =
+                                    (
+                                        item.complementos ||
+                                        []
+                                    ).reduce(
+                                        (
+                                            total,
+                                            complemento
+                                        ) =>
+                                            total +
+                                            numberValue(
+                                                complemento.valor_m2
+                                            ),
+                                        0
+                                    );
+
+
+                                /*
+                                ==============================
+                                VALOR FINAL DO M²
+                                ==============================
+                                */
+
+                                const valorFinalM2 =
+                                    valorM2 +
+                                    valorM2Complementos;
+
+
+                                /*
+                                =====================================================
+                                DESCONTO / ADICIONAL
+                                =====================================================
+                                */
+
+                                const descontoAdicional =
+                                    numberValue(
+                                        item.desconto_adicional
+                                    );
+
+
+                                /*
+                                =====================================================
+                                VALOR COM DESCONTO / ADICIONAL
+                                =====================================================
+                                */
+
+                                const valorComDescontoAdicional =
+                                    valorFinalM2 +
+                                    descontoAdicional;
+
+
+                                /*
+                                =====================================================
+                                VALOR UNITÁRIO
+                                =====================================================
+                                */
+
+                                const valorUnitario =
+                                    m2Total *
+                                    valorComDescontoAdicional;
+
+
+                                /*
+                                =====================================================
+                                LED
+                                =====================================================
+                                */
+
+                                const quantidadeLed =
+                                    item.possui_led
+                                        ? Math.min(
+                                            MAX_LED,
+                                            Math.max(
+                                                0,
+                                                numberValue(
+                                                    item.quantidade_led
+                                                )
+                                            )
+                                        )
+                                        : 0;
+
+
+                                const valorLed =
+                                    quantidadeLed *
+                                    VALOR_POR_LED;
+
+
+                                /*
+                                =====================================================
+                                METALON
+                                =====================================================
+                                */
+
+                                const quantidadeMetalon =
+                                    item.possui_metalon
+                                        ? Math.min(
+                                            MAX_METALON,
+                                            Math.max(
+                                                0,
+                                                numberValue(
+                                                    item.quantidade_metalon
+                                                )
+                                            )
+                                        )
+                                        : 0;
+
+
+                                const valorMetalon =
+                                    quantidadeMetalon *
+                                    VALOR_POR_METALON;
+
+
+                                /*
+                                =====================================================
+                                VALOR MÍNIMO DA PROPOSTA ALME
+                                =====================================================
+                                */
+
+                                const valorMinimoPropostaAlme =
+                                    valorUnitario +
+                                    valorLed +
+                                    valorMetalon;
+
+
+                                /*
+                                =====================================================
+                                VALOR PARA MEMORIAL DESCRITIVO
+                                =====================================================
+
+                                Valor mínimo da proposta ALME × 0,98
+                                */
+
+                                const valorMemorialDescritivo =
+                                    valorMinimoPropostaAlme *
+                                    0.98;
+
+
+                                /*
+                                =====================================================
+                                OVER DO ANALISTA
+                                =====================================================
+                                */
+
+                                const overAnalistaPercentual =
+                                    Math.max(
+                                        0,
+                                        numberValue(
+                                            item.over_analista_percentual
+                                        )
+                                    );
+
+
+                                /*
+                                =====================================================
+                                VALOR COM OVER DO ANALISTA
+                                =====================================================
+
+                                Valor mínimo da proposta ALME × 100
+                                /
+                                (100 - percentual × 100)
+                                */
+
+                                const divisorOverAnalista =
+                                    100 -
+                                    (
+                                        overAnalistaPercentual *
+                                        100
+                                    );
+
+
+                                const valorComOverAnalista =
+                                    divisorOverAnalista > 0
+                                        ? (
+                                            valorMinimoPropostaAlme *
+                                            100
+                                        ) /
+                                        divisorOverAnalista
+                                        : 0;
+
+
+                                /*
+                                =====================================================
+                                OVER PARA O ANALISTA
+                                =====================================================
+
+                                Valor com over do analista
+                                ×
+                                percentual
+                                */
+
+                                const overAnalista =
+                                    valorComOverAnalista *
+                                    overAnalistaPercentual;
+
+
+                                /*
+                                =====================================================
+                                RT DO ARQUITETO
+                                =====================================================
+                                */
+
+                                const rtArquitetoPercentual =
+                                    Math.max(
+                                        0,
+                                        numberValue(
+                                            item.rt_arquiteto_percentual
+                                        )
+                                    );
+
+
+                                /*
+                                =====================================================
+                                VALOR COM RT
+                                =====================================================
+
+                                Valor com over do analista × 100
+                                /
+                                (100 - percentual RT × 100)
+                                */
+
+                                const divisorRt =
+                                    100 -
+                                    (
+                                        rtArquitetoPercentual *
+                                        100
+                                    );
+
+
+                                const valorComRt =
+                                    divisorRt > 0
+                                        ? (
+                                            valorComOverAnalista *
+                                            100
+                                        ) /
+                                        divisorRt
+                                        : 0;
+
+
+                                /*
+                                =====================================================
+                                RT
+                                =====================================================
+
+                                Valor com RT
+                                ×
+                                percentual RT
+                                */
+
+                                const rt =
+                                    valorComRt *
+                                    rtArquitetoPercentual;
+
+
+                                return {
+
+                                    ...item,
+
+                                    calculadoM2:
+                                        m2,
+
+                                    calculadoM2Total:
+                                        m2Total,
+
+                                    calculadoValorM2:
+                                        valorM2,
+
+                                    calculadoValorM2Complementos:
+                                        valorM2Complementos,
+
+                                    calculadoValorFinalM2:
+                                        valorFinalM2,
+
+                                    calculadoValorUnitario:
+                                        valorUnitario,
+
+                                    calculadoQuantidadeLed:
+                                        quantidadeLed,
+
+                                    calculadoValorLed:
+                                        valorLed,
+
+                                    calculadoQuantidadeMetalon:
+                                        quantidadeMetalon,
+
+                                    calculadoValorMetalon:
+                                        valorMetalon,
+
+                                    calculadoValorMinimoPropostaAlme:
+                                        valorMinimoPropostaAlme,
+
+                                    /*
+                                    =============================================
+                                    MEMORIAL
+                                    =============================================
+                                    */
+
+                                    calculadoValorMemorialDescritivo:
+                                        valorMemorialDescritivo,
+
+                                    /*
+                                    =============================================
+                                    OVER ANALISTA
+                                    =============================================
+                                    */
+
+                                    calculadoOverAnalistaPercentual:
+                                        overAnalistaPercentual,
+
+                                    calculadoValorComOverAnalista:
+                                        valorComOverAnalista,
+
+                                    calculadoOverAnalista:
+                                        overAnalista,
+
+                                    /*
+                                    =============================================
+                                    RT
+                                    =============================================
+                                    */
+
+                                    calculadoRtArquitetoPercentual:
+                                        rtArquitetoPercentual,
+
+                                    calculadoValorComRt:
+                                        valorComRt,
+
+                                    calculadoRt:
+                                        rt,
+
+                                    calculadoDescontoAdicional:
+                                        descontoAdicional,
+
+                                    calculadoValorComDescontoAdicional:
+                                        valorComDescontoAdicional
+
+                                };
+
+                            }
+                        )
+
+                })
+            ),
+        [
+            ambientes
+        ]
     );
 
-
-/*
-=====================================================
-VALOR COM DESCONTO / ADICIONAL
-=====================================================
-
-Valor final do m²
-+
-desconto ou adicional
-*/
-
-const valorComDescontoAdicional =
-    valorFinalM2 +
-    descontoAdicional;
-
-
-/*
-=====================================================
-VALOR UNITÁRIO
-=====================================================
-
-M² total
-×
-Valor com desconto ou adicional
-*/
-
-const valorUnitario =
-    m2Total *
-    valorComDescontoAdicional;
-
-    /*
-=====================================================
-LED
-=====================================================
-*/
-
-const quantidadeLed =
-    item.possui_led
-        ? Math.min(
-            MAX_LED,
-            Math.max(
-                0,
-                numberValue(
-                    item.quantidade_led
-                )
-            )
-        )
-        : 0;
-
-const valorLed =
-    quantidadeLed *
-    VALOR_POR_LED;
-
-
-/*
-=====================================================
-METALON
-=====================================================
-*/
-
-const quantidadeMetalon =
-    item.possui_metalon
-        ? Math.min(
-            MAX_METALON,
-            Math.max(
-                0,
-                numberValue(
-                    item.quantidade_metalon
-                )
-            )
-        )
-        : 0;
-
-const valorMetalon =
-    quantidadeMetalon *
-    VALOR_POR_METALON;
-
-
-/*
-=====================================================
-VALOR MÍNIMO DA PROPOSTA ALME
-=====================================================
-*/
-
-const valorMinimoPropostaAlme =
-    valorUnitario +
-    valorLed +
-    valorMetalon;
-
-
-                                  return {
-
-    ...item,
-
-    calculadoM2:
-        m2,
-
-    calculadoM2Total:
-        m2Total,
-
-    calculadoValorM2:
-        valorM2,
-
-    calculadoValorM2Complementos:
-        valorM2Complementos,
-
-    calculadoValorFinalM2:
-        valorFinalM2,
-
-    calculadoValorUnitario:
-        valorUnitario,
-
-    calculadoQuantidadeLed:
-        quantidadeLed,
-
-    calculadoValorLed:
-        valorLed,
-
-    calculadoQuantidadeMetalon:
-        quantidadeMetalon,
-
-    calculadoValorMetalon:
-        valorMetalon,
-
-    calculadoValorMinimoPropostaAlme:
-        valorMinimoPropostaAlme,
-
-    calculadoDescontoAdicional:
-        descontoAdicional,
-
-    calculadoValorComDescontoAdicional:
-        valorComDescontoAdicional
-
-
-
-                                    };
-
-                                }
-                            )
-
-                    })
-                ),
-            [
-                ambientes
-            ]
-        );
 
 
     /*
@@ -3429,15 +3616,45 @@ const valorMinimoPropostaAlme =
                                                     Desconto ou adicional
                                                 </th>
 
-                                                <th>
-                                                    Valor com desconto ou adicional
-                                                </th>
+                                              <th>
+    Valor com desconto ou adicional
+</th>
+
 <th>
     Valor mínimo da proposta ALME
 </th>
-                                                <th>
-                                                    Ação
-                                                </th>
+
+<th>
+    Valor para memorial descritivo
+</th>
+
+<th>
+    Valor de over do analista (%)
+</th>
+
+<th>
+    Valor com over do analista
+</th>
+
+<th>
+    Over para o analista
+</th>
+
+<th>
+    % de RT para o arquiteto
+</th>
+
+<th>
+    Valor com RT
+</th>
+
+<th>
+    RT
+</th>
+
+<th>
+    Ação
+</th>
 
                                             </tr>
 
@@ -3453,7 +3670,7 @@ const valorMinimoPropostaAlme =
 
                                                     <tr className="orcamento-tabela-vazia">
 
-                                                        <td colSpan="20">
+                                                        <td colSpan="26">
 
                                                             Nenhum item adicionado neste ambiente.
 
@@ -3977,7 +4194,195 @@ const valorMinimoPropostaAlme =
     </div>
 
 </td>
+{/* =================================================
+    VALOR PARA MEMORIAL DESCRITIVO
+================================================= */}
 
+<td>
+
+    <div className="orcamento-resultado orcamento-resultado-memorial">
+
+        {
+            money(
+                item.calculadoValorMemorialDescritivo
+            )
+        }
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    OVER DO ANALISTA %
+================================================= */}
+
+<td>
+
+    <div className="orcamento-percentual-wrapper">
+
+        <input
+            className="orcamento-tabela-input input-number orcamento-input-percentual"
+            type="number"
+            min="0"
+            max="99"
+            step="0.01"
+            value={
+                percentualExibicao(
+                    item.over_analista_percentual
+                )
+            }
+            onChange={
+                event =>
+                    atualizarItem(
+                        ambiente.id,
+                        item.id,
+                        "over_analista_percentual",
+                        Math.min(
+                            0.99,
+                            Math.max(
+                                0,
+                                numberValue(
+                                    event.target.value
+                                ) / 100
+                            )
+                        )
+                    )
+            }
+            placeholder="2,00"
+        />
+
+        <span>
+            %
+        </span>
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    VALOR COM OVER DO ANALISTA
+================================================= */}
+
+<td>
+
+    <div className="orcamento-resultado orcamento-resultado-over">
+
+        {
+            money(
+                item.calculadoValorComOverAnalista
+            )
+        }
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    OVER PARA O ANALISTA
+================================================= */}
+
+<td>
+
+    <div className="orcamento-resultado orcamento-resultado-over-valor">
+
+        {
+            money(
+                item.calculadoOverAnalista
+            )
+        }
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    RT %
+================================================= */}
+
+<td>
+
+    <div className="orcamento-percentual-wrapper">
+
+        <input
+            className="orcamento-tabela-input input-number orcamento-input-percentual"
+            type="number"
+            min="0"
+            max="99"
+            step="0.01"
+            value={
+                percentualExibicao(
+                    item.rt_arquiteto_percentual
+                )
+            }
+            onChange={
+                event =>
+                    atualizarItem(
+                        ambiente.id,
+                        item.id,
+                        "rt_arquiteto_percentual",
+                        Math.min(
+                            0.99,
+                            Math.max(
+                                0,
+                                numberValue(
+                                    event.target.value
+                                ) / 100
+                            )
+                        )
+                    )
+            }
+            placeholder="0,00"
+        />
+
+        <span>
+            %
+        </span>
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    VALOR COM RT
+================================================= */}
+
+<td>
+
+    <div className="orcamento-resultado orcamento-resultado-rt">
+
+        {
+            money(
+                item.calculadoValorComRt
+            )
+        }
+
+    </div>
+
+</td>
+
+
+{/* =================================================
+    RT
+================================================= */}
+
+<td>
+
+    <div className="orcamento-resultado orcamento-resultado-rt-valor">
+
+        {
+            money(
+                item.calculadoRt
+            )
+        }
+
+    </div>
+
+</td>
                                                                     <td>
 
                                                                         <button
@@ -4018,7 +4423,7 @@ const valorMinimoPropostaAlme =
 
                                                                         <tr className="orcamento-detalhes-linha">
 
-                                                                            <td colSpan="19">
+                                                                            <td colSpan="26">
 
                                                                                 <div className="orcamento-detalhes">
 
@@ -4125,7 +4530,7 @@ const valorMinimoPropostaAlme =
 
 <tr className="orcamento-extras-linha">
 
-    <td colSpan="20">
+    <td colSpan="26">
 
         <div className="orcamento-extras">
 
