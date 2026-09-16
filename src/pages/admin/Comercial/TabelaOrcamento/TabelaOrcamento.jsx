@@ -5642,7 +5642,7 @@ sessionStorage.removeItem(
     Ação
 </th>
 
-                                            </tr>
+ </tr>
 
                                         </thead>
 
@@ -6369,35 +6369,17 @@ sessionStorage.removeItem(
     </div>
 
 </td>
-      <td>
-
+     <td>
     <div className="orcamento-resultado orcamento-resultado-rt-arredondado">
-
         {
             money(
                 item.calculadoValorComRtArredondado
             )
         }
-
     </div>
-
-</td>
-<td>
-
-    <div className="orcamento-resultado orcamento-resultado-rt-arredondado">
-
-        {
-            money(
-                item.calculadoValorComRtArredondado
-            )
-        }
-
-    </div>
-
 </td>
 
 <td>
-
     <button
         type="button"
         className="orcamento-excluir-item"
@@ -6410,11 +6392,8 @@ sessionStorage.removeItem(
                 )
         }
     >
-
         <FiTrash2 />
-
     </button>
-
 </td>
                                                                 </tr>
 
