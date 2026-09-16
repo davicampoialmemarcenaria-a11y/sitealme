@@ -33,6 +33,12 @@ CONSTANTES
 const DRAFT_STORAGE_KEY =
     "alme_orcamento_novo_rascunho";
 
+const SESSION_STATE_KEY =
+    "alme_orcamento_estado_sessao";
+
+const SESSION_SCROLL_KEY =
+    "alme_orcamento_scroll";
+
 const MAX_COMPLEMENTOS = 5;
 
 const VALOR_POR_LED = 50;
@@ -1151,170 +1157,542 @@ const [multiplicador, setMultiplicador] =
 
 
     /*
-    =================================================
-    RECUPERAR RASCUNHO
-    =================================================
-    */
+=================================================
+RECUPERAR ESTADO DA SESSÃO
+=================================================
+*/
 
-    useEffect(
-        () => {
+useEffect(
+    () => {
 
-            if (!isEditor || urlOrcamentoId) {
+        if (!isEditor) {
+            setRascunhoCarregado(true);
+            return;
+        }
+
+        try {
+
+            const salvo =
+                sessionStorage.getItem(
+                    SESSION_STATE_KEY
+                );
+
+            if (!salvo) {
                 setRascunhoCarregado(true);
                 return;
             }
 
-            try {
+            const dados =
+                JSON.parse(salvo);
 
-                const salvo =
-                    localStorage.getItem(
-                        DRAFT_STORAGE_KEY
-                    );
+            /*
+            =================================================
+            CONFERE SE O ESTADO É DA MESMA TELA
+            =================================================
+            */
 
-
-                if (
-                    salvo
-                ) {
-
-                    const dados =
-                        JSON.parse(
-                            salvo
-                        );
-
-
-                    if (
-                        dados.orcamento
-                    ) {
-
-                        setOrcamento(
-                            atual => ({
-
-                                ...atual,
-
-                                ...dados.orcamento
-
-                            })
-                        );
-
-                    }
-
-
-                    if (
-                        Array.isArray(
-                            dados.ambientes
-                        )
-                    ) {
-
-                        setAmbientes(
-                            dados.ambientes.length > 0
-                                ? dados.ambientes
-                                : [
-                                    novoAmbiente()
-                                ]
-                        );
-
-                    } else if (
-                        Array.isArray(
-                            dados.itens
-                        )
-                    ) {
-
-                        setAmbientes([
-
-                            {
-
-                                ...novoAmbiente(
-                                    "Ambiente 1"
-                                ),
-
-                                itens:
-                                    dados.itens
-
-                            }
-
-                        ]);
-
-                    }
-
-                }
-
-            } catch (
-                error
-            ) {
-
-                console.error(
-                    "Erro ao recuperar rascunho:",
-                    error
+            const mesmaTela =
+                String(
+                    dados.orcamentoId || ""
+                ) ===
+                String(
+                    urlOrcamentoId || ""
+                ) &&
+                String(
+                    dados.versaoId || ""
+                ) ===
+                String(
+                    urlVersaoId || ""
                 );
 
-            } finally {
-
-                setRascunhoCarregado(
-                    true
-                );
-
-            }
-
-        },
-        []
-    );
-
-
-    /*
-    =================================================
-    SALVAR RASCUNHO AUTOMATICAMENTE
-    =================================================
-    */
-
-    useEffect(
-        () => {
+            /*
+            =================================================
+            NOVO ORÇAMENTO
+            =================================================
+            */
 
             if (
-                !rascunhoCarregado
+                !urlOrcamentoId &&
+                dados.orcamentoId
             ) {
 
+                setRascunhoCarregado(true);
                 return;
 
             }
 
+            /*
+            =================================================
+            ORÇAMENTO EXISTENTE
+            =================================================
+            */
 
-            try {
-
-                localStorage.setItem(
-
-                    DRAFT_STORAGE_KEY,
-
-                    JSON.stringify({
-
-                        orcamento,
-
-                        ambientes
-
-                    })
-
-                );
-
-            } catch (
-                error
+            if (
+                urlOrcamentoId &&
+                !mesmaTela
             ) {
 
-                console.error(
-                    "Erro ao salvar rascunho:",
-                    error
+                setRascunhoCarregado(true);
+                return;
+
+            }
+
+            if (
+                dados.orcamento
+            ) {
+
+                setOrcamento(
+                    atual => ({
+                        ...atual,
+                        ...dados.orcamento
+                    })
                 );
 
             }
 
-        },
-        [
-            orcamento,
-            ambientes,
-            rascunhoCarregado
-        ]
+            if (
+                Array.isArray(
+                    dados.ambientes
+                )
+            ) {
+
+                setAmbientes(
+                    dados.ambientes.length > 0
+                        ? dados.ambientes
+                        : [
+                            novoAmbiente()
+                        ]
+                );
+
+            }
+
+            /*
+            =================================================
+            MULTIPLICADOR
+            =================================================
+            */
+
+            if (
+                [1, 1.1, 1.2, 1.3, 1.5]
+                    .includes(
+                        Number(
+                            dados.multiplicador
+                        )
+                    )
+            ) {
+
+                setMultiplicador(
+                    Number(
+                        dados.multiplicador
+                    )
+                );
+
+            }
+
+        } catch (
+            error
+        ) {
+
+            console.error(
+                "Erro ao recuperar estado da sessão:",
+                error
+            );
+
+        } finally {
+
+            setRascunhoCarregado(
+                true
+            );
+
+        }
+
+    },
+    [
+        isEditor,
+        urlOrcamentoId,
+        urlVersaoId
+    ]
+);
+
+   /*
+=================================================
+SALVAR ESTADO DA SESSÃO AUTOMATICAMENTE
+=================================================
+*/
+
+useEffect(
+    () => {
+
+        if (
+            !rascunhoCarregado ||
+            !isEditor
+        ) {
+
+            return;
+
+        }
+
+        try {
+
+            sessionStorage.setItem(
+                SESSION_STATE_KEY,
+                JSON.stringify({
+
+                    orcamentoId:
+                        orcamentoId || "",
+
+                    versaoId:
+                        versaoId || "",
+
+                    orcamento,
+
+                    ambientes,
+
+                    multiplicador,
+
+                    atualizadoEm:
+                        Date.now(),
+                        
+
+                })
+            );
+
+            /*
+            =================================================
+            TAMBÉM MANTÉM O RASCUNHO LOCAL EXISTENTE
+            =================================================
+            */
+
+            localStorage.setItem(
+                DRAFT_STORAGE_KEY,
+                JSON.stringify({
+
+                    orcamento,
+
+                    ambientes,
+
+                    multiplicador
+
+                })
+            );
+
+        } catch (
+            error
+        ) {
+
+            console.error(
+                "Erro ao salvar estado da sessão:",
+                error
+            );
+
+        }
+
+    },
+    [
+        isEditor,
+        orcamentoId,
+        versaoId,
+        orcamento,
+        ambientes,
+        multiplicador,
+        rascunhoCarregado
+    ]
+);
+
+/*
+=================================================
+SALVAR / RESTAURAR POSIÇÃO DA TELA
+=================================================
+*/
+useEffect(() => {
+
+    if (!isEditor) {
+        return;
+    }
+
+    const getScrollContainer = () =>
+        document.querySelector(
+            ".admin__content"
+        );
+
+    const salvarScroll = () => {
+
+        try {
+
+            const container =
+                getScrollContainer();
+
+            if (!container) {
+                return;
+            }
+
+            sessionStorage.setItem(
+                SESSION_SCROLL_KEY,
+                JSON.stringify({
+                    orcamentoId:
+                        orcamentoId || "",
+
+                    versaoId:
+                        versaoId || "",
+
+                    scrollTop:
+                        container.scrollTop || 0,
+
+                    atualizadoEm:
+                        Date.now()
+                })
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao salvar posição da tela:",
+                error
+            );
+
+        }
+
+    };
+
+    const onScroll = () => {
+        salvarScroll();
+    };
+
+    const onVisibilityChange = () => {
+
+        if (
+            document.visibilityState ===
+            "hidden"
+        ) {
+            salvarScroll();
+        }
+
+    };
+
+    const container =
+        getScrollContainer();
+
+    if (container) {
+
+        container.addEventListener(
+            "scroll",
+            onScroll,
+            {
+                passive: true
+            }
+        );
+
+    }
+
+    window.addEventListener(
+        "pagehide",
+        salvarScroll
     );
 
+    window.addEventListener(
+        "blur",
+        salvarScroll
+    );
+
+    document.addEventListener(
+        "visibilitychange",
+        onVisibilityChange
+    );
+
+    return () => {
+
+        if (container) {
+
+            container.removeEventListener(
+                "scroll",
+                onScroll
+            );
+
+        }
+
+        window.removeEventListener(
+            "pagehide",
+            salvarScroll
+        );
+
+        window.removeEventListener(
+            "blur",
+            salvarScroll
+        );
+
+        document.removeEventListener(
+            "visibilitychange",
+            onVisibilityChange
+        );
+
+    };
+
+}, [
+    isEditor,
+    orcamentoId,
+    versaoId
+]);
 
 
+/*
+=================================================
+RESTAURAR POSIÇÃO DA TELA
+=================================================
+*/
+useEffect(() => {
+
+    if (
+        !isEditor ||
+        !rascunhoCarregado
+    ) {
+        return;
+    }
+
+    let ativo = true;
+    let tentativas = 0;
+
+    const MAX_TENTATIVAS = 60;
+
+    const tentarRestaurar = () => {
+
+        if (!ativo) {
+            return;
+        }
+
+        try {
+
+            const container =
+                document.querySelector(
+                    ".admin__content"
+                );
+
+            if (!container) {
+
+                if (
+                    tentativas <
+                    MAX_TENTATIVAS
+                ) {
+
+                    tentativas++;
+
+                    requestAnimationFrame(
+                        tentarRestaurar
+                    );
+
+                }
+
+                return;
+            }
+
+            const salvo =
+                sessionStorage.getItem(
+                    SESSION_SCROLL_KEY
+                );
+
+            if (!salvo) {
+                return;
+            }
+
+            const dados =
+                JSON.parse(
+                    salvo
+                );
+
+            const mesmaTela =
+                String(
+                    dados.orcamentoId || ""
+                ) ===
+                String(
+                    orcamentoId || ""
+                ) &&
+                String(
+                    dados.versaoId || ""
+                ) ===
+                String(
+                    versaoId || ""
+                );
+
+            if (!mesmaTela) {
+                return;
+            }
+
+            const scrollTop =
+                Number(
+                    dados.scrollTop
+                ) || 0;
+
+            if (scrollTop <= 0) {
+                return;
+            }
+
+            const maxScroll =
+                Math.max(
+                    0,
+                    container.scrollHeight -
+                    container.clientHeight
+                );
+
+            /*
+            O conteúdo ainda está sendo renderizado.
+            Espera até existir altura suficiente.
+            */
+            if (
+                maxScroll <
+                    scrollTop &&
+                tentativas <
+                    MAX_TENTATIVAS
+            ) {
+
+                tentativas++;
+
+                requestAnimationFrame(
+                    tentarRestaurar
+                );
+
+                return;
+            }
+
+            container.scrollTop =
+                Math.min(
+                    scrollTop,
+                    maxScroll
+                );
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao restaurar posição da tela:",
+                error
+            );
+
+        }
+
+    };
+
+    requestAnimationFrame(() => {
+
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(
+                tentarRestaurar
+            );
+
+        });
+
+    });
+
+    return () => {
+
+        ativo = false;
+
+    };
+
+}, [
+    isEditor,
+    rascunhoCarregado,
+    orcamentoId,
+    versaoId
+]);
     /*
     =================================================
     NORMALIZAR STATUS
@@ -1566,7 +1944,97 @@ setMultiplicador(
         ? Number(version.multiplicador)
         : 1
 );
+/*
+=================================================
+RESTAURAR ALTERAÇÕES NÃO SALVAS DA SESSÃO
+=================================================
+*/
 
+try {
+
+    const salvo =
+        sessionStorage.getItem(
+            SESSION_STATE_KEY
+        );
+
+    if (salvo) {
+
+        const dados =
+            JSON.parse(
+                salvo
+            );
+
+        const mesmaTela =
+            String(
+                dados.orcamentoId || ""
+            ) ===
+            String(
+                quote.id
+            ) &&
+            String(
+                dados.versaoId || ""
+            ) ===
+            String(
+                version.id
+            );
+
+        if (
+            mesmaTela &&
+            Array.isArray(
+                dados.ambientes
+            )
+        ) {
+
+            setOrcamento(
+                dados.orcamento || {
+                    nome: quote.nome || "",
+                    cliente: quote.cliente || "",
+                    status:
+                        quote.status ||
+                        "rascunho",
+                    observacoes:
+                        quote.observacoes ||
+                        ""
+                }
+            );
+
+            setAmbientes(
+                dados.ambientes.length > 0
+                    ? dados.ambientes
+                    : [novoAmbiente()]
+            );
+
+            if (
+                [1, 1.1, 1.2, 1.3, 1.5]
+                    .includes(
+                        Number(
+                            dados.multiplicador
+                        )
+                    )
+            ) {
+
+                setMultiplicador(
+                    Number(
+                        dados.multiplicador
+                    )
+                );
+
+            }
+
+        }
+
+    }
+
+} catch (
+    error
+) {
+
+    console.error(
+        "Erro ao restaurar alterações da sessão:",
+        error
+    );
+
+}
 setRascunhoCarregado(true);
 
         } catch (error) {
@@ -1607,6 +2075,13 @@ setRascunhoCarregado(true);
 
 
    const abrirNovoOrcamento = () => {
+    sessionStorage.removeItem(
+    SESSION_STATE_KEY
+);
+
+sessionStorage.removeItem(
+    SESSION_SCROLL_KEY
+);
 
     setOrcamentoId("");
     setVersaoId("");
@@ -4218,6 +4693,20 @@ const totaisColunas = useMemo(() => {
             setVersaoAtual(versaoNumero);
 
             localStorage.removeItem(DRAFT_STORAGE_KEY);
+            sessionStorage.removeItem(
+    SESSION_STATE_KEY
+);
+
+sessionStorage.removeItem(
+    SESSION_SCROLL_KEY
+);
+            sessionStorage.removeItem(
+    SESSION_STATE_KEY
+);
+
+sessionStorage.removeItem(
+    SESSION_SCROLL_KEY
+);
 
             setSearchParams({
                 orcamento: quoteId,
@@ -5892,27 +6381,41 @@ const totaisColunas = useMemo(() => {
 
     </div>
 
-</td>                                                              <td>
+</td>
+<td>
 
-                                                                        <button
-                                                                            type="button"
-                                                                            className="orcamento-excluir-item"
-                                                                            title="Remover item"
-                                                                            onClick={
-                                                                                () =>
-                                                                                    removerItem(
-                                                                                        ambiente.id,
-                                                                                        item.id
-                                                                                    )
-                                                                            }
-                                                                        >
+    <div className="orcamento-resultado orcamento-resultado-rt-arredondado">
 
-                                                                            <FiTrash2 />
+        {
+            money(
+                item.calculadoValorComRtArredondado
+            )
+        }
 
-                                                                        </button>
+    </div>
 
-                                                                    </td>
+</td>
 
+<td>
+
+    <button
+        type="button"
+        className="orcamento-excluir-item"
+        title="Remover item"
+        onClick={
+            () =>
+                removerItem(
+                    ambiente.id,
+                    item.id
+                )
+        }
+    >
+
+        <FiTrash2 />
+
+    </button>
+
+</td>
                                                                 </tr>
 
 
