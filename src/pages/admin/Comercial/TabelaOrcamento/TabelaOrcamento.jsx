@@ -5,7 +5,8 @@ import React, {
 } from "react";
 
 import {
-    useNavigate
+    useNavigate,
+    useSearchParams
 } from "react-router-dom";
 
 import {
@@ -13,7 +14,9 @@ import {
     FiPlus,
     FiSave,
     FiTrash2,
-    FiX
+    FiX,
+    FiEdit2,
+    FiRefreshCw
 } from "react-icons/fi";
 
 import { supabase } from "../../../../services/supabase";
@@ -361,7 +364,7 @@ const novoItem = () => ({
     */
 
     over_analista_percentual:
-        0,
+        0.02,
 
     /*
     =====================================================
@@ -693,7 +696,45 @@ export default function TabelaOrcamento() {
     const navigate =
         useNavigate();
 
+    const [searchParams, setSearchParams] =
+        useSearchParams();
 
+    const urlOrcamentoId =
+        searchParams.get("orcamento");
+
+    const urlVersaoId =
+        searchParams.get("versao");
+
+    const isEditor =
+        searchParams.get("novo") === "1" ||
+        Boolean(urlOrcamentoId);
+
+    const [listaOrcamentos, setListaOrcamentos] =
+        useState([]);
+
+    const [carregandoLista, setCarregandoLista] =
+        useState(false);
+
+    const [erroLista, setErroLista] =
+        useState("");
+
+    const [salvando, setSalvando] =
+        useState(false);
+
+    const [orcamentoId, setOrcamentoId] =
+        useState(urlOrcamentoId || "");
+
+    const [versaoId, setVersaoId] =
+        useState(urlVersaoId || "");
+
+    const [versaoAtual, setVersaoAtual] =
+        useState(0);
+
+    const [versoesOrcamento, setVersoesOrcamento] =
+        useState([]);
+
+const [multiplicador, setMultiplicador] =
+    useState(1);
     /*
     =================================================
     DADOS DO ORÇAMENTO
@@ -712,7 +753,7 @@ export default function TabelaOrcamento() {
             "",
 
         status:
-            "Rascunho",
+            "rascunho",
 
         observacoes:
             ""
@@ -1118,6 +1159,11 @@ export default function TabelaOrcamento() {
     useEffect(
         () => {
 
+            if (!isEditor || urlOrcamentoId) {
+                setRascunhoCarregado(true);
+                return;
+            }
+
             try {
 
                 const salvo =
@@ -1266,6 +1312,377 @@ export default function TabelaOrcamento() {
             rascunhoCarregado
         ]
     );
+
+
+
+    /*
+    =================================================
+    NORMALIZAR STATUS
+    =================================================
+    */
+
+    const statusLabel = value => {
+
+        const map = {
+            rascunho: "Rascunho",
+            em_analise: "Em análise",
+            aprovado: "Aprovado",
+            cancelado: "Cancelado"
+        };
+
+        return map[value] || value || "Rascunho";
+    };
+
+    const statusValue = value => {
+
+        const normalized = normalizeText(value)
+            .replace(/ /g, "_");
+
+        if (normalized === "em_analise") return "em_analise";
+        if (normalized === "aprovado") return "aprovado";
+        if (normalized === "cancelado") return "cancelado";
+        return "rascunho";
+    };
+
+
+    /*
+    =================================================
+    CARREGAR LISTA DE ORÇAMENTOS
+    =================================================
+    */
+
+    const carregarListaOrcamentos = async () => {
+
+        try {
+            setCarregandoLista(true);
+            setErroLista("");
+
+            const { data, error } = await supabase
+                .from("vw_orcamentos_resumo")
+                .select("*")
+                .order("updated_at", { ascending: false });
+
+            if (error) throw error;
+
+            setListaOrcamentos(data || []);
+
+        } catch (error) {
+
+            console.error(error);
+            setErroLista(
+                error.message ||
+                "Não foi possível carregar os orçamentos."
+            );
+
+        } finally {
+            setCarregandoLista(false);
+        }
+    };
+
+
+    /*
+    =================================================
+    CARREGAR ORÇAMENTO / VERSÃO
+    =================================================
+    */
+
+    const carregarOrcamento = async (
+        quoteId,
+        requestedVersionId = ""
+    ) => {
+
+        try {
+            setErroBase("");
+
+            const { data: quote, error: quoteError } =
+                await supabase
+                    .from("orcamentos")
+                    .select("*")
+                    .eq("id", quoteId)
+                    .single();
+
+            if (quoteError) throw quoteError;
+
+            const { data: allVersions, error: versionsError } =
+                await supabase
+                    .from("orcamento_versoes")
+                    .select("*")
+                    .eq("orcamento_id", quoteId)
+                    .order("versao", { ascending: false });
+
+            if (versionsError) throw versionsError;
+
+            setVersoesOrcamento(allVersions || []);
+
+            const version = requestedVersionId
+                ? (allVersions || []).find(
+                    currentVersion =>
+                        currentVersion.id === requestedVersionId
+                )
+                : (allVersions || [])[0];
+
+            if (!version) {
+                throw new Error(
+                    "Nenhuma versão encontrada para este orçamento."
+                );
+            }
+
+            const versionIdToLoad = version.id;
+
+            const [
+                ambientesResult,
+                itensResult,
+                complementosResult
+            ] = await Promise.all([
+                supabase
+                    .from("orcamento_versao_ambientes")
+                    .select("*")
+                    .eq("versao_id", versionIdToLoad)
+                    .order("ordem", { ascending: true }),
+
+                supabase
+                    .from("orcamento_itens")
+                    .select("*")
+                    .eq("versao_id", versionIdToLoad)
+                    .order("ordem", { ascending: true }),
+
+                supabase
+                    .from("orcamento_item_complementos")
+                    .select("*")
+                    .order("ordem", { ascending: true })
+            ]);
+
+            if (ambientesResult.error) throw ambientesResult.error;
+            if (itensResult.error) throw itensResult.error;
+            if (complementosResult.error) throw complementosResult.error;
+
+            const complementsByItem = {};
+
+            (complementosResult.data || []).forEach(complemento => {
+                if (!complementsByItem[complemento.item_id]) {
+                    complementsByItem[complemento.item_id] = [];
+                }
+
+                complementsByItem[complemento.item_id].push({
+                    id: complemento.id,
+                    item_id: complemento.base_item_id || "",
+                    item_nome: complemento.item_nome || "",
+                    item_descricao: complemento.item_descricao || "",
+                    padrao_medicao: complemento.padrao_medicao || "",
+                    cor_complexidade_id: "",
+                    cor_complexidade_cor:
+                        complemento.cor_complexidade_cor ?? "",
+                    cor_complexidade_nivel:
+                        complemento.cor_complexidade_nivel ?? "",
+                    valor_m2: complemento.valor_m2 ?? 0
+                });
+            });
+
+            const itemsByEnvironment = {};
+
+            (itensResult.data || []).forEach(row => {
+                if (!itemsByEnvironment[row.ambiente_id]) {
+                    itemsByEnvironment[row.ambiente_id] = [];
+                }
+
+                itemsByEnvironment[row.ambiente_id].push({
+                    id: row.id,
+                    quantidade: row.quantidade ?? 1,
+                    nome_item: row.nome_item || "",
+                    altura: row.altura_cm != null
+                        ? Number(row.altura_cm) / 100
+                        : "",
+                    largura: row.largura_cm != null
+                        ? Number(row.largura_cm) / 100
+                        : "",
+                    profundidade: row.profundidade_cm != null
+                        ? Number(row.profundidade_cm) / 100
+                        : "",
+                    comprimento: row.comprimento_cm != null
+                        ? Number(row.comprimento_cm) / 100
+                        : "",
+                    diametro: row.diametro_cm != null
+                        ? Number(row.diametro_cm) / 100
+                        : "",
+                    base_item_id: row.base_item_id || "",
+                    base_item_nome: row.base_item_nome || "",
+                    base_item_descricao: row.base_item_descricao || "",
+                    padrao_medicao: row.padrao_medicao || "",
+                    mdf_id: row.mdf_id || "",
+                    mdf_nome: row.mdf_nome || "",
+                    mdf_cor: row.mdf_cor ?? "",
+                    cor_complexidade_id: "",
+                    cor_complexidade_cor:
+                        row.cor_complexidade_cor ?? "",
+                    cor_complexidade_nivel:
+                        row.cor_complexidade_nivel ?? "",
+                    valor_m2: row.valor_m2 ?? 0,
+                    possui_complementos:
+                        Boolean(row.possui_complementos),
+                    complementos:
+                        complementsByItem[row.id] || [],
+                    desconto_adicional:
+                        row.desconto_adicional ?? 0,
+                    possui_led: Number(row.qtd_led || 0) > 0,
+                    quantidade_led: Number(row.qtd_led || 0),
+                    possui_metalon:
+                        Number(row.qtd_metalon || 0) > 0,
+                    quantidade_metalon:
+                        Number(row.qtd_metalon || 0),
+                    over_analista_percentual:
+                        row.over_analista_percentual ?? 0,
+                    rt_arquiteto_percentual:
+                        row.percentual_rt ?? 0
+                });
+            });
+
+            setOrcamento({
+                nome: quote.nome || "",
+                cliente: quote.cliente || "",
+                status: quote.status || "rascunho",
+                observacoes: quote.observacoes || ""
+            });
+
+            setAmbientes(
+                (ambientesResult.data || []).map(row => ({
+                    id: row.id,
+                    nome: row.nome || "Ambiente",
+                    itens: itemsByEnvironment[row.id] || []
+                }))
+            );
+
+            if (!ambientesResult.data?.length) {
+                setAmbientes([novoAmbiente()]);
+            }
+
+           setOrcamentoId(quote.id);
+setVersaoId(version.id);
+setVersaoAtual(Number(version.versao) || 1);
+
+setMultiplicador(
+    [1, 1.1, 1.2, 1.3, 1.5].includes(
+        Number(version.multiplicador)
+    )
+        ? Number(version.multiplicador)
+        : 1
+);
+
+setRascunhoCarregado(true);
+
+        } catch (error) {
+            console.error("Erro ao carregar orçamento:", error);
+            setErroBase(
+                error.message ||
+                "Não foi possível carregar o orçamento."
+            );
+        }
+    };
+
+
+    /*
+    =================================================
+    LISTA / URL
+    =================================================
+    */
+
+    useEffect(() => {
+
+        if (!isEditor) {
+            carregarListaOrcamentos();
+        }
+
+    }, [isEditor]);
+
+
+    useEffect(() => {
+
+        if (!isEditor || !urlOrcamentoId) return;
+
+        carregarOrcamento(
+            urlOrcamentoId,
+            urlVersaoId || ""
+        );
+
+    }, [isEditor, urlOrcamentoId, urlVersaoId]);
+
+
+   const abrirNovoOrcamento = () => {
+
+    setOrcamentoId("");
+    setVersaoId("");
+    setVersaoAtual(0);
+    setVersoesOrcamento([]);
+
+    setMultiplicador(1);
+
+    setOrcamento({
+        nome: "",
+        cliente: "",
+        status: "rascunho",
+        observacoes: ""
+    });
+
+    setAmbientes([
+        novoAmbiente()
+    ]);
+
+    setSearchParams({
+        novo: "1"
+    });
+
+};
+
+
+    const editarOrcamento = row => {
+        setSearchParams({
+            orcamento: row.id,
+            versao: row.versao_id || ""
+        });
+    };
+
+
+    const trocarVersao = event => {
+
+        const selectedVersionId = event.target.value;
+
+        if (!selectedVersionId || !urlOrcamentoId) return;
+
+        setSearchParams({
+            orcamento: urlOrcamentoId,
+            versao: selectedVersionId
+        });
+    };
+
+
+    const excluirOrcamento = async row => {
+
+        const confirmado = window.confirm(
+            `Excluir o orçamento "${row.nome}"?\n\nTodas as versões, ambientes, itens e complementos vinculados serão removidos.`
+        );
+
+        if (!confirmado) return;
+
+        try {
+            setCarregandoLista(true);
+            setErroLista("");
+
+            const { error } = await supabase
+                .from("orcamentos")
+                .delete()
+                .eq("id", row.id);
+
+            if (error) throw error;
+
+            await carregarListaOrcamentos();
+
+        } catch (error) {
+            console.error(error);
+            setErroLista(
+                error.message ||
+                "Não foi possível excluir o orçamento."
+            );
+        }
+    };
 
 
     /*
@@ -2919,11 +3336,14 @@ const ambientesCalculados =
                                 =====================================================
                                 */
 
-                                const valorMinimoPropostaAlme =
-                                    valorUnitario +
-                                    valorLed +
-                                    valorMetalon;
+                            const valorMinimoPropostaAlmeBase =
+    valorUnitario +
+    valorLed +
+    valorMetalon;
 
+const valorMinimoPropostaAlme =
+    valorMinimoPropostaAlmeBase *
+    multiplicador;
 
                                 /*
                                 =====================================================
@@ -3052,7 +3472,20 @@ const ambientesCalculados =
                                 const rt =
                                     valorComRt *
                                     rtArquitetoPercentual;
+/*
+=====================================================
+VALOR COM RT ARREDONDADO
+=====================================================
 
+Arredondamento para a dezena mais próxima.
+Exemplo:
+1581,63 → 1580,00
+*/
+
+const valorComRtArredondado =
+    Math.round(
+        valorComRt / 10
+    ) * 10;
 
                                 return {
 
@@ -3087,6 +3520,10 @@ const ambientesCalculados =
 
                                     calculadoValorMetalon:
                                         valorMetalon,
+
+
+calculadoValorMinimoPropostaAlmeBase:
+    valorMinimoPropostaAlmeBase,
 
                                     calculadoValorMinimoPropostaAlme:
                                         valorMinimoPropostaAlme,
@@ -3129,7 +3566,8 @@ const ambientesCalculados =
 
                                     calculadoRt:
                                         rt,
-
+calculadoValorComRtArredondado:
+    valorComRtArredondado,
                                     calculadoDescontoAdicional:
                                         descontoAdicional,
 
@@ -3144,7 +3582,8 @@ const ambientesCalculados =
                 })
             ),
         [
-            ambientes
+           ambientes,
+        multiplicador
         ]
     );
 
@@ -3167,29 +3606,812 @@ const ambientesCalculados =
             0
         );
 
+/*
+=================================================
+TOTAIS DO PAINEL
+=================================================
+*/
 
-    /*
-    =================================================
-    SALVAR
-    =================================================
-    */
+const totaisColunas = useMemo(() => {
 
-    const salvarOrcamento =
-        () => {
+    return ambientesCalculados.reduce(
+        (
+            totais,
+            ambiente
+        ) => {
 
-            console.log(
-                "ORÇAMENTO:",
-                {
+            ambiente.itens.forEach(
+                item => {
 
-                    orcamento,
+                    totais.valorUnitario +=
+                        numberValue(
+                            item.calculadoValorUnitario
+                        );
 
-                    ambientes:
-                        ambientesCalculados
+                    totais.valorComDescontoAdicional +=
+                        numberValue(
+                            item.calculadoValorComDescontoAdicional
+                        );
+
+                    totais.valorMinimoPropostaAlme +=
+                        numberValue(
+                            item.calculadoValorMinimoPropostaAlme
+                        );
+
+                    totais.valorMemorialDescritivo +=
+                        numberValue(
+                            item.calculadoValorMemorialDescritivo
+                        );
+
+                    totais.valorComOverAnalista +=
+                        numberValue(
+                            item.calculadoValorComOverAnalista
+                        );
+
+                    totais.overAnalista +=
+                        numberValue(
+                            item.calculadoOverAnalista
+                        );
+
+                    totais.valorComRt +=
+                        numberValue(
+                            item.calculadoValorComRt
+                        );
+
+                    totais.rt +=
+                        numberValue(
+                            item.calculadoRt
+                        );
+
+                    totais.valorComRtArredondado +=
+                        numberValue(
+                            item.calculadoValorComRtArredondado
+                        );
 
                 }
             );
 
-        };
+            return totais;
+
+        },
+        {
+            valorUnitario: 0,
+            valorComDescontoAdicional: 0,
+            valorMinimoPropostaAlme: 0,
+            valorMemorialDescritivo: 0,
+            valorComOverAnalista: 0,
+            overAnalista: 0,
+            valorComRt: 0,
+            rt: 0,
+            valorComRtArredondado: 0
+        }
+    );
+
+}, [ambientesCalculados]);
+    /*
+    =================================================
+    SALVAR ORÇAMENTO / VERSÃO
+    =================================================
+    */
+
+    const salvarOrcamento = async ({
+        criarNovaVersao = false
+    } = {}) => {
+
+        if (!orcamento.nome.trim()) {
+            window.alert("Informe o nome do orçamento.");
+            return;
+        }
+
+        const allItems = ambientesCalculados.flatMap(
+            ambiente => ambiente.itens
+        );
+
+        if (!allItems.length) {
+            window.alert("Adicione pelo menos um item ao orçamento.");
+            return;
+        }
+
+        const itemSemBase = allItems.find(
+            item => !item.base_item_id
+        );
+
+        if (itemSemBase) {
+            window.alert(
+                "Todos os itens precisam ter um item da base selecionado."
+            );
+            return;
+        }
+
+        const itemSemMdf = allItems.find(
+            item => !item.mdf_id
+        );
+
+        if (itemSemMdf) {
+            window.alert(
+                "Todos os itens precisam ter um MDF selecionado."
+            );
+            return;
+        }
+
+        try {
+            setSalvando(true);
+            setErroBase("");
+
+            const userResult = await supabase.auth.getUser();
+            const userId = userResult.data?.user?.id || null;
+
+            const eraNovoOrcamento = !orcamentoId;
+            let quoteId = orcamentoId;
+
+            if (!quoteId) {
+
+                const code =
+                    `ORC-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+
+                const { data: createdQuote, error: quoteError } =
+                    await supabase
+                        .from("orcamentos")
+                        .insert({
+                            codigo: code,
+                            nome: orcamento.nome.trim(),
+                            cliente: orcamento.cliente || null,
+                            observacoes: orcamento.observacoes || null,
+                            status: statusValue(orcamento.status),
+                            versao_atual: 1,
+                            created_by: userId
+                        })
+                        .select("*")
+                        .single();
+
+                if (quoteError) throw quoteError;
+
+                quoteId = createdQuote.id;
+                setOrcamentoId(createdQuote.id);
+
+            } else {
+
+                const { error: quoteUpdateError } =
+                    await supabase
+                        .from("orcamentos")
+                        .update({
+                            nome: orcamento.nome.trim(),
+                            cliente: orcamento.cliente || null,
+                            observacoes: orcamento.observacoes || null,
+                            status: statusValue(orcamento.status)
+                        })
+                        .eq("id", quoteId);
+
+                if (quoteUpdateError) throw quoteUpdateError;
+            }
+
+            const { data: versions, error: versionsError } =
+                await supabase
+                    .from("orcamento_versoes")
+                    .select("id, versao")
+                    .eq("orcamento_id", quoteId)
+                    .order("versao", { ascending: false });
+
+            if (versionsError) throw versionsError;
+
+            const versoesExistentes = versions || [];
+            const versaoSelecionada =
+                versoesExistentes.find(
+                    version => version.id === versaoId
+                ) || versoesExistentes[0] || null;
+
+            const deveCriarNovaVersao =
+                eraNovoOrcamento ||
+                criarNovaVersao ||
+                !versaoSelecionada;
+
+            let versaoNumero;
+            let versaoIdParaSalvar = "";
+
+            if (deveCriarNovaVersao) {
+                versaoNumero = versoesExistentes.length
+                    ? Math.max(
+                        ...versoesExistentes.map(
+                            version => Number(version.versao) || 0
+                        )
+                    ) + 1
+                    : 1;
+            } else {
+                versaoNumero = Number(
+                    versaoSelecionada.versao
+                ) || 1;
+
+                versaoIdParaSalvar = versaoSelecionada.id;
+            }
+
+            const valorMinimoTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoValorMinimoPropostaAlme
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const valorMemorialTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoValorMemorialDescritivo
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const valorRtTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoRt
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const precoFinalTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoValorComRtArredondado
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const overTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoOverAnalista
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const valorMinimoBaseTotal = ambientesCalculados.reduce(
+                (total, ambiente) =>
+                    total + ambiente.itens.reduce(
+                        (subtotal, item) =>
+                            subtotal + numberValue(
+                                item.calculadoValorUnitario
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            const dadosVersao = {
+                orcamento_id: quoteId,
+                versao: versaoNumero,
+                multiplicador:  Number(multiplicador),
+                multiplicador_auto: Number(multiplicador),
+                multiplicador_manual: false,
+                valor_minimo_total_base:
+                    valorMinimoBaseTotal,
+                valor_minimo_total:
+                    valorMinimoTotal,
+                valor_memorial_total:
+                    valorMemorialTotal,
+                valor_rt_total:
+                    valorRtTotal,
+                preco_final_total:
+                    precoFinalTotal,
+                over_total:
+                    overTotal,
+                created_by: userId
+            };
+
+            let savedVersion;
+
+            if (deveCriarNovaVersao) {
+
+                const { data: createdVersion, error: versionError } =
+                    await supabase
+                        .from("orcamento_versoes")
+                        .insert(dadosVersao)
+                        .select("*")
+                        .single();
+
+                if (versionError) throw versionError;
+
+                savedVersion = createdVersion;
+
+            } else {
+
+                const { data: existingItemRows, error: existingItemsError } =
+                    await supabase
+                        .from("orcamento_itens")
+                        .select("id")
+                        .eq("versao_id", versaoIdParaSalvar);
+
+                if (existingItemsError) throw existingItemsError;
+
+                const existingItemIds =
+                    (existingItemRows || []).map(item => item.id);
+
+                if (existingItemIds.length) {
+                    const { error: deleteComplementosError } =
+                        await supabase
+                            .from("orcamento_item_complementos")
+                            .delete()
+                            .in("item_id", existingItemIds);
+
+                    if (deleteComplementosError) {
+                        throw deleteComplementosError;
+                    }
+                }
+
+                const { error: deleteItemsError } =
+                    await supabase
+                        .from("orcamento_itens")
+                        .delete()
+                        .eq("versao_id", versaoIdParaSalvar);
+
+                if (deleteItemsError) throw deleteItemsError;
+
+                const { error: deleteEnvironmentsError } =
+                    await supabase
+                        .from("orcamento_versao_ambientes")
+                        .delete()
+                        .eq("versao_id", versaoIdParaSalvar);
+
+                if (deleteEnvironmentsError) {
+                    throw deleteEnvironmentsError;
+                }
+
+                const { data: updatedVersion, error: versionError } =
+                    await supabase
+                        .from("orcamento_versoes")
+                        .update({
+                            multiplicador:
+                                dadosVersao.multiplicador,
+                            multiplicador_auto:
+                                dadosVersao.multiplicador_auto,
+                            multiplicador_manual:
+                                dadosVersao.multiplicador_manual,
+                            valor_minimo_total_base:
+                                dadosVersao.valor_minimo_total_base,
+                            valor_minimo_total:
+                                dadosVersao.valor_minimo_total,
+                            valor_memorial_total:
+                                dadosVersao.valor_memorial_total,
+                            valor_rt_total:
+                                dadosVersao.valor_rt_total,
+                            preco_final_total:
+                                dadosVersao.preco_final_total,
+                            over_total:
+                                dadosVersao.over_total
+                        })
+                        .eq("id", versaoIdParaSalvar)
+                        .select("*")
+                        .single();
+
+                if (versionError) throw versionError;
+
+                savedVersion = updatedVersion;
+            }
+
+            for (
+                let ambienteIndex = 0;
+                ambienteIndex < ambientesCalculados.length;
+                ambienteIndex += 1
+            ) {
+
+                const ambiente = ambientesCalculados[ambienteIndex];
+
+                const { data: savedEnvironment, error: environmentError } =
+                    await supabase
+                        .from("orcamento_versao_ambientes")
+                        .insert({
+                            versao_id: savedVersion.id,
+                            nome: ambiente.nome?.trim() ||
+                                `Ambiente ${ambienteIndex + 1}`,
+                            ordem: ambienteIndex
+                        })
+                        .select("*")
+                        .single();
+
+                if (environmentError) throw environmentError;
+
+                for (
+                    let itemIndex = 0;
+                    itemIndex < ambiente.itens.length;
+                    itemIndex += 1
+                ) {
+
+                    const item = ambiente.itens[itemIndex];
+
+                    const { data: savedItem, error: itemError } =
+                        await supabase
+                            .from("orcamento_itens")
+                            .insert({
+                                versao_id: savedVersion.id,
+                                ambiente_id: savedEnvironment.id,
+                                ordem: itemIndex,
+                                quantidade: Math.max(
+                                    0.001,
+                                    numberValue(item.quantidade)
+                                ),
+                                nome_item: item.nome_item || "",
+                                base_item_id:
+                                    item.base_item_id || null,
+                                base_item_nome:
+                                    item.base_item_nome || null,
+                                base_item_descricao:
+                                    item.base_item_descricao || null,
+                                padrao_medicao:
+                                    item.padrao_medicao || null,
+                                altura_cm:
+                                    item.altura === "" || item.altura == null
+                                        ? null
+                                        : numberValue(item.altura) * 100,
+                                largura_cm:
+                                    item.largura === "" || item.largura == null
+                                        ? null
+                                        : numberValue(item.largura) * 100,
+                                profundidade_cm:
+                                    item.profundidade === "" || item.profundidade == null
+                                        ? null
+                                        : numberValue(item.profundidade) * 100,
+                                comprimento_cm:
+                                    item.comprimento === "" || item.comprimento == null
+                                        ? null
+                                        : numberValue(item.comprimento) * 100,
+                                diametro_cm:
+                                    item.diametro === "" || item.diametro == null
+                                        ? null
+                                        : numberValue(item.diametro) * 100,
+                                mdf_id:
+                                    item.mdf_id || null,
+                                mdf_nome:
+                                    item.mdf_nome || null,
+                                mdf_cor:
+                                    item.mdf_cor === ""
+                                        ? null
+                                        : numberValue(item.mdf_cor),
+                                cor_complexidade_cor:
+                                    item.cor_complexidade_cor === ""
+                                        ? null
+                                        : numberValue(item.cor_complexidade_cor),
+                                cor_complexidade_nivel:
+                                    item.cor_complexidade_nivel === ""
+                                        ? null
+                                        : numberValue(item.cor_complexidade_nivel),
+                                m2:
+                                    numberValue(item.calculadoM2),
+                                m2_total:
+                                    numberValue(item.calculadoM2Total),
+                                valor_m2:
+                                    numberValue(item.calculadoValorM2),
+                                valor_final_m2:
+                                    numberValue(item.calculadoValorFinalM2),
+                                valor_unitario:
+                                    numberValue(item.calculadoValorUnitario),
+                                possui_complementos:
+                                    Boolean(item.possui_complementos),
+                                desconto_adicional:
+                                    numberValue(item.calculadoDescontoAdicional),
+                                qtd_led:
+                                    Math.min(
+                                        MAX_LED,
+                                        Math.max(
+                                            0,
+                                            Math.round(
+                                                numberValue(item.calculadoQuantidadeLed)
+                                            )
+                                        )
+                                    ),
+                                qtd_metalon:
+                                    Math.min(
+                                        MAX_METALON,
+                                        Math.max(
+                                            0,
+                                            Math.round(
+                                                numberValue(item.calculadoQuantidadeMetalon)
+                                            )
+                                        )
+                                    ),
+                                valor_com_desconto_adicional:
+                                    numberValue(item.calculadoValorComDescontoAdicional),
+                                valor_minimo_sem_multiplicador:
+                                    numberValue(item.calculadoValorUnitario),
+                                valor_minimo_proposta:
+                                    numberValue(item.calculadoValorMinimoPropostaAlme),
+                                valor_memorial_descritivo:
+                                    numberValue(item.calculadoValorMemorialDescritivo),
+                                over_analista_percentual:
+                                    numberValue(item.calculadoOverAnalistaPercentual),
+                                valor_item_com_over_analista:
+                                    numberValue(item.calculadoValorComOverAnalista),
+                                over_analista:
+                                    numberValue(item.calculadoOverAnalista),
+                                percentual_rt:
+                                    numberValue(item.calculadoRtArquitetoPercentual),
+                                valor_mais_rt:
+                                    numberValue(item.calculadoValorComRt),
+                                rt:
+                                    numberValue(item.calculadoRt),
+                                preco_final:
+                                    numberValue(item.calculadoValorComRtArredondado),
+                                rt_final_arquiteto:
+                                    numberValue(item.calculadoValorComRtArredondado)
+                            })
+                            .select("*")
+                            .single();
+
+                    if (itemError) throw itemError;
+
+                    const complementos = Array.isArray(item.complementos)
+                        ? item.complementos
+                        : [];
+
+                    for (
+                        let complementoIndex = 0;
+                        complementoIndex < complementos.length;
+                        complementoIndex += 1
+                    ) {
+
+                        const complemento = complementos[complementoIndex];
+
+                        if (!complemento.item_id) continue;
+
+                        const { error: complementoError } =
+                            await supabase
+                                .from("orcamento_item_complementos")
+                                .insert({
+                                    item_id: savedItem.id,
+                                    ordem: complementoIndex + 1,
+                                    base_item_id:
+                                        complemento.item_id || null,
+                                    item_nome:
+                                        complemento.item_nome || null,
+                                    item_descricao:
+                                        complemento.item_descricao || null,
+                                    padrao_medicao:
+                                        complemento.padrao_medicao || null,
+                                    cor_complexidade_cor:
+                                        complemento.cor_complexidade_cor === ""
+                                            ? null
+                                            : numberValue(complemento.cor_complexidade_cor),
+                                    cor_complexidade_nivel:
+                                        complemento.cor_complexidade_nivel === ""
+                                            ? null
+                                            : numberValue(complemento.cor_complexidade_nivel),
+                                    valor_m2:
+                                        numberValue(complemento.valor_m2)
+                                });
+
+                        if (complementoError) throw complementoError;
+                    }
+                }
+            }
+
+            if (deveCriarNovaVersao) {
+                const { error: quoteVersionError } =
+                    await supabase
+                        .from("orcamentos")
+                        .update({
+                            versao_atual: versaoNumero
+                        })
+                        .eq("id", quoteId);
+
+                if (quoteVersionError) throw quoteVersionError;
+            }
+
+            setVersaoId(savedVersion.id);
+            setVersaoAtual(versaoNumero);
+
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
+
+            setSearchParams({
+                orcamento: quoteId,
+                versao: savedVersion.id
+            });
+
+            const mensagem = deveCriarNovaVersao
+                ? `Nova versão V${versaoNumero} criada com sucesso.`
+                : `Versão V${versaoNumero} atualizada com sucesso.`;
+
+            window.alert(mensagem);
+
+        } catch (error) {
+
+            console.error("Erro ao salvar orçamento:", error);
+
+            setErroBase(
+                error.message ||
+                "Não foi possível salvar o orçamento."
+            );
+
+            window.alert(
+                error.message ||
+                "Não foi possível salvar o orçamento."
+            );
+
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+
+    /*
+    =================================================
+    EXCLUIR VERSÃO
+    =================================================
+    */
+
+    const excluirVersao = async () => {
+
+        if (!orcamentoId || !versaoId) return;
+
+        if (versoesOrcamento.length <= 1) {
+            window.alert(
+                "Este orçamento possui apenas uma versão. Para removê-la, exclua o orçamento inteiro pela lista."
+            );
+            return;
+        }
+
+        const versaoSelecionada = versoesOrcamento.find(
+            version => version.id === versaoId
+        );
+
+        if (!versaoSelecionada) return;
+
+        const confirmado = window.confirm(
+            `Excluir a versão V${versaoSelecionada.versao}?\n\nTodos os ambientes, itens e complementos desta versão serão removidos.\n\nEsta ação não pode ser desfeita.`
+        );
+
+        if (!confirmado) return;
+
+        try {
+            setSalvando(true);
+            setErroBase("");
+
+            const { data: itemRows, error: itemRowsError } =
+                await supabase
+                    .from("orcamento_itens")
+                    .select("id")
+                    .eq("versao_id", versaoId);
+
+            if (itemRowsError) throw itemRowsError;
+
+            const itemIds =
+                (itemRows || []).map(item => item.id);
+
+            if (itemIds.length) {
+                const { error: complementosError } =
+                    await supabase
+                        .from("orcamento_item_complementos")
+                        .delete()
+                        .in("item_id", itemIds);
+
+                if (complementosError) throw complementosError;
+            }
+
+            const { error: itensError } =
+                await supabase
+                    .from("orcamento_itens")
+                    .delete()
+                    .eq("versao_id", versaoId);
+
+            if (itensError) throw itensError;
+
+            const { error: ambientesError } =
+                await supabase
+                    .from("orcamento_versao_ambientes")
+                    .delete()
+                    .eq("versao_id", versaoId);
+
+            if (ambientesError) throw ambientesError;
+
+            const { error: versaoError } =
+                await supabase
+                    .from("orcamento_versoes")
+                    .delete()
+                    .eq("id", versaoId);
+
+            if (versaoError) throw versaoError;
+
+            const { data: remainingVersions, error: remainingError } =
+                await supabase
+                    .from("orcamento_versoes")
+                    .select("id, versao")
+                    .eq("orcamento_id", orcamentoId)
+                    .order("versao", { ascending: false });
+
+            if (remainingError) throw remainingError;
+
+            const remaining = remainingVersions || [];
+
+            if (!remaining.length) {
+                throw new Error(
+                    "O orçamento ficou sem versões. Exclua o orçamento inteiro pela lista."
+                );
+            }
+
+            const { data: quoteData, error: quoteDataError } =
+                await supabase
+                    .from("orcamentos")
+                    .select("versao_atual")
+                    .eq("id", orcamentoId)
+                    .single();
+
+            if (quoteDataError) throw quoteDataError;
+
+            const versaoExcluidaEraAtual =
+                Number(quoteData.versao_atual) ===
+                Number(versaoSelecionada.versao);
+
+            const proximaVersaoAtual = versaoExcluidaEraAtual
+                ? Number(remaining[0].versao)
+                : Number(quoteData.versao_atual);
+
+            if (versaoExcluidaEraAtual) {
+                const { error: updateQuoteError } =
+                    await supabase
+                        .from("orcamentos")
+                        .update({
+                            versao_atual: proximaVersaoAtual
+                        })
+                        .eq("id", orcamentoId);
+
+                if (updateQuoteError) throw updateQuoteError;
+            }
+
+            const versaoDestino =
+                remaining.find(
+                    version =>
+                        Number(version.versao) ===
+                        proximaVersaoAtual
+                ) || remaining[0];
+
+            setVersoesOrcamento(remaining);
+            setVersaoId(versaoDestino.id);
+            setVersaoAtual(Number(versaoDestino.versao) || 1);
+
+            setSearchParams({
+                orcamento: orcamentoId,
+                versao: versaoDestino.id
+            });
+
+            window.alert(
+                `Versão V${versaoSelecionada.versao} excluída com sucesso.`
+            );
+
+        } catch (error) {
+
+            console.error("Erro ao excluir versão:", error);
+
+            setErroBase(
+                error.message ||
+                "Não foi possível excluir a versão."
+            );
+
+            window.alert(
+                error.message ||
+                "Não foi possível excluir a versão."
+            );
+
+        } finally {
+            setSalvando(false);
+        }
+    };
 
 
     /*
@@ -3197,6 +4419,201 @@ const ambientesCalculados =
     RENDER
     =================================================
     */
+
+    if (!isEditor) {
+
+        const totalOrcamentos = listaOrcamentos.length;
+        const totalRascunhos = listaOrcamentos.filter(
+            item => item.status === "rascunho"
+        ).length;
+        const totalAnalise = listaOrcamentos.filter(
+            item => item.status === "em_analise"
+        ).length;
+        const totalAprovados = listaOrcamentos.filter(
+            item => item.status === "aprovado"
+        ).length;
+        const totalCancelados = listaOrcamentos.filter(
+            item => item.status === "cancelado"
+        ).length;
+
+        return (
+            <div className="tabela-orcamento-page tabela-orcamento-lista-page">
+
+                <div className="tabela-orcamento-lista-topo">
+                    <div>
+                        <span className="tabela-orcamento-kicker">
+                            COMERCIAL
+                        </span>
+                        <h1>Orçamentos</h1>
+                        <p>
+                            Gestão de orçamentos, versões e valores comerciais.
+                        </p>
+                    </div>
+
+                    <div className="tabela-orcamento-lista-acoes">
+                        <button
+                            type="button"
+                            className="orcamento-lista-refresh"
+                            onClick={carregarListaOrcamentos}
+                            disabled={carregandoLista}
+                        >
+                            <FiRefreshCw />
+                            {carregandoLista ? "Atualizando..." : "Atualizar"}
+                        </button>
+
+                        <button
+                            type="button"
+                            className="orcamento-salvar"
+                            onClick={abrirNovoOrcamento}
+                        >
+                            <FiPlus />
+                            Novo orçamento
+                        </button>
+                    </div>
+                </div>
+
+                <div className="orcamento-lista-resumo-grid">
+                    <div className="orcamento-lista-resumo-card">
+                        <span>Total</span>
+                        <strong>{totalOrcamentos}</strong>
+                    </div>
+                    <div className="orcamento-lista-resumo-card">
+                        <span>Rascunhos</span>
+                        <strong>{totalRascunhos}</strong>
+                    </div>
+                    <div className="orcamento-lista-resumo-card">
+                        <span>Em análise</span>
+                        <strong>{totalAnalise}</strong>
+                    </div>
+                    <div className="orcamento-lista-resumo-card">
+                        <span>Aprovados</span>
+                        <strong>{totalAprovados}</strong>
+                    </div>
+                    <div className="orcamento-lista-resumo-card">
+                        <span>Cancelados</span>
+                        <strong>{totalCancelados}</strong>
+                    </div>
+                </div>
+
+                {erroLista && (
+                    <div className="orcamento-erro-base">
+                        {erroLista}
+                    </div>
+                )}
+
+                <section className="orcamento-lista-card">
+                    <div className="orcamento-lista-card-header">
+                        <div>
+                            <span>GESTÃO</span>
+                            <h2>Orçamentos cadastrados</h2>
+                        </div>
+                    </div>
+
+                    {carregandoLista && listaOrcamentos.length === 0 ? (
+                        <div className="orcamento-lista-loading">
+                            Carregando orçamentos...
+                        </div>
+                    ) : listaOrcamentos.length === 0 ? (
+                        <div className="orcamento-lista-vazia">
+                            <strong>Nenhum orçamento cadastrado</strong>
+                            <span>
+                                Crie o primeiro orçamento para começar.
+                            </span>
+                            <button
+                                type="button"
+                                className="orcamento-salvar"
+                                onClick={abrirNovoOrcamento}
+                            >
+                                <FiPlus />
+                                Criar orçamento
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="orcamento-lista-table-wrapper">
+                            <table className="orcamento-lista-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Orçamento</th>
+                                        <th>Cliente</th>
+                                        <th>Versão</th>
+                                        <th>Valor mínimo</th>
+                                        <th>Preço final</th>
+                                        <th>Status</th>
+                                        <th>Atualizado</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {listaOrcamentos.map(row => (
+                                        <tr key={row.id}>
+                                            <td>
+                                                <strong>{row.codigo}</strong>
+                                            </td>
+                                            <td>{row.nome}</td>
+                                            <td>{row.cliente || "—"}</td>
+                                            <td>
+                                                <span className="orcamento-lista-versao">
+                                                    V{row.versao_atual || 1}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {money(row.valor_minimo_total)}
+                                            </td>
+                                            <td className="orcamento-lista-preco-final">
+                                                {money(row.preco_final_total)}
+                                            </td>
+                                            <td>
+                                                <span className={`orcamento-lista-status orcamento-lista-status-${row.status}`}>
+                                                    {statusLabel(row.status)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {row.updated_at
+                                                    ? new Date(row.updated_at).toLocaleString(
+                                                        "pt-BR",
+                                                        {
+                                                            day: "2-digit",
+                                                            month: "2-digit",
+                                                            year: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit"
+                                                        }
+                                                    )
+                                                    : "—"}
+                                            </td>
+                                            <td>
+                                                <div className="orcamento-lista-acoes-linha">
+                                                    <button
+                                                        type="button"
+                                                        className="orcamento-lista-editar"
+                                                        onClick={() => editarOrcamento(row)}
+                                                        title="Editar orçamento"
+                                                    >
+                                                        <FiEdit2 />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="orcamento-lista-excluir"
+                                                        onClick={() => excluirOrcamento(row)}
+                                                        title="Excluir orçamento"
+                                                    >
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
+            </div>
+        );
+    }
 
     return (
 
@@ -3229,21 +4646,53 @@ const ambientesCalculados =
                 </button>
 
 
-                <button
-                    type="button"
-                    className="orcamento-salvar"
-                    onClick={
-                        salvarOrcamento
-                    }
-                >
+                <div className="tabela-orcamento-topo-acoes">
 
-                    <FiSave />
+                    {orcamentoId && (
+                        <button
+                            type="button"
+                            className="orcamento-nova-versao"
+                            onClick={
+                                () =>
+                                    salvarOrcamento({
+                                        criarNovaVersao: true
+                                    })
+                            }
+                            disabled={salvando}
+                        >
 
-                    <span>
-                        Salvar orçamento
-                    </span>
+                            <FiPlus />
 
-                </button>
+                            <span>
+                                Nova versão
+                            </span>
+
+                        </button>
+                    )}
+
+                    <button
+                        type="button"
+                        className="orcamento-salvar"
+                        onClick={
+                            () =>
+                                salvarOrcamento()
+                        }
+                        disabled={salvando}
+                    >
+
+                        <FiSave />
+
+                        <span>
+                            {salvando
+                                ? "Salvando..."
+                                : orcamentoId
+                                    ? `Salvar V${versaoAtual || ""}`
+                                    : "Salvar orçamento"}
+                        </span>
+
+                    </button>
+
+                </div>
 
             </div>
 
@@ -3260,9 +4709,53 @@ const ambientesCalculados =
                         COMERCIAL
                     </span>
 
-                    <h1>
-                        Novo orçamento
-                    </h1>
+                    <div className="orcamento-titulo-linha">
+                        <h1>
+                            {orcamentoId
+                                ? `Orçamento ${orcamento.nome || ""}`
+                                : "Novo orçamento"}
+                        </h1>
+
+                        {orcamentoId && versoesOrcamento.length > 0 && (
+                            <div className="orcamento-versao-selector">
+                                <label htmlFor="orcamento-versao">
+                                    Versão
+                                </label>
+                                <select
+                                    id="orcamento-versao"
+                                    value={versaoId}
+                                    onChange={trocarVersao}
+                                    disabled={salvando}
+                                >
+                                    {versoesOrcamento.map(version => (
+                                        <option
+                                            key={version.id}
+                                            value={version.id}
+                                        >
+                                            V{version.versao}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <button
+                                    type="button"
+                                    className="orcamento-versao-excluir"
+                                    onClick={excluirVersao}
+                                    disabled={
+                                        salvando ||
+                                        versoesOrcamento.length <= 1
+                                    }
+                                    title={
+                                        versoesOrcamento.length <= 1
+                                            ? "O orçamento precisa manter pelo menos uma versão."
+                                            : `Excluir V${versaoAtual || ""}`
+                                    }
+                                >
+                                    <FiTrash2 />
+                                </button>
+                            </div>
+                        )}
+                    </div>
 
                 </div>
 
@@ -3337,19 +4830,19 @@ const ambientesCalculados =
                             }
                         >
 
-                            <option value="Rascunho">
+                            <option value="rascunho">
                                 Rascunho
                             </option>
 
-                            <option value="Em análise">
+                            <option value="em_analise">
                                 Em análise
                             </option>
 
-                            <option value="Aprovado">
+                            <option value="aprovado">
                                 Aprovado
                             </option>
 
-                            <option value="Cancelado">
+                            <option value="cancelado">
                                 Cancelado
                             </option>
 
@@ -3653,6 +5146,10 @@ const ambientesCalculados =
 </th>
 
 <th>
+    Valor com RT arredondado
+</th>
+
+<th>
     Ação
 </th>
 
@@ -3670,7 +5167,7 @@ const ambientesCalculados =
 
                                                     <tr className="orcamento-tabela-vazia">
 
-                                                        <td colSpan="26">
+                                                        <td colSpan="28">
 
                                                             Nenhum item adicionado neste ambiente.
 
@@ -4383,7 +5880,19 @@ const ambientesCalculados =
     </div>
 
 </td>
-                                                                    <td>
+      <td>
+
+    <div className="orcamento-resultado orcamento-resultado-rt-arredondado">
+
+        {
+            money(
+                item.calculadoValorComRtArredondado
+            )
+        }
+
+    </div>
+
+</td>                                                              <td>
 
                                                                         <button
                                                                             type="button"
@@ -4423,7 +5932,7 @@ const ambientesCalculados =
 
                                                                         <tr className="orcamento-detalhes-linha">
 
-                                                                            <td colSpan="26">
+                                                                            <td colSpan="28">
 
                                                                                 <div className="orcamento-detalhes">
 
@@ -4530,7 +6039,7 @@ const ambientesCalculados =
 
 <tr className="orcamento-extras-linha">
 
-    <td colSpan="26">
+    <td colSpan="28">
 
         <div className="orcamento-extras">
 
@@ -4737,13 +6246,13 @@ const ambientesCalculados =
             <div className="orcamento-extra-resumo">
 
                 <span>
-                    Valor mínimo da proposta ALME
+                    Valor Final
                 </span>
 
                 <strong>
                     {
                         money(
-                            item.calculadoValorMinimoPropostaAlme
+                           item.calculadoValorComRtArredondado
                         )
                     }
                 </strong>
@@ -5261,6 +6770,306 @@ const ambientesCalculados =
 
                 </div>
 
+
+                {/* =================================================
+    MULTIPLICADOR DO ORÇAMENTO
+================================================= */}
+
+<section className="orcamento-multiplicador-painel">
+
+    <div className="orcamento-multiplicador-conteudo">
+
+        <div className="orcamento-multiplicador-texto">
+
+            <span>
+                MULTIPLICADOR
+            </span>
+
+            <strong>
+                Ajuste comercial do orçamento
+            </strong>
+
+            <small>
+                Aplica o multiplicador sobre o valor mínimo
+                da proposta ALME de cada item e recalcula
+                os valores comerciais seguintes.
+            </small>
+
+        </div>
+
+
+        <div className="orcamento-multiplicador-campo">
+
+            <label htmlFor="orcamento-multiplicador">
+                Multiplicador
+            </label>
+
+            <select
+                id="orcamento-multiplicador"
+                value={multiplicador}
+                onChange={
+                    event =>
+                        setMultiplicador(
+                            Number(event.target.value)
+                        )
+                }
+            >
+
+                <option value="1">
+                    1
+                </option>
+
+                <option value="1.1">
+                    1.1
+                </option>
+
+                <option value="1.2">
+                    1.2
+                </option>
+
+                <option value="1.3">
+                    1.3
+                </option>
+
+                <option value="1.5">
+                    1.5
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</section>
+{/* =================================================
+    PAINEL DE TOTAIS
+================================================= */}
+
+<section className="orcamento-totais-painel">
+
+    <div className="orcamento-totais-header">
+
+        <div>
+
+            <span>
+                RESUMO FINANCEIRO
+            </span>
+
+            <h3>
+                Totais do orçamento
+            </h3>
+
+        </div>
+
+        <div className="orcamento-totais-itens">
+
+            {
+                ambientesCalculados.length
+            }
+
+            {" "}
+
+            {
+                ambientesCalculados.length === 1
+                    ? "ambiente"
+                    : "ambientes"
+            }
+
+            {" • "}
+
+            {
+                totalItens
+            }
+
+            {" "}
+
+            {
+                totalItens === 1
+                    ? "item"
+                    : "itens"
+            }
+
+        </div>
+
+    </div>
+
+
+    <div className="orcamento-totais-grid">
+
+        {/* VALOR UNITÁRIO */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Valor unitário
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorUnitario
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* VALOR COM DESCONTO / ADICIONAL */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Valor com desconto ou adicional
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorComDescontoAdicional
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* VALOR MÍNIMO ALME */}
+
+        <div className="orcamento-total-card destaque">
+
+            <span>
+                Valor mínimo da proposta ALME
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorMinimoPropostaAlme
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* MEMORIAL DESCRITIVO */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Valor para memorial descritivo
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorMemorialDescritivo
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* VALOR COM OVER */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Valor com over do analista
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorComOverAnalista
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* OVER ANALISTA */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Over para o analista
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.overAnalista
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* VALOR COM RT */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                Valor com RT
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorComRt
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* RT */}
+
+        <div className="orcamento-total-card">
+
+            <span>
+                RT
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.rt
+                    )
+                }
+            </strong>
+
+        </div>
+
+
+        {/* VALOR COM RT ARREDONDADO */}
+
+        <div className="orcamento-total-card destaque-final">
+
+            <span>
+                Valor com RT arredondado
+            </span>
+
+            <strong>
+                {
+                    money(
+                        totaisColunas.valorComRtArredondado
+                    )
+                }
+            </strong>
+
+        </div>
+
+    </div>
+
+</section>
             </section>
 
         </div>
