@@ -16,10 +16,15 @@ import {
     FiTrash2,
     FiX,
     FiEdit2,
-    FiRefreshCw
+    FiRefreshCw,
+    FiDownload
 } from "react-icons/fi";
 
+import { jsPDF } from "jspdf";
+
 import { supabase } from "../../../../services/supabase";
+
+import logoAlme from "../../../../imgs/logoamarela.png";
 
 import "./TabelaOrcamento.scss";
 
@@ -741,6 +746,16 @@ export default function TabelaOrcamento() {
 
 const [multiplicador, setMultiplicador] =
     useState(1);
+
+    const [
+    valorFinalDesejado,
+    setValorFinalDesejado
+] = useState("");
+
+const [
+    overFinalAplicado,
+    setOverFinalAplicado
+] = useState(false);
     /*
     =================================================
     DADOS DO ORÇAMENTO
@@ -1288,7 +1303,25 @@ useEffect(
                 );
 
             }
+if (
+    dados.valorFinalDesejado !==
+    undefined
+) {
+    setValorFinalDesejado(
+        dados.valorFinalDesejado
+    );
+}
 
+if (
+    dados.overFinalAplicado !==
+    undefined
+) {
+    setOverFinalAplicado(
+        Boolean(
+            dados.overFinalAplicado
+        )
+    );
+}
         } catch (
             error
         ) {
@@ -1337,24 +1370,25 @@ useEffect(
             sessionStorage.setItem(
                 SESSION_STATE_KEY,
                 JSON.stringify({
+    orcamentoId:
+        orcamentoId || "",
 
-                    orcamentoId:
-                        orcamentoId || "",
+    versaoId:
+        versaoId || "",
 
-                    versaoId:
-                        versaoId || "",
+    orcamento,
 
-                    orcamento,
+    ambientes,
 
-                    ambientes,
+    multiplicador,
 
-                    multiplicador,
+    valorFinalDesejado,
 
-                    atualizadoEm:
-                        Date.now(),
-                        
+    overFinalAplicado,
 
-                })
+    atualizadoEm:
+        Date.now()
+})
             );
 
             /*
@@ -1395,7 +1429,9 @@ useEffect(
         orcamento,
         ambientes,
         multiplicador,
-        rascunhoCarregado
+        rascunhoCarregado,
+        valorFinalDesejado,
+overFinalAplicado,
     ]
 );
 
@@ -1936,6 +1972,12 @@ useEffect(() => {
            setOrcamentoId(quote.id);
 setVersaoId(version.id);
 setVersaoAtual(Number(version.versao) || 1);
+if (
+    Number(version.versao) < 2
+) {
+    setValorFinalDesejado("");
+    setOverFinalAplicado(false);
+}
 
 setMultiplicador(
     [1, 1.1, 1.2, 1.3, 1.5].includes(
@@ -1944,6 +1986,7 @@ setMultiplicador(
         ? Number(version.multiplicador)
         : 1
 );
+
 /*
 =================================================
 RESTAURAR ALTERAÇÕES NÃO SALVAS DA SESSÃO
@@ -2017,7 +2060,25 @@ try {
                     Number(
                         dados.multiplicador
                     )
-                );
+                ); if (
+    dados.valorFinalDesejado !==
+    undefined
+) {
+    setValorFinalDesejado(
+        dados.valorFinalDesejado
+    );
+}
+
+if (
+    dados.overFinalAplicado !==
+    undefined
+) {
+    setOverFinalAplicado(
+        Boolean(
+            dados.overFinalAplicado
+        )
+    );
+}
 
             }
 
@@ -2089,6 +2150,8 @@ sessionStorage.removeItem(
     setVersoesOrcamento([]);
 
     setMultiplicador(1);
+    setValorFinalDesejado("");
+setOverFinalAplicado(false);
 
     setOrcamento({
         nome: "",
@@ -4163,6 +4226,1572 @@ const totaisColunas = useMemo(() => {
     );
 
 }, [ambientesCalculados]);
+
+
+
+/*
+=================================================
+NEGOCIAÇÃO DE OVER FINAL
+=================================================
+*/
+
+/*
+=================================================
+SOMA DO VALOR QUE JÁ EXISTE ATÉ O RT
+=================================================
+
+O Valor Final Desejado deve partir do valor que já
+existe com o RT calculado. O Over Final será apenas
+o acréscimo necessário para chegar ao valor informado.
+=================================================
+*/
+
+const valorComRtTotal = useMemo(() => {
+
+    return ambientesCalculados.reduce(
+        (total, ambiente) =>
+            total +
+            ambiente.itens.reduce(
+                (subtotal, item) =>
+                    subtotal +
+                    numberValue(
+                        item.calculadoValorComRt
+                    ),
+                0
+            ),
+        0
+    );
+
+}, [ambientesCalculados]);
+
+
+const percentualOverFinal = useMemo(() => {
+
+    if (
+        Number(versaoAtual) < 2 ||
+        !overFinalAplicado
+    ) {
+        return 0;
+    }
+
+    const valorSolicitado =
+        numberValue(
+            valorFinalDesejado
+        );
+
+    if (
+        valorSolicitado <= 0 ||
+        valorComRtTotal <= 0
+    ) {
+        return 0;
+    }
+
+    /*
+    =================================================
+    DILUIÇÃO PROPORCIONAL DO OVER FINAL
+    =================================================
+
+    O percentual agora é calculado sobre o valor que
+    já existe em cada item até o RT.
+
+    Exemplo:
+
+    Valor com RT total = R$ 10.000,00
+    Valor final desejado = R$ 12.000,00
+
+    Percentual = 20%
+
+    Cada item recebe exatamente +20% sobre o seu
+    próprio Valor com RT.
+    =================================================
+    */
+
+    return (
+        valorSolicitado -
+        valorComRtTotal
+    ) / valorComRtTotal;
+
+}, [
+    versaoAtual,
+    overFinalAplicado,
+    valorFinalDesejado,
+    valorComRtTotal
+]);
+
+
+/*
+=================================================
+DADOS DO OVER FINAL POR ITEM
+=================================================
+
+Este bloco concentra o cálculo para que a coluna
+da tabela e os totais utilizem exatamente os
+mesmos valores.
+
+Depois do arredondamento individual para dezenas,
+a diferença restante é redistribuída em blocos de
+R$ 10 para fechar exatamente o Valor Final Desejado
+quando o valor solicitado for compatível com esse
+arredondamento.
+=================================================
+*/
+
+const dadosOverFinalPorItem = useMemo(() => {
+
+    const itens = [];
+
+    ambientesCalculados.forEach(
+        ambiente => {
+
+            ambiente.itens.forEach(
+                item => {
+
+                    const valorMinimo =
+                        numberValue(
+                            item.calculadoValorMinimoPropostaAlme
+                        );
+
+                    const valorComRt =
+                        numberValue(
+                            item.calculadoValorComRt
+                        );
+
+                    const rtPercentual =
+                        numberValue(
+                            item.calculadoRtArquitetoPercentual
+                        );
+
+                    const overNegociado =
+                        overFinalAplicado
+                            ? valorComRt *
+                              percentualOverFinal
+                            : 0;
+
+                    const valorMaisOverFinal =
+                        valorComRt +
+                        overNegociado;
+
+                    const precoFinalTodos =
+                        Math.round(
+                            valorMaisOverFinal / 10
+                        ) * 10;
+
+                    itens.push({
+
+                        chave:
+                            `${ambiente.id}::${item.id}`,
+
+                        valorMinimo,
+
+                        valorComRt,
+
+                        rtPercentual,
+
+                        overNegociado,
+
+                        valorMaisOverFinal,
+
+                        precoFinalTodos
+
+                    });
+
+                }
+            );
+
+        }
+    );
+
+    /*
+    =================================================
+    RECONCILIAÇÃO DO TOTAL
+    =================================================
+
+    O arredondamento individual pode criar uma pequena
+    diferença entre a soma dos itens e o valor solicitado.
+    Quando isso acontece, ajustamos os preços finais em
+    blocos de R$ 10 para que a soma feche exatamente.
+    =================================================
+    */
+
+    if (
+        overFinalAplicado &&
+        itens.length > 0
+    ) {
+
+        const valorSolicitado =
+            numberValue(
+                valorFinalDesejado
+            );
+
+        const somaArredondada =
+            itens.reduce(
+                (total, item) =>
+                    total +
+                    item.precoFinalTodos,
+                0
+            );
+
+        const diferenca =
+            valorSolicitado -
+            somaArredondada;
+
+        const diferencaEmDezenas =
+            Math.round(
+                diferenca / 10
+            );
+
+        const diferencaReconstruida =
+            diferencaEmDezenas * 10;
+
+        if (
+            Math.abs(
+                diferenca -
+                diferencaReconstruida
+            ) < 0.01
+        ) {
+
+            const passo =
+                diferencaReconstruida > 0
+                    ? 10
+                    : -10;
+
+            let passosRestantes =
+                Math.abs(
+                    diferencaEmDezenas
+                );
+
+            let indice = 0;
+
+            while (
+                passosRestantes > 0 &&
+                itens.length > 0
+            ) {
+
+                const itemAlvo =
+                    itens[
+                        indice % itens.length
+                    ];
+
+                /*
+                Nunca deixamos um item ficar
+                com preço final negativo.
+                */
+
+                if (
+                    passo > 0 ||
+                    itemAlvo.precoFinalTodos >= 10
+                ) {
+
+                    itemAlvo.precoFinalTodos +=
+                        passo;
+
+                    passosRestantes--;
+
+                }
+
+                indice++;
+
+                /*
+                Segurança contra loop infinito.
+                */
+
+                if (
+                    indice >
+                    itens.length *
+                    (
+                        Math.abs(
+                            diferencaEmDezenas
+                        ) + 1
+                    ) *
+                    2
+                ) {
+                    break;
+                }
+
+            }
+
+        }
+
+    }
+
+    const resultado = {};
+
+    itens.forEach(
+        item => {
+
+            resultado[item.chave] = {
+
+                ...item,
+
+                rtFinal:
+                    item.precoFinalTodos *
+                    item.rtPercentual
+
+            };
+
+        }
+    );
+
+    return resultado;
+
+}, [
+    ambientesCalculados,
+    overFinalAplicado,
+    percentualOverFinal,
+    valorFinalDesejado
+]);
+
+
+/*
+=================================================
+TOTAIS DO OVER FINAL
+=================================================
+*/
+
+const totaisOverFinal = useMemo(() => {
+
+    const totais = {
+        overNegociado: 0,
+        valorMaisOverFinal: 0,
+        precoFinalTodos: 0,
+        rtFinal: 0
+    };
+
+    Object.values(
+        dadosOverFinalPorItem
+    ).forEach(
+        item => {
+
+            totais.overNegociado +=
+                numberValue(
+                    item.overNegociado
+                );
+
+            totais.valorMaisOverFinal +=
+                numberValue(
+                    item.valorMaisOverFinal
+                );
+
+            totais.precoFinalTodos +=
+                numberValue(
+                    item.precoFinalTodos
+                );
+
+            totais.rtFinal +=
+                numberValue(
+                    item.rtFinal
+                );
+
+        }
+    );
+
+    const valorTotalAdicionado =
+        overFinalAplicado
+            ? Math.max(
+                0,
+                numberValue(
+                    valorFinalDesejado
+                ) -
+                numberValue(
+                    valorComRtTotal
+                )
+            )
+            : 0;
+
+    const overTotal =
+        totais.precoFinalTodos -
+        numberValue(
+            totaisColunas
+                .valorMinimoPropostaAlme
+        ) -
+        totais.rtFinal;
+
+    return {
+        ...totais,
+        overTotal,
+        valorTotalAdicionado
+    };
+
+}, [
+    dadosOverFinalPorItem,
+    overFinalAplicado,
+    valorFinalDesejado,
+    valorComRtTotal,
+    totaisColunas
+]);
+
+
+
+    /*
+    =================================================
+    PDF DO ORÇAMENTO
+    =================================================
+    */
+
+    const gerarPdfOrcamento = async () => {
+
+        try {
+
+            const itensComDados =
+                ambientesCalculados.some(
+                    ambiente =>
+                        ambiente.itens.some(
+                            item =>
+                                item.base_item_id
+                        )
+                );
+
+            if (!itensComDados) {
+                window.alert(
+                    "Adicione pelo menos um item da base antes de gerar o PDF."
+                );
+                return;
+            }
+
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "pt",
+                format: "a4"
+            });
+
+            const pageWidth =
+                doc.internal.pageSize.getWidth();
+
+            const pageHeight =
+                doc.internal.pageSize.getHeight();
+
+            const margem = 34;
+            const larguraUtil =
+                pageWidth - (margem * 2);
+
+            const corMarrom = "#4B2108";
+            const corMarromEscuro = "#321505";
+            const corDourado = "#D48821";
+            const corBege = "#F3E5D2";
+            const corBegeClaro = "#FAF7F2";
+            const corBorda = "#DCC8B2";
+            const corTexto = "#2F2118";
+            const corCinza = "#766A61";
+
+            const carregarImagemDataUrl = async url => {
+
+                const response =
+                    await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Não foi possível carregar a logo da ALME."
+                    );
+                }
+
+                const blob =
+                    await response.blob();
+
+                return new Promise(
+                    (resolve, reject) => {
+
+                        const reader =
+                            new FileReader();
+
+                        reader.onloadend = () =>
+                            resolve(
+                                reader.result
+                            );
+
+                        reader.onerror = reject;
+
+                        reader.readAsDataURL(
+                            blob
+                        );
+
+                    }
+                );
+
+            };
+
+            const criarMarcaDataUrl = async () => {
+
+                try {
+
+                    if (
+                        document.fonts &&
+                        document.fonts.ready
+                    ) {
+                        await document.fonts.ready;
+                    }
+
+                    const logoDataUrl =
+                        await carregarImagemDataUrl(
+                            logoAlme
+                        );
+
+                    const logo =
+                        await new Promise(
+                            (resolve, reject) => {
+
+                                const image =
+                                    new Image();
+
+                                image.onload = () =>
+                                    resolve(image);
+
+                                image.onerror = reject;
+
+                                image.src =
+                                    logoDataUrl;
+
+                            }
+                        );
+
+                    const canvas =
+                        document.createElement(
+                            "canvas"
+                        );
+
+                    canvas.width = 1100;
+                    canvas.height = 190;
+
+                    const context =
+                        canvas.getContext("2d");
+
+                    context.clearRect(
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
+
+                    const alturaLogo = 130;
+                    const larguraLogo =
+                        logo.width > 0
+                            ? alturaLogo *
+                              (logo.width / logo.height)
+                            : 150;
+
+                    context.drawImage(
+                        logo,
+                        10,
+                        25,
+                        larguraLogo,
+                        alturaLogo
+                    );
+
+                    context.fillStyle =
+                        corMarrom;
+
+                    context.font =
+                        '700 56px "Montserrat", Arial, sans-serif';
+
+                    context.textBaseline =
+                        "middle";
+
+                    context.fillText(
+                        "ALME MARCENARIA",
+                        10 + larguraLogo + 35,
+                        95
+                    );
+
+                    return canvas.toDataURL(
+                        "image/png"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Erro ao criar marca do PDF:",
+                        error
+                    );
+
+                    return null;
+
+                }
+
+            };
+
+            const marcaDataUrl =
+                await criarMarcaDataUrl();
+
+            const formatarMedidaCm = value => {
+
+                const cm =
+                    numberValue(value) * 100;
+
+                if (cm <= 0) {
+                    return "";
+                }
+
+                return Number.isInteger(cm)
+                    ? String(cm)
+                    : new Intl.NumberFormat(
+                        "pt-BR",
+                        {
+                            maximumFractionDigits: 2
+                        }
+                    ).format(cm);
+
+            };
+
+            const formatarDimensoesPdf = item => {
+
+                const partes = [];
+
+                const altura =
+                    formatarMedidaCm(
+                        item.altura
+                    );
+
+                const largura =
+                    formatarMedidaCm(
+                        item.largura
+                    );
+
+                const profundidade =
+                    formatarMedidaCm(
+                        item.profundidade
+                    );
+
+                if (altura) {
+                    partes.push(`A${altura}`);
+                }
+
+                if (largura) {
+                    partes.push(`L${largura}`);
+                }
+
+                if (profundidade) {
+                    partes.push(`P${profundidade}`);
+                }
+
+                if (
+                    partes.length > 0
+                ) {
+                    return partes.join("x");
+                }
+
+                const comprimento =
+                    formatarMedidaCm(
+                        item.comprimento
+                    );
+
+                const diametro =
+                    formatarMedidaCm(
+                        item.diametro
+                    );
+
+                if (comprimento) {
+                    return `C${comprimento}`;
+                }
+
+                if (diametro) {
+                    return `Ø${diametro}`;
+                }
+
+                return "-";
+
+            };
+
+            /*
+            =================================================
+            COLUNA FINANCEIRA DO PDF
+            =================================================
+
+            Quando o Over Final foi aplicado e a soma dos
+            Preços finais de todos é maior que R$ 1,00,
+            o PDF usa exclusivamente o Preço final de todos.
+
+            Caso contrário, usa o Valor com RT arredondado.
+            =================================================
+            */
+
+            const temPrecoFinalPdf =
+                overFinalAplicado &&
+                numberValue(
+                    totaisOverFinal
+                        .precoFinalTodos
+                ) > 1;
+
+            const obterPrecoPdf = item => {
+
+                const dadosItem =
+                    dadosOverFinalPorItem[
+                        `${item._ambienteId}::${item.id}`
+                    ];
+
+                if (
+                    temPrecoFinalPdf &&
+                    dadosItem &&
+                    numberValue(
+                        dadosItem.precoFinalTodos
+                    ) > 0
+                ) {
+                    return numberValue(
+                        dadosItem.precoFinalTodos
+                    );
+                }
+
+                return numberValue(
+                    item.calculadoValorComRtArredondado
+                );
+
+            };
+
+            const valorTotalPdf =
+                overFinalAplicado &&
+                numberValue(
+                    valorFinalDesejado
+                ) > 0
+                    ? numberValue(
+                        valorFinalDesejado
+                    )
+                    : numberValue(
+                        totaisColunas
+                            .valorComRtArredondado
+                    );
+
+            const sanitizarNomeArquivo = value =>
+                String(value || "orcamento")
+                    .normalize("NFD")
+                    .replace(
+                        /[\u0300-\u036f]/g,
+                        ""
+                    )
+                    .replace(
+                        /[^a-zA-Z0-9_-]+/g,
+                        "-"
+                    )
+                    .replace(
+                        /^-+|-+$/g,
+                        ""
+                    ) || "orcamento";
+
+            let y = 32;
+
+            const desenharMarca = () => {
+
+                if (marcaDataUrl) {
+
+                    doc.addImage(
+                        marcaDataUrl,
+                        "PNG",
+                        margem,
+                        22,
+                        255,
+                        44
+                    );
+
+                } else {
+
+                    doc.setTextColor(
+                        corMarrom
+                    );
+
+                    doc.setFont(
+                        "helvetica",
+                        "bold"
+                    );
+
+                    doc.setFontSize(20);
+
+                    doc.text(
+                        "ALME MARCENARIA",
+                        margem,
+                        52
+                    );
+
+                }
+
+                doc.setTextColor(
+                    corCinza
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "normal"
+                );
+
+                doc.setFontSize(8);
+
+                doc.text(
+                    "ORÇAMENTO",
+                    pageWidth - margem,
+                    38,
+                    {
+                        align: "right"
+                    }
+                );
+
+                doc.setTextColor(
+                    corTexto
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+                doc.setFontSize(13);
+
+                doc.text(
+                    orcamento.nome ||
+                        "Orçamento",
+                    pageWidth - margem,
+                    54,
+                    {
+                        align: "right"
+                    }
+                );
+
+                y = 92;
+
+            };
+
+            const desenharRodape = () => {
+
+                const paginaAtual =
+                    doc.internal.getCurrentPageInfo()
+                        .pageNumber;
+
+                doc.setDrawColor(
+                    corBorda
+                );
+
+                doc.setLineWidth(0.5);
+
+                doc.line(
+                    margem,
+                    pageHeight - 28,
+                    pageWidth - margem,
+                    pageHeight - 28
+                );
+
+                doc.setTextColor(
+                    corCinza
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "normal"
+                );
+
+                doc.setFontSize(7);
+
+                doc.text(
+                    "ALME Marcenaria",
+                    margem,
+                    pageHeight - 15
+                );
+
+                doc.text(
+                    `Página ${paginaAtual}`,
+                    pageWidth - margem,
+                    pageHeight - 15,
+                    {
+                        align: "right"
+                    }
+                );
+
+            };
+
+            const garantirEspaco = alturaNecessaria => {
+
+                if (
+                    y + alturaNecessaria >
+                    pageHeight - 44
+                ) {
+
+                    desenharRodape();
+
+                    doc.addPage();
+
+                    desenharMarca();
+
+                    y = 82;
+
+                }
+
+            };
+
+            const desenharCabecalhoTabela = () => {
+
+                const altura = 24;
+
+                const larguraItem =
+                    300;
+
+                const larguraValor =
+                    larguraUtil -
+                    larguraItem;
+
+                const tituloValor =
+                    temPrecoFinalPdf
+                        ? "Preço final de item"
+                        : "Valor final de item";
+
+                const colunas = [
+                    {
+                        titulo: "Item / Medidas / MDF",
+                        x: margem,
+                        largura: larguraItem
+                    },
+                    {
+                        titulo: tituloValor,
+                        x:
+                            margem +
+                            larguraItem,
+                        largura: larguraValor
+                    }
+                ];
+
+                doc.setFillColor(
+                    corMarrom
+                );
+
+                doc.rect(
+                    margem,
+                    y,
+                    larguraUtil,
+                    altura,
+                    "F"
+                );
+
+                doc.setTextColor(
+                    255,
+                    255,
+                    255
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+                doc.setFontSize(7);
+
+                colunas.forEach(
+                    coluna => {
+
+                        const linhas =
+                            doc.splitTextToSize(
+                                coluna.titulo,
+                                coluna.largura - 8
+                            );
+
+                        doc.text(
+                            linhas,
+                            coluna.x + 4,
+                            y + 9
+                        );
+
+                    }
+                );
+
+                doc.setDrawColor(
+                    corMarrom
+                );
+
+                doc.setLineWidth(0.6);
+
+                doc.rect(
+                    margem,
+                    y,
+                    larguraUtil,
+                    altura
+                );
+
+                y += altura;
+
+                return {
+                    larguraItem,
+                    larguraValor,
+                    temPrecoFinalPdf
+                };
+
+            };
+
+            const desenharLinhaTabela = (
+                item,
+                colunas,
+                linhaIndex
+            ) => {
+
+                const itemNome =
+                    item.base_item_nome ||
+                    item.nome_item ||
+                    "-";
+
+                const dimensoes =
+                    formatarDimensoesPdf(
+                        item
+                    );
+
+                const corMdf =
+                    item.mdf_nome ||
+                    "-";
+
+                const valorRt =
+                    numberValue(
+                        item.calculadoValorComRtArredondado
+                    );
+
+                const precoFinal =
+                    obterPrecoPdf(item);
+
+                const valorFinanceiroPdf =
+                    colunas.temPrecoFinalPdf
+                        ? precoFinal
+                        : valorRt;
+
+                const larguraTextoItem =
+                    colunas.larguraItem - 10;
+
+                const linhasItem =
+                    doc.splitTextToSize(
+                        String(itemNome),
+                        larguraTextoItem
+                    );
+
+                const linhasDimensoes =
+                    doc.splitTextToSize(
+                        String(dimensoes),
+                        larguraTextoItem
+                    );
+
+                const linhasCorMdf =
+                    doc.splitTextToSize(
+                        String(corMdf),
+                        larguraTextoItem
+                    );
+
+                const alturaLinhaTexto = 8;
+                const espacoParagrafo = 4;
+                const espacamentoSuperior = 9;
+                const espacamentoInferior = 9;
+
+                const alturaTexto =
+                    (
+                        linhasItem.length *
+                        alturaLinhaTexto
+                    ) +
+                    espacoParagrafo +
+                    (
+                        linhasDimensoes.length *
+                        alturaLinhaTexto
+                    ) +
+                    espacoParagrafo +
+                    (
+                        linhasCorMdf.length *
+                        alturaLinhaTexto
+                    );
+
+                const alturaLinha = Math.max(
+                    50,
+                    espacamentoSuperior +
+                    alturaTexto +
+                    espacamentoInferior
+                );
+
+                if (
+                    y + alturaLinha >
+                    pageHeight - 44
+                ) {
+
+                    desenharRodape();
+
+                    doc.addPage();
+
+                    desenharMarca();
+
+                    y = 82;
+
+                    desenharCabecalhoTabela();
+
+                }
+
+                const larguraTotal =
+                    colunas.larguraItem +
+                    colunas.larguraValor;
+
+                doc.setFillColor(
+                    linhaIndex % 2 === 0
+                        ? 255
+                        : 250,
+                    linhaIndex % 2 === 0
+                        ? 255
+                        : 247,
+                    linhaIndex % 2 === 0
+                        ? 255
+                        : 242
+                );
+
+                doc.rect(
+                    margem,
+                    y,
+                    larguraTotal,
+                    alturaLinha,
+                    "F"
+                );
+
+                doc.setDrawColor(
+                    corBorda
+                );
+
+                doc.setLineWidth(0.45);
+
+                doc.rect(
+                    margem,
+                    y,
+                    larguraTotal,
+                    alturaLinha
+                );
+
+                const xValor =
+                    margem +
+                    colunas.larguraItem;
+
+                doc.line(
+                    xValor,
+                    y,
+                    xValor,
+                    y + alturaLinha
+                );
+
+                let linhaAtual =
+                    y +
+                    espacamentoSuperior;
+
+                doc.setTextColor(
+                    corTexto
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+                doc.setFontSize(7.5);
+
+                doc.text(
+                    linhasItem,
+                    margem + 4,
+                    linhaAtual
+                );
+
+                linhaAtual +=
+                    (
+                        linhasItem.length *
+                        alturaLinhaTexto
+                    ) +
+                    espacoParagrafo;
+
+                doc.setFont(
+                    "helvetica",
+                    "normal"
+                );
+
+                doc.setFontSize(7);
+
+                doc.setTextColor(
+                    corTexto
+                );
+
+                doc.text(
+                    linhasDimensoes,
+                    margem + 4,
+                    linhaAtual
+                );
+
+                linhaAtual +=
+                    (
+                        linhasDimensoes.length *
+                        alturaLinhaTexto
+                    ) +
+                    espacoParagrafo;
+
+                doc.setTextColor(
+                    corCinza
+                );
+
+                doc.text(
+                    linhasCorMdf,
+                    margem + 4,
+                    linhaAtual
+                );
+
+                doc.setTextColor(
+                    corMarromEscuro
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+                doc.setFontSize(9);
+
+                doc.text(
+                    money(valorFinanceiroPdf),
+                    margem +
+                        larguraTotal -
+                        6,
+                    y +
+                        (alturaLinha / 2) +
+                        3,
+                    {
+                        align: "right"
+                    }
+                );
+
+                y += alturaLinha;
+
+            };
+
+            desenharMarca();
+
+            doc.setTextColor(
+                corTexto
+            );
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.setFontSize(8.5);
+
+            doc.text(
+                `Cliente: ${orcamento.cliente || "-"}`,
+                margem,
+                y
+            );
+
+            doc.text(
+                `Status: ${statusLabel(orcamento.status)}`,
+                pageWidth - margem,
+                y,
+                {
+                    align: "right"
+                }
+            );
+
+            y += 18;
+
+            if (
+                Number(versaoAtual) > 0
+            ) {
+
+                doc.setTextColor(
+                    corCinza
+                );
+
+                doc.setFontSize(7.5);
+
+                doc.text(
+                    `Versão V${versaoAtual}`,
+                    margem,
+                    y
+                );
+
+                if (
+                    overFinalAplicado &&
+                    numberValue(
+                        valorFinalDesejado
+                    ) > 0
+                ) {
+
+                    doc.text(
+                        `Valor final desejado: ${money(valorFinalDesejado)}`,
+                        pageWidth - margem,
+                        y,
+                        {
+                            align: "right"
+                        }
+                    );
+
+                }
+
+                y += 20;
+
+            }
+
+            ambientesCalculados.forEach(
+                (ambiente, ambienteIndex) => {
+
+                    const itensDoAmbiente =
+                        ambiente.itens.filter(
+                            item =>
+                                item.base_item_id
+                        );
+
+                    garantirEspaco(
+                        70
+                    );
+
+                    doc.setFillColor(
+                        corBege
+                    );
+
+                    doc.roundedRect(
+                        margem,
+                        y,
+                        larguraUtil,
+                        28,
+                        5,
+                        5,
+                        "F"
+                    );
+
+                    doc.setTextColor(
+                        corMarrom
+                    );
+
+                    doc.setFont(
+                        "helvetica",
+                        "bold"
+                    );
+
+                    doc.setFontSize(10);
+
+                    doc.text(
+                        `${ambienteIndex + 1}. ${ambiente.nome || "Ambiente"}`,
+                        margem + 10,
+                        y + 18
+                    );
+
+                    y += 36;
+
+                    if (
+                        itensDoAmbiente.length === 0
+                    ) {
+
+                        doc.setTextColor(
+                            corCinza
+                        );
+
+                        doc.setFont(
+                            "helvetica",
+                            "normal"
+                        );
+
+                        doc.setFontSize(8);
+
+                        doc.text(
+                            "Nenhum item preenchido neste ambiente.",
+                            margem + 4,
+                            y + 6
+                        );
+
+                        y += 24;
+
+                        return;
+
+                    }
+
+                    const colunas =
+                        desenharCabecalhoTabela();
+
+                    itensDoAmbiente.forEach(
+                        (item, itemIndex) => {
+
+                            const itemPdf = {
+                                ...item,
+                                _ambienteId:
+                                    ambiente.id
+                            };
+
+                            desenharLinhaTabela(
+                                itemPdf,
+                                colunas,
+                                itemIndex
+                            );
+
+                        }
+                    );
+
+                    y += 16;
+
+                }
+            );
+
+            const alturaCardFinal = 70;
+
+            garantirEspaco(
+                alturaCardFinal + 12
+            );
+
+            doc.setFillColor(
+                corBege
+            );
+
+            doc.setDrawColor(
+                corDourado
+            );
+
+            doc.setLineWidth(0.9);
+
+            doc.roundedRect(
+                margem,
+                y,
+                larguraUtil,
+                alturaCardFinal,
+                7,
+                7,
+                "FD"
+            );
+
+            doc.setTextColor(
+                corMarrom
+            );
+
+            doc.setFont(
+                "helvetica",
+                "bold"
+            );
+
+            doc.setFontSize(9);
+
+            doc.text(
+                "VALOR FINAL OBTIDO",
+                margem + 14,
+                y + 25
+            );
+
+            doc.setFontSize(18);
+
+            doc.text(
+                money(valorTotalPdf),
+                pageWidth - margem - 14,
+                y + 31,
+                {
+                    align: "right"
+                }
+            );
+
+            doc.setTextColor(
+                corCinza
+            );
+
+            doc.setFont(
+                "helvetica",
+                "normal"
+            );
+
+            doc.setFontSize(7.5);
+
+            doc.text(
+                overFinalAplicado &&
+                    numberValue(
+                        valorFinalDesejado
+                    ) > 0
+                    ? "Valor final alcançado após análise do orçamento."
+                    : "Valor final alcançado após análise do orçamento.",
+                margem + 14,
+                y + 48
+            );
+
+            y += alturaCardFinal + 16;
+
+            if (
+                orcamento.observacoes
+            ) {
+
+                garantirEspaco(
+                    60
+                );
+
+                doc.setTextColor(
+                    corMarrom
+                );
+
+                doc.setFont(
+                    "helvetica",
+                    "bold"
+                );
+
+                doc.setFontSize(8);
+
+                doc.text(
+                    "Observações",
+                    margem,
+                    y
+                );
+
+                y += 12;
+
+                doc.setFont(
+                    "helvetica",
+                    "normal"
+                );
+
+                doc.setTextColor(
+                    corTexto
+                );
+
+                const observacoes =
+                    doc.splitTextToSize(
+                        String(
+                            orcamento.observacoes
+                        ),
+                        larguraUtil
+                    );
+
+                observacoes.forEach(
+                    linha => {
+
+                        garantirEspaco(10);
+
+                        doc.text(
+                            linha,
+                            margem,
+                            y
+                        );
+
+                        y += 10;
+
+                    }
+                );
+
+            }
+
+            const totalPaginas =
+                doc.getNumberOfPages();
+
+            for (
+                let pagina = 1;
+                pagina <= totalPaginas;
+                pagina++
+            ) {
+
+                doc.setPage(
+                    pagina
+                );
+
+                desenharRodape();
+
+            }
+
+            const nomeArquivo =
+                `orcamento-${sanitizarNomeArquivo(orcamento.nome)}${versaoAtual ? `-v${versaoAtual}` : ""}.pdf`;
+
+            doc.save(
+                nomeArquivo
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao gerar PDF do orçamento:",
+                error
+            );
+
+            window.alert(
+                error?.message ||
+                "Não foi possível gerar o PDF do orçamento."
+            );
+
+        }
+
+    };
+
     /*
     =================================================
     SALVAR ORÇAMENTO / VERSÃO
@@ -5161,6 +6790,33 @@ sessionStorage.removeItem(
 
                     <button
                         type="button"
+                        className="orcamento-nova-versao"
+                        onClick={
+                            gerarPdfOrcamento
+                        }
+                        disabled={
+                            carregandoBase ||
+                            !ambientesCalculados.some(
+                                ambiente =>
+                                    ambiente.itens.some(
+                                        item =>
+                                            item.base_item_id
+                                    )
+                            )
+                        }
+                    >
+
+                        <FiDownload />
+
+                        <span>
+                            Baixar PDF
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        type="button"
                         className="orcamento-salvar"
                         onClick={
                             () =>
@@ -5638,7 +7294,23 @@ sessionStorage.removeItem(
     Valor com RT arredondado
 </th>
 
-<th>
+{Number(versaoAtual) >= 2 && (
+    <>
+        <th className="orcamento-coluna-over-final">
+            Valor + Over final
+        </th>
+
+        <th className="orcamento-coluna-preco-final">
+            Preço final de todos
+        </th>
+
+        <th className="orcamento-coluna-rt-final">
+            RT final
+        </th>
+    </>
+)}
+
+<th className="orcamento-coluna-acao">
     Ação
 </th>
 
@@ -5656,7 +7328,11 @@ sessionStorage.removeItem(
 
                                                     <tr className="orcamento-tabela-vazia">
 
-                                                        <td colSpan="28">
+                                                        <td colSpan={
+    Number(versaoAtual) >= 2
+        ? 31
+        : 28
+}>
 
                                                             Nenhum item adicionado neste ambiente.
 
@@ -5684,6 +7360,12 @@ sessionStorage.removeItem(
                                                         const complementos =
                                                             item.complementos ||
                                                             [];
+
+
+                                                        const dadosOverFinalItem =
+                                                            dadosOverFinalPorItem[
+                                                                `${ambiente.id}::${item.id}`
+                                                            ];
 
 
                                                         return (
@@ -6369,7 +8051,7 @@ sessionStorage.removeItem(
     </div>
 
 </td>
-     <td>
+    <td>
     <div className="orcamento-resultado orcamento-resultado-rt-arredondado">
         {
             money(
@@ -6379,7 +8061,53 @@ sessionStorage.removeItem(
     </div>
 </td>
 
-<td>
+{Number(versaoAtual) >= 2 && (
+
+    <>
+
+        <td className="orcamento-coluna-over-final">
+     <div className="orcamento-resultado orcamento-resultado-over-final">
+                 {
+                     money(
+                         dadosOverFinalItem
+                             ? dadosOverFinalItem.valorMaisOverFinal
+                             : numberValue(
+                                 item.calculadoValorComRt
+                             )
+                     )
+                 }
+             </div>
+         </td>
+
+         <td className="orcamento-coluna-preco-final">
+     <div className="orcamento-resultado orcamento-resultado-preco-final">
+                 {
+                     money(
+                         dadosOverFinalItem
+                             ? dadosOverFinalItem.precoFinalTodos
+                             : 0
+                     )
+                 }
+             </div>
+         </td>
+
+        <td className="orcamento-coluna-rt-final">
+     <div className="orcamento-resultado orcamento-resultado-rt-final">
+                 {
+                     money(
+                         dadosOverFinalItem
+                             ? dadosOverFinalItem.rtFinal
+                             : 0
+                     )
+                 }
+             </div>
+         </td>
+
+    </>
+
+)}
+
+<td className="orcamento-coluna-acao">
     <button
         type="button"
         className="orcamento-excluir-item"
@@ -6414,7 +8142,11 @@ sessionStorage.removeItem(
 
                                                                         <tr className="orcamento-detalhes-linha">
 
-                                                                            <td colSpan="28">
+                                                                            <td colSpan={
+                                                                                Number(versaoAtual) >= 2
+                                                                                    ? 31
+                                                                                    : 28
+                                                                            }>
 
                                                                                 <div className="orcamento-detalhes">
 
@@ -6521,7 +8253,11 @@ sessionStorage.removeItem(
 
 <tr className="orcamento-extras-linha">
 
-    <td colSpan="28">
+    <td colSpan={
+    Number(versaoAtual) >= 2
+        ? 31
+        : 28
+}>
 
         <div className="orcamento-extras">
 
@@ -6728,7 +8464,7 @@ sessionStorage.removeItem(
             <div className="orcamento-extra-resumo">
 
                 <span>
-                    Valor Final
+                    Valor Final com RT
                 </span>
 
                 <strong>
@@ -7548,9 +9284,277 @@ sessionStorage.removeItem(
             </strong>
 
         </div>
+{/* ================================================
+    OVER TOTAL
+================================================ */}
+
+{Number(versaoAtual) >= 2 && (
+
+    <div className="orcamento-total-card destaque">
+
+        <span>
+            Over total
+        </span>
+
+        <strong>
+            {
+                money(
+                    totaisOverFinal.overTotal
+                )
+            }
+        </strong>
 
     </div>
 
+)}
+
+
+{/* ================================================
+    PREÇO FINAL DE TODOS
+================================================ */}
+
+{Number(versaoAtual) >= 2 && (
+
+    <div className="orcamento-total-card destaque-final">
+
+        <span>
+            Soma de todos preço final de todos
+        </span>
+
+        <strong>
+            {
+                money(
+                    totaisOverFinal.precoFinalTodos
+                )
+            }
+        </strong>
+
+    </div>
+
+)}
+
+
+{/* ================================================
+    RT FINAL
+================================================ */}
+
+{Number(versaoAtual) >= 2 && (
+
+    <div className="orcamento-total-card">
+
+        <span>
+            Soma de todos RT final
+        </span>
+
+        <strong>
+            {
+                money(
+                    totaisOverFinal.rtFinal
+                )
+            }
+        </strong>
+
+    </div>
+
+)}
+
+
+{/* ================================================
+    PERCENTUAL OVER FINAL
+================================================ */}
+
+{Number(versaoAtual) >= 2 && (
+
+    <div className="orcamento-total-card">
+
+        <span>
+            % a acrescentar no over final pelos itens
+        </span>
+
+        <strong>
+            {
+                percentualExibicao(
+                    percentualOverFinal
+                ).toFixed(2)
+            }%
+        </strong>
+
+    </div>
+
+)}
+
+
+{/* ================================================
+    VALOR TOTAL ADICIONADO
+================================================ */}
+
+{Number(versaoAtual) >= 2 && (
+
+    <div className="orcamento-total-card">
+
+        <span>
+            Valor total adicionado até chegar no valor solicitado
+        </span>
+
+        <strong>
+            {
+                money(
+                    totaisOverFinal
+                        .valorTotalAdicionado
+                )
+            }
+        </strong>
+
+    </div>
+
+)}
+    </div>
+{Number(versaoAtual) >= 2 && (
+
+    <section className="orcamento-over-final-painel">
+
+        <div className="orcamento-over-final-conteudo">
+
+            <div className="orcamento-over-final-texto">
+
+                <span>
+                    NEGOCIAÇÃO
+                </span>
+
+                <strong>
+                    Valor final desejado
+                </strong>
+
+                <small>
+                    Informe o valor final desejado para
+                    distribuir o acréscimo proporcionalmente
+                    entre os itens desta versão.
+                </small>
+
+            </div>
+
+
+            <div className="orcamento-over-final-campo">
+
+                <label htmlFor="orcamento-valor-final-desejado">
+                    Valor final desejado
+                </label>
+
+                <div className="orcamento-over-final-controle">
+
+                    <input
+                        id="orcamento-valor-final-desejado"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={valorFinalDesejado}
+                        onChange={
+                            event =>
+                                setValorFinalDesejado(
+                                    event.target.value
+                                )
+                        }
+                        placeholder="0,00"
+                    />
+
+                    <button
+                        type="button"
+                        className="orcamento-over-final-ok"
+                        onClick={() => {
+
+                            const valor =
+                                numberValue(
+                                    valorFinalDesejado
+                                );
+
+                            const minimo =
+                                numberValue(
+                                    totaisColunas
+                                        .valorMinimoPropostaAlme
+                                );
+
+                            if (
+                                valor <= 0
+                            ) {
+                                window.alert(
+                                    "Informe o valor final desejado."
+                                );
+                                return;
+                            }
+
+                            if (
+                                minimo <= 0
+                            ) {
+                                window.alert(
+                                    "O valor mínimo da proposta ALME precisa ser maior que zero."
+                                );
+                                return;
+                            }
+
+                            const valorComRtAtual =
+                                numberValue(
+                                    valorComRtTotal
+                                );
+
+                            if (
+                                valor <
+                                valorComRtAtual
+                            ) {
+                                window.alert(
+                                    "O valor final desejado não pode ser menor que a soma dos valores com RT atuais."
+                                );
+                                return;
+                            }
+
+                            if (
+                                Math.abs(
+                                    valor % 10
+                                ) > 0.001
+                            ) {
+                                window.alert(
+                                    "Para fechar exatamente a soma dos itens, o valor final desejado deve ser múltiplo de R$ 10,00."
+                                );
+                                return;
+                            }
+
+                            setOverFinalAplicado(
+                                true
+                            );
+
+                        }}
+                    >
+                        OK
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {overFinalAplicado && (
+
+            <div className="orcamento-over-final-resumo">
+
+                <span>
+                    Over final aplicado
+                </span>
+
+                <strong>
+                    {
+                        percentualExibicao(
+                            percentualOverFinal
+                        ).toFixed(2)
+                    }%
+                </strong>
+
+            </div>
+
+        )}
+
+    </section>
+
+)}
 </section>
             </section>
 

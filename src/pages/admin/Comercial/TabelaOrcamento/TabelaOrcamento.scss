@@ -786,7 +786,7 @@
 
 
 /* =====================================================
-   TABELA PRINCIPAL — 28 COLUNAS
+   TABELA PRINCIPAL
 ===================================================== */
 
 .orcamento-tabela-wrapper {
@@ -816,7 +816,7 @@
 
 .orcamento-tabela {
     width: 100%;
-    min-width: 3850px;
+    min-width: 4450px;
     border-collapse: separate;
     border-spacing: 0;
     table-layout: fixed;
@@ -836,49 +836,6 @@
     border-right: 0;
 }
 
-/* =====================================================
-   COLUNA DE AÇÃO
-===================================================== */
-
-.orcamento-tabela th:last-child {
-    width: 90px !important;
-    min-width: 90px !important;
-    max-width: 90px !important;
-    padding: 8px 5px;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.orcamento-tabela td:last-child {
-    width: 90px !important;
-    min-width: 90px !important;
-    max-width: 90px !important;
-    padding: 8px 5px !important;
-    text-align: center;
-    vertical-align: middle;
-    overflow: hidden;
-}
-
-.orcamento-tabela td:last-child .orcamento-excluir-item {
-    width: 34px;
-    min-width: 34px;
-    max-width: 34px;
-    height: 34px;
-    margin: 0 auto;
-    padding: 0;
-    box-sizing: border-box;
-    flex: 0 0 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.orcamento-tabela td:last-child .orcamento-excluir-item svg {
-    width: 15px;
-    height: 15px;
-    flex: 0 0 15px;
-}
-
 .orcamento-tabela th {
     position: sticky;
     top: 0;
@@ -893,10 +850,6 @@
     white-space: nowrap;
 }
 
-.orcamento-tabela th:last-child {
-    text-align: center;
-}
-
 .orcamento-item-linha.zebra-par td {
     background: #fff;
 }
@@ -908,6 +861,11 @@
 .orcamento-item-linha:hover td {
     background: #fff9f1;
 }
+
+
+/* =====================================================
+   LARGURAS DAS COLUNAS EXISTENTES — 1 A 27
+===================================================== */
 
 .orcamento-tabela th:nth-child(1),
 .orcamento-tabela td:nth-child(1) {
@@ -1036,40 +994,52 @@
 .orcamento-tabela th:nth-child(27),
 .orcamento-tabela td:nth-child(27) {
     width: 220px;
+    min-width: 220px;
 }
 
-/*
-Última coluna do cabeçalho / ação.
-Também deixa o CSS preparado caso o corpo tenha
-uma célula adicional antes do botão.
-*/
-.orcamento-tabela th:nth-child(28),
-.orcamento-tabela td:nth-child(28) {
+
+/* =====================================================
+   NOVAS COLUNAS — VERSÃO 2+
+===================================================== */
+
+.orcamento-coluna-over-final {
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+    box-sizing: border-box;
+}
+
+.orcamento-coluna-preco-final {
+    width: 210px !important;
+    min-width: 210px !important;
+    max-width: 210px !important;
+    box-sizing: border-box;
+}
+
+.orcamento-coluna-rt-final {
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   COLUNA AÇÃO
+===================================================== */
+
+.orcamento-coluna-acao {
     width: 90px !important;
     min-width: 90px !important;
     max-width: 90px !important;
-}
-
-.orcamento-tabela td:nth-child(28):last-child {
-    text-align: center;
+    box-sizing: border-box;
     padding: 8px 5px !important;
-}
-
-.orcamento-tabela td:nth-child(28):last-child .orcamento-excluir-item {
-    margin: 0 auto;
-}
-
-.orcamento-tabela td:nth-child(29) {
-    width: 90px !important;
-    min-width: 90px !important;
-    max-width: 90px !important;
-    padding: 8px 5px !important;
-    text-align: center;
+    text-align: center !important;
     vertical-align: middle;
     overflow: hidden;
 }
 
-.orcamento-tabela td:nth-child(29) .orcamento-excluir-item {
+.orcamento-coluna-acao .orcamento-excluir-item {
     width: 34px;
     min-width: 34px;
     max-width: 34px;
@@ -1080,6 +1050,51 @@ uma célula adicional antes do botão.
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 34px;
+}
+
+.orcamento-coluna-acao .orcamento-excluir-item svg {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 15px;
+}
+
+
+/* =====================================================
+   RESULTADOS DAS NOVAS COLUNAS
+===================================================== */
+
+.orcamento-coluna-over-final .orcamento-resultado,
+.orcamento-coluna-preco-final .orcamento-resultado,
+.orcamento-coluna-rt-final .orcamento-resultado {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.orcamento-resultado-over-final {
+    border: 1px solid #d9c8ae;
+    background: #fff9ef;
+    color: #6d481c;
+    font-weight: 800;
+}
+
+.orcamento-resultado-preco-final {
+    border: 1px solid #8c5a24;
+    background: #f3e5d2;
+    color: #4b2108;
+    font-weight: 900;
+}
+
+.orcamento-resultado-rt-final {
+    border: 1px solid #cba878;
+    background: #f6e8d3;
+    color: #4b2108;
+    font-weight: 900;
 }
 
 
@@ -1732,10 +1747,6 @@ uma célula adicional antes do botão.
     height: 15px;
 }
 
-.orcamento-tabela td:last-child .orcamento-excluir-item {
-    flex-shrink: 0;
-}
-
 
 /* =====================================================
    RESPONSIVO
@@ -1834,6 +1845,26 @@ uma célula adicional antes do botão.
         justify-content: space-between;
     }
 
+    .orcamento-over-final-conteudo {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .orcamento-over-final-campo {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .orcamento-over-final-controle {
+        width: 100%;
+    }
+
+    .orcamento-over-final-controle input {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+    }
+
 }
 
 @media (max-width: 700px) {
@@ -1920,13 +1951,30 @@ uma célula adicional antes do botão.
         white-space: normal;
     }
 
+    .orcamento-over-final-painel {
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    .orcamento-over-final-controle {
+        align-items: stretch;
+    }
+
+    .orcamento-over-final-ok {
+        min-width: 60px;
+    }
+
+    .orcamento-over-final-resumo {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+    }
+
 }
 
 
 /* =====================================================
    CORREÇÃO DOS BOTÕES DA LISTA
-   Garante que estilos globais de button/Bootstrap não
-   substituam a aparência dos botões do orçamento.
 ===================================================== */
 
 .tabela-orcamento-lista-page .tabela-orcamento-lista-acoes > button,
@@ -2105,8 +2153,7 @@ button svg {
 
 .orcamento-totais-grid {
     display: grid;
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16px;
 }
 
@@ -2196,7 +2243,7 @@ button svg {
 
 
 /* =====================================================
-   RESPONSIVO
+   RESPONSIVO DOS TOTAIS
 ===================================================== */
 
 @media (max-width: 1200px) {
@@ -2221,8 +2268,7 @@ button svg {
     }
 
     .orcamento-totais-grid {
-        grid-template-columns:
-            1fr;
+        grid-template-columns: 1fr;
     }
 
     .orcamento-total-card strong {
@@ -2350,12 +2396,13 @@ button svg {
 
 .orcamento-multiplicador-campo select:focus {
     border-color: #d48821;
-    box-shadow: 0 0 0 3px rgba(212, 136, 33, 0.12);
+    box-shadow:
+        0 0 0 3px rgba(212, 136, 33, 0.12);
 }
 
 
 /* =====================================================
-   RESPONSIVO
+   RESPONSIVO DO MULTIPLICADOR
 ===================================================== */
 
 @media (max-width: 700px) {
@@ -2377,6 +2424,244 @@ button svg {
 
     .orcamento-multiplicador-campo select {
         width: 100%;
+    }
+
+}
+
+
+/* =====================================================
+   VALOR FINAL DESEJADO / OVER FINAL
+===================================================== */
+
+.orcamento-over-final-painel {
+    width: 100%;
+    margin-top: 32px;
+    margin-bottom: 18px;
+    padding: 24px 28px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1px solid #e5ddd5;
+    border-radius: 18px;
+    box-shadow:
+        0 8px 24px rgba(67, 28, 1, 0.04);
+}
+
+.orcamento-over-final-conteudo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+}
+
+.orcamento-over-final-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 760px;
+}
+
+.orcamento-over-final-texto > span {
+    color: #d48821;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.orcamento-over-final-texto > strong {
+    color: #4b2108;
+    font-size: 20px;
+    line-height: 1.25;
+    font-weight: 700;
+}
+
+.orcamento-over-final-texto > small {
+    max-width: 680px;
+    color: #79695d;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.orcamento-over-final-campo {
+    min-width: 310px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.orcamento-over-final-campo label {
+    margin: 0;
+    color: #5f5047;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.orcamento-over-final-controle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.orcamento-over-final-controle input {
+    width: 220px;
+    height: 48px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid #d9cfc7;
+    border-radius: 10px;
+    outline: none;
+    background: #ffffff;
+    color: #4b2108;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.orcamento-over-final-controle input:focus {
+    border-color: #d48821;
+    box-shadow:
+        0 0 0 3px rgba(212, 136, 33, 0.12);
+}
+
+.orcamento-over-final-ok {
+    min-width: 56px;
+    height: 48px;
+    padding: 0 16px;
+    border: 1px solid #4b2108;
+    border-radius: 10px;
+    background: #4b2108;
+    color: #ffffff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.orcamento-over-final-ok:hover {
+    border-color: #68310d;
+    background: #68310d;
+    transform: translateY(-1px);
+}
+
+.orcamento-over-final-resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-top: 20px;
+    padding: 13px 15px;
+    border: 1px solid #e7c58e;
+    border-radius: 10px;
+    background: #fff8ee;
+}
+
+.orcamento-over-final-resumo span {
+    color: #765c4a;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.orcamento-over-final-resumo strong {
+    color: #8b4a08;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+
+/* =====================================================
+   NOVOS RESULTADOS — OVER FINAL
+===================================================== */
+
+.orcamento-resultado-over-final {
+    border: 1px solid #d9c8ae;
+    background: #fff9ef;
+    color: #6d481c;
+    font-weight: 800;
+}
+
+.orcamento-resultado-preco-final {
+    border: 1px solid #8c5a24;
+    background: #f3e5d2;
+    color: #4b2108;
+    font-weight: 900;
+}
+
+.orcamento-resultado-rt-final {
+    border: 1px solid #cba878;
+    background: #f6e8d3;
+    color: #4b2108;
+    font-weight: 900;
+}
+
+
+/* =====================================================
+   PROTEÇÃO DOS VALORES DAS NOVAS COLUNAS
+===================================================== */
+
+.orcamento-coluna-over-final .orcamento-resultado,
+.orcamento-coluna-preco-final .orcamento-resultado,
+.orcamento-coluna-rt-final .orcamento-resultado {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+
+/* =====================================================
+   RESPONSIVO DO VALOR FINAL
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .orcamento-over-final-conteudo {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .orcamento-over-final-campo {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .orcamento-over-final-controle {
+        width: 100%;
+    }
+
+    .orcamento-over-final-controle input {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+    }
+
+}
+
+@media (max-width: 700px) {
+
+    .orcamento-over-final-painel {
+        padding: 20px;
+        border-radius: 14px;
+    }
+
+    .orcamento-over-final-controle {
+        align-items: stretch;
+    }
+
+    .orcamento-over-final-ok {
+        min-width: 60px;
+    }
+
+    .orcamento-over-final-resumo {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
     }
 
 }
