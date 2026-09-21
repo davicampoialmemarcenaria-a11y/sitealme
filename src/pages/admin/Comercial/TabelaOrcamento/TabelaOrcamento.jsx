@@ -932,6 +932,11 @@ const [
     carregandoArquitetos,
     setCarregandoArquitetos
 ] = useState(false);
+
+const [
+    arquitetoManual,
+    setArquitetoManual
+] = useState(false);
 /*
 =====================================================
 SCROLL HORIZONTAL DA TABELA
@@ -7501,7 +7506,7 @@ sessionStorage.removeItem(
                         />
 
                     </div>
-               <div className="orcamento-field">
+                    <div className="orcamento-field">
 
     <label>
         Arquiteto / Empresa
@@ -7509,14 +7514,55 @@ sessionStorage.removeItem(
 
     <select
         value={
-            orcamento.arquiteto_empresa
+            arquitetoManual
+                ? "__manual__"
+                : orcamento.arquiteto_empresa
         }
         onChange={
-            event =>
+            event => {
+
+                const valor =
+                    event.target.value;
+
+                /*
+                =========================================
+                OUTRO / NÃO CADASTRADO
+                =========================================
+                */
+
+                if (
+                    valor === "__manual__"
+                ) {
+
+                    setArquitetoManual(
+                        true
+                    );
+
+                    atualizarCampo(
+                        "arquiteto_empresa",
+                        ""
+                    );
+
+                    return;
+
+                }
+
+                /*
+                =========================================
+                PARCEIRO CADASTRADO
+                =========================================
+                */
+
+                setArquitetoManual(
+                    false
+                );
+
                 atualizarCampo(
                     "arquiteto_empresa",
-                    event.target.value
-                )
+                    valor
+                );
+
+            }
         }
         disabled={
             carregandoArquitetos
@@ -7524,13 +7570,11 @@ sessionStorage.removeItem(
     >
 
         <option value="">
-
             {
                 carregandoArquitetos
                     ? "Carregando parceiros..."
                     : "Selecione o arquiteto / empresa"
             }
-
         </option>
 
 
@@ -7554,9 +7598,7 @@ sessionStorage.removeItem(
                                 nomeExibicao
                             }
                         >
-                            {
-                                nomeExibicao
-                            }
+                            {nomeExibicao}
                         </option>
 
                     );
@@ -7565,7 +7607,35 @@ sessionStorage.removeItem(
             )
         }
 
+
+        <option value="__manual__">
+            Outro / não cadastrado
+        </option>
+
     </select>
+
+
+    {
+        arquitetoManual && (
+
+            <input
+                type="text"
+                placeholder="Digite o nome do arquiteto ou empresa"
+                value={
+                    orcamento.arquiteto_empresa
+                }
+                onChange={
+                    event =>
+                        atualizarCampo(
+                            "arquiteto_empresa",
+                            event.target.value
+                        )
+                }
+                autoFocus
+            />
+
+        )
+    }
 
 </div>
 
