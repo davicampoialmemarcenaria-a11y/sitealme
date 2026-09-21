@@ -917,7 +917,21 @@ const [
         setErroBase
     ] = useState("");
 
+   /*
+=====================================================
+USUÁRIOS — ARQUITETOS / PARCEIROS
+=====================================================
+*/
 
+const [
+    arquitetosParceiros,
+    setArquitetosParceiros
+] = useState([]);
+
+const [
+    carregandoArquitetos,
+    setCarregandoArquitetos
+] = useState(false);
 /*
 =====================================================
 SCROLL HORIZONTAL DA TABELA
@@ -1228,11 +1242,233 @@ SCROLL HORIZONTAL DA TABELA
 
             };
 
+       /*
+=====================================================
+CARREGAR ARQUITETOS / PARCEIROS
+ROLE 6 = PARCEIRO
+=====================================================
+*/
+
+useEffect(() => {
+
+    let ativo = true;
+
+    const carregarArquitetosParceiros =
+        async () => {
+
+            try {
+
+                setCarregandoArquitetos(
+                    true
+                );
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabase.functions.invoke(
+                        "admin-users",
+                        {
+                            body: {
+                                action: "list"
+                            }
+                        }
+                    );
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data?.error) {
+                    throw new Error(
+                        data.error
+                    );
+                }
+
+                const usuarios =
+                    Array.isArray(
+                        data?.users
+                    )
+                        ? data.users
+                        : [];
+
+                const parceiros =
+                    usuarios.filter(
+                        usuario =>
+                            Number(
+                                usuario.role_id
+                            ) === 6
+                    );
+
+                console.log(
+                    "ARQUITETOS / PARCEIROS:",
+                    parceiros
+                );
+
+                if (ativo) {
+
+                    setArquitetosParceiros(
+                        parceiros
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Erro ao carregar arquitetos parceiros:",
+                    error
+                );
+
+                if (ativo) {
+
+                    setArquitetosParceiros(
+                        []
+                    );
+
+                }
+
+            } finally {
+
+                if (ativo) {
+
+                    setCarregandoArquitetos(
+                        false
+                    );
+
+                }
+
+            }
+
+        };
+
+
+    carregarArquitetosParceiros();
+
+
+    return () => {
+
+        ativo = false;
+
+    };
+
+}, []);
+
         },
         []
     );
+   
+/*
+=====================================================
+CARREGAR ARQUITETOS / PARCEIROS
+ROLE 6 = PARCEIRO
+=====================================================
+*/
+
+useEffect(() => {
+
+    let ativo = true;
+
+    const carregarArquitetosParceiros =
+        async () => {
+
+            try {
+
+                setCarregandoArquitetos(
+                    true
+                );
+
+                const {
+                    data,
+                    error
+                } =
+                    await supabase.functions.invoke(
+                        "admin-users",
+                        {
+                            body: {
+                                action: "list"
+                            }
+                        }
+                    );
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data?.error) {
+                    throw new Error(
+                        data.error
+                    );
+                }
+
+                const usuarios =
+                    Array.isArray(
+                        data?.users
+                    )
+                        ? data.users
+                        : [];
+
+                const parceiros =
+                    usuarios.filter(
+                        usuario =>
+                            Number(
+                                usuario.role_id
+                            ) === 6
+                    );
+
+                console.log(
+                    "ARQUITETOS / PARCEIROS:",
+                    parceiros
+                );
+
+                if (ativo) {
+
+                    setArquitetosParceiros(
+                        parceiros
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Erro ao carregar arquitetos parceiros:",
+                    error
+                );
+
+                if (ativo) {
+
+                    setArquitetosParceiros(
+                        []
+                    );
+
+                }
+
+            } finally {
+
+                if (ativo) {
+
+                    setCarregandoArquitetos(
+                        false
+                    );
+
+                }
+
+            }
+
+        };
 
 
+    carregarArquitetosParceiros();
+
+
+    return () => {
+
+        ativo = false;
+
+    };
+
+}, []);
     /*
 =================================================
 RECUPERAR ESTADO DA SESSÃO
@@ -7265,15 +7501,13 @@ sessionStorage.removeItem(
                         />
 
                     </div>
-                    <div className="orcamento-field">
+               <div className="orcamento-field">
 
     <label>
         Arquiteto / Empresa
     </label>
 
-    <input
-        type="text"
-        placeholder="Nome do arquiteto ou empresa"
+    <select
         value={
             orcamento.arquiteto_empresa
         }
@@ -7284,7 +7518,54 @@ sessionStorage.removeItem(
                     event.target.value
                 )
         }
-    />
+        disabled={
+            carregandoArquitetos
+        }
+    >
+
+        <option value="">
+
+            {
+                carregandoArquitetos
+                    ? "Carregando parceiros..."
+                    : "Selecione o arquiteto / empresa"
+            }
+
+        </option>
+
+
+        {
+            arquitetosParceiros.map(
+                usuario => {
+
+                    const nomeExibicao =
+                        usuario.nome ||
+                        usuario.username ||
+                        usuario.email ||
+                        "Usuário";
+
+                    return (
+
+                        <option
+                            key={
+                                usuario.id
+                            }
+                            value={
+                                nomeExibicao
+                            }
+                        >
+                            {
+                                nomeExibicao
+                            }
+                        </option>
+
+                    );
+
+                }
+            )
+        }
+
+    </select>
 
 </div>
 
