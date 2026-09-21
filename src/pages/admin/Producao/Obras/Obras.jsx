@@ -131,6 +131,28 @@ export default function Obras() {
         setUsuarios
     ] = useState([]);
 
+/*
+=====================================================
+ORÇAMENTOS APROVADOS
+=====================================================
+*/
+
+const [
+    orcamentosAprovados,
+    setOrcamentosAprovados
+] = useState([]);
+
+
+const [
+    loadingOrcamentosAprovados,
+    setLoadingOrcamentosAprovados
+] = useState(false);
+
+
+const [
+    orcamentoSelecionadoId,
+    setOrcamentoSelecionadoId
+] = useState("");
 
     /*
     =================================================
@@ -474,7 +496,77 @@ export default function Obras() {
 
     }
 
+/*
+=====================================================
+CARREGAR ORÇAMENTOS APROVADOS
+=====================================================
+*/
 
+async function carregarOrcamentosAprovados() {
+
+    setLoadingOrcamentosAprovados(true);
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabase
+                .from("orcamentos")
+                .select(`
+                    id,
+                    nome,
+                    cliente,
+                    arquiteto_empresa,
+                    status
+                `)
+                .eq(
+                    "status",
+                    "aprovado"
+                )
+                .order(
+                    "nome",
+                    {
+                        ascending: true
+                    }
+                );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        setOrcamentosAprovados(
+            data || []
+        );
+
+    }
+
+    catch (err) {
+
+        console.error(
+            "Erro ao carregar orçamentos aprovados:",
+            err
+        );
+
+        setOrcamentosAprovados([]);
+
+        setErro(
+            err?.message ||
+            "Não foi possível carregar os orçamentos aprovados."
+        );
+
+    }
+
+    finally {
+
+        setLoadingOrcamentosAprovados(false);
+
+    }
+
+}
     /*
     =================================================
     CARREGAR OBRAS CONCLUÍDAS
@@ -1232,6 +1324,82 @@ export default function Obras() {
 
     }
 
+/*
+=====================================================
+SELECIONAR ORÇAMENTO APROVADO
+=====================================================
+*/
+
+function selecionarOrcamentoAprovado(
+    e
+) {
+
+    const orcamentoId =
+        e.target.value;
+
+
+    setOrcamentoSelecionadoId(
+        orcamentoId
+    );
+
+
+    const orcamentoSelecionado =
+        orcamentosAprovados.find(
+
+            orcamento =>
+                String(
+                    orcamento.id
+                ) ===
+                String(
+                    orcamentoId
+                )
+
+        );
+
+
+    if (
+        !orcamentoSelecionado
+    ) {
+
+        setForm(
+            prev => ({
+                ...prev,
+
+                nome: "",
+
+                cliente_nome: "",
+
+                arquiteto_empresa: ""
+
+            })
+        );
+
+        return;
+
+    }
+
+
+    setForm(
+        prev => ({
+
+            ...prev,
+
+            nome:
+                orcamentoSelecionado.nome ||
+                "",
+
+            cliente_nome:
+                orcamentoSelecionado.cliente ||
+                "",
+
+            arquiteto_empresa:
+                orcamentoSelecionado.arquiteto_empresa ||
+                ""
+
+        })
+    );
+
+}
 
     /*
     =================================================
@@ -1239,21 +1407,25 @@ export default function Obras() {
     =================================================
     */
 
-    function abrirNovaObra() {
+   function abrirNovaObra() {
 
-        limparRascunho();
+    limparRascunho();
 
-        setEditando(null);
+    setEditando(null);
 
-        setForm({
-            ...FORM_INICIAL
-        });
+    setOrcamentoSelecionadoId("");
 
-        setErro("");
+    setForm({
+        ...FORM_INICIAL
+    });
 
-        setModal(true);
+    setErro("");
 
-    }
+    setModal(true);
+
+    carregarOrcamentosAprovados();
+
+}
 
 
     /*
@@ -1640,6 +1812,8 @@ export default function Obras() {
 
         setEditando(null);
 
+        setOrcamentoSelecionadoId("");
+
         setForm({
             ...FORM_INICIAL
         });
@@ -1962,6 +2136,8 @@ export default function Obras() {
             setModal(false);
 
             setEditando(null);
+
+            setOrcamentoSelecionadoId("");
 
             setForm({
                 ...FORM_INICIAL
@@ -3533,42 +3709,127 @@ export default function Obras() {
                                 <div className="obras-form-grid">
 
 
-                                    <div className="obras-form-group full">
+                                   <div className="obras-form-group full">
 
-                                        <label>
+    <label>
 
-                                            Nome da obra
+        Nome da obra
 
-                                            <span>
-                                                *
-                                            </span>
+        <span>
+            *
+        </span>
 
-                                        </label>
+    </label>
 
 
-                                        <input
+    {
 
-                                            type="text"
+        editando
 
-                                            name="nome"
+            ? (
 
-                                            value={
-                                                form.nome
-                                            }
+                <input
 
-                                            onChange={
-                                                alterarCampo
-                                            }
+                    type="text"
 
-                                            placeholder="Ex.: Residência Alphaville"
+                    name="nome"
 
-                                            autoComplete="off"
+                    value={
+                        form.nome
+                    }
 
-                                            required
+                    onChange={
+                        alterarCampo
+                    }
 
-                                        />
+                    placeholder="Nome da obra"
 
-                                    </div>
+                    autoComplete="off"
+
+                    required
+
+                />
+
+            )
+
+            : (
+
+                <select
+
+                    name="orcamento_aprovado_id"
+
+                    value={
+                        orcamentoSelecionadoId
+                    }
+
+                    onChange={
+                        selecionarOrcamentoAprovado
+                    }
+
+                    required
+
+                    disabled={
+                        loadingOrcamentosAprovados
+                    }
+
+                >
+
+                    <option value="">
+
+                        {
+
+                            loadingOrcamentosAprovados
+
+                                ? "Carregando orçamentos aprovados..."
+
+                                : orcamentosAprovados.length === 0
+
+                                    ? "Nenhum orçamento aprovado disponível"
+
+                                    : "Selecione um orçamento aprovado"
+
+                        }
+
+                    </option>
+
+
+                    {
+
+                        orcamentosAprovados.map(
+
+                            orcamento => (
+
+                                <option
+
+                                    key={
+                                        orcamento.id
+                                    }
+
+                                    value={
+                                        orcamento.id
+                                    }
+
+                                >
+
+                                    {
+                                        orcamento.nome
+                                    }
+
+                                </option>
+
+                            )
+
+                        )
+
+                    }
+
+                </select>
+
+            )
+
+    }
+
+</div>
 
 
                                     <div className="obras-form-group full">
@@ -3601,64 +3862,63 @@ export default function Obras() {
                                     </div>
 
 
-                                    <div className="obras-form-group">
+                                   <div className="obras-form-group">
 
-                                        <label>
-                                            Nome do cliente
-                                        </label>
+    <label>
+        Nome do cliente
+    </label>
 
+    <input
 
-                                        <input
+        type="text"
 
-                                            type="text"
+        name="cliente_nome"
 
-                                            name="cliente_nome"
+        value={
+            form.cliente_nome
+        }
 
-                                            value={
-                                                form.cliente_nome
-                                            }
+        onChange={
+            alterarCampo
+        }
 
-                                            onChange={
-                                                alterarCampo
-                                            }
+        placeholder="Nome do cliente"
 
-                                            placeholder="Nome do cliente"
-
-                                            autoComplete="off"
-
-                                        />
-
-                                    </div>
+        autoComplete="off"
 
 
-                                    <div className="obras-form-group">
+    />
 
-                                        <label>
-                                            Arquiteto / Empresa
-                                        </label>
+</div>
+
+                                 <div className="obras-form-group">
+
+    <label>
+        Arquiteto / Empresa
+    </label>
+
+    <input
+
+        type="text"
+
+        name="arquiteto_empresa"
+
+        value={
+            form.arquiteto_empresa
+        }
+
+        onChange={
+            alterarCampo
+        }
+
+        placeholder="Nome do arquiteto ou empresa"
+
+        autoComplete="off"
 
 
-                                        <input
+    />
 
-                                            type="text"
-
-                                            name="arquiteto_empresa"
-
-                                            value={
-                                                form.arquiteto_empresa
-                                            }
-
-                                            onChange={
-                                                alterarCampo
-                                            }
-
-                                            placeholder="Nome do arquiteto ou empresa"
-
-                                            autoComplete="off"
-
-                                        />
-
-                                    </div>
+</div>
 
 
                                     <div className="obras-form-group">

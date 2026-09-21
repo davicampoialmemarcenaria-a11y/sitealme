@@ -9,7 +9,6 @@
     color: #4b2108;
 }
 
-
 /* =====================================================
    LISTA / CRUD DE ORÇAMENTOS
 ===================================================== */
@@ -363,7 +362,6 @@
     font-size: 13px;
 }
 
-
 /* =====================================================
    TOPO DO EDITOR
 ===================================================== */
@@ -456,7 +454,6 @@
     border-color: #c58d45;
     box-shadow: 0 0 0 3px rgba(211, 138, 23, .10);
 }
-
 
 /* =====================================================
    AÇÕES DO TOPO / CONTROLE DE VERSÕES
@@ -579,7 +576,6 @@
     cursor: not-allowed;
 }
 
-
 /* =====================================================
    FORMULÁRIO
 ===================================================== */
@@ -650,7 +646,6 @@
     font-size: 13px;
 }
 
-
 /* =====================================================
    HEADER DA TABELA / AMBIENTE
 ===================================================== */
@@ -679,7 +674,7 @@
     border: 1px solid #e4d9d0;
     border-radius: 15px;
     background: #fff;
-    overflow: hidden;
+    overflow: clip;
 }
 
 .orcamento-ambiente:first-of-type {
@@ -784,13 +779,72 @@
     cursor: not-allowed;
 }
 
-
 /* =====================================================
    TABELA PRINCIPAL
 ===================================================== */
 
+/* =====================================================
+   BARRA HORIZONTAL SUPERIOR DA TABELA
+===================================================== */
+
+.orcamento-scroll-superior {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+    margin: 0 0 6px;
+    padding: 0;
+
+    background: #fff;
+}
+
+.orcamento-scroll-superior-barra {
+    display: block;
+    width: 100%;
+    height: 16px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #cbb9a9 #f7f3ef;
+}
+
+.orcamento-scroll-superior-barra > div {
+    display: block;
+    height: 1px;
+    min-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.orcamento-scroll-superior-barra::-webkit-scrollbar {
+    height: 8px;
+}
+
+.orcamento-scroll-superior-barra::-webkit-scrollbar-track {
+    background: #f7f3ef;
+}
+
+.orcamento-scroll-superior-barra::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #cbb9a9;
+}
+
+.orcamento-scroll-superior-barra::-webkit-scrollbar-thumb:hover {
+    background: #ad927c;
+}
+
 .orcamento-tabela-wrapper {
     width: 100%;
+    box-sizing: border-box;
     overflow-x: auto;
     overflow-y: visible;
     scrollbar-width: thin;
@@ -862,141 +916,60 @@
     background: #fff9f1;
 }
 
-
-/* =====================================================
-   LARGURAS DAS COLUNAS EXISTENTES — 1 A 27
-===================================================== */
-
 .orcamento-tabela th:nth-child(1),
-.orcamento-tabela td:nth-child(1) {
-    width: 50px;
-}
-
+.orcamento-tabela td:nth-child(1) { width: 50px; }
 .orcamento-tabela th:nth-child(2),
-.orcamento-tabela td:nth-child(2) {
-    width: 105px;
-}
-
+.orcamento-tabela td:nth-child(2) { width: 105px; }
 .orcamento-tabela th:nth-child(3),
-.orcamento-tabela td:nth-child(3) {
-    width: 235px;
-}
-
+.orcamento-tabela td:nth-child(3) { width: 235px; }
 .orcamento-tabela th:nth-child(4),
 .orcamento-tabela td:nth-child(4),
 .orcamento-tabela th:nth-child(5),
 .orcamento-tabela td:nth-child(5),
 .orcamento-tabela th:nth-child(6),
-.orcamento-tabela td:nth-child(6) {
-    width: 105px;
-}
-
+.orcamento-tabela td:nth-child(6) { width: 105px; }
 .orcamento-tabela th:nth-child(7),
-.orcamento-tabela td:nth-child(7) {
-    width: 230px;
-}
-
+.orcamento-tabela td:nth-child(7) { width: 230px; }
 .orcamento-tabela th:nth-child(8),
-.orcamento-tabela td:nth-child(8) {
-    width: 185px;
-}
-
+.orcamento-tabela td:nth-child(8) { width: 185px; }
 .orcamento-tabela th:nth-child(9),
-.orcamento-tabela td:nth-child(9) {
-    width: 185px;
-}
-
+.orcamento-tabela td:nth-child(9) { width: 185px; }
 .orcamento-tabela th:nth-child(10),
-.orcamento-tabela td:nth-child(10) {
-    width: 80px;
-}
-
+.orcamento-tabela td:nth-child(10) { width: 80px; }
 .orcamento-tabela th:nth-child(11),
-.orcamento-tabela td:nth-child(11) {
-    width: 190px;
-}
-
+.orcamento-tabela td:nth-child(11) { width: 190px; }
 .orcamento-tabela th:nth-child(12),
-.orcamento-tabela td:nth-child(12) {
-    width: 100px;
-}
-
+.orcamento-tabela td:nth-child(12) { width: 100px; }
 .orcamento-tabela th:nth-child(13),
-.orcamento-tabela td:nth-child(13) {
-    width: 110px;
-}
-
+.orcamento-tabela td:nth-child(13) { width: 110px; }
 .orcamento-tabela th:nth-child(14),
-.orcamento-tabela td:nth-child(14) {
-    width: 130px;
-}
-
+.orcamento-tabela td:nth-child(14) { width: 130px; }
 .orcamento-tabela th:nth-child(15),
-.orcamento-tabela td:nth-child(15) {
-    width: 160px;
-}
-
+.orcamento-tabela td:nth-child(15) { width: 160px; }
 .orcamento-tabela th:nth-child(16),
-.orcamento-tabela td:nth-child(16) {
-    width: 150px;
-}
-
+.orcamento-tabela td:nth-child(16) { width: 150px; }
 .orcamento-tabela th:nth-child(17),
-.orcamento-tabela td:nth-child(17) {
-    width: 160px;
-}
-
+.orcamento-tabela td:nth-child(17) { width: 160px; }
 .orcamento-tabela th:nth-child(18),
-.orcamento-tabela td:nth-child(18) {
-    width: 220px;
-}
-
+.orcamento-tabela td:nth-child(18) { width: 220px; }
 .orcamento-tabela th:nth-child(19),
-.orcamento-tabela td:nth-child(19) {
-    width: 225px;
-}
-
+.orcamento-tabela td:nth-child(19) { width: 225px; }
 .orcamento-tabela th:nth-child(20),
-.orcamento-tabela td:nth-child(20) {
-    width: 220px;
-}
-
+.orcamento-tabela td:nth-child(20) { width: 220px; }
 .orcamento-tabela th:nth-child(21),
-.orcamento-tabela td:nth-child(21) {
-    width: 180px;
-}
-
+.orcamento-tabela td:nth-child(21) { width: 180px; }
 .orcamento-tabela th:nth-child(22),
-.orcamento-tabela td:nth-child(22) {
-    width: 220px;
-}
-
+.orcamento-tabela td:nth-child(22) { width: 220px; }
 .orcamento-tabela th:nth-child(23),
-.orcamento-tabela td:nth-child(23) {
-    width: 180px;
-}
-
+.orcamento-tabela td:nth-child(23) { width: 180px; }
 .orcamento-tabela th:nth-child(24),
-.orcamento-tabela td:nth-child(24) {
-    width: 170px;
-}
-
+.orcamento-tabela td:nth-child(24) { width: 170px; }
 .orcamento-tabela th:nth-child(25),
-.orcamento-tabela td:nth-child(25) {
-    width: 190px;
-}
-
+.orcamento-tabela td:nth-child(25) { width: 190px; }
 .orcamento-tabela th:nth-child(26),
-.orcamento-tabela td:nth-child(26) {
-    width: 160px;
-}
-
+.orcamento-tabela td:nth-child(26) { width: 160px; }
 .orcamento-tabela th:nth-child(27),
-.orcamento-tabela td:nth-child(27) {
-    width: 220px;
-    min-width: 220px;
-}
-
+.orcamento-tabela td:nth-child(27) { width: 220px; }
 
 /* =====================================================
    NOVAS COLUNAS — VERSÃO 2+
@@ -1145,7 +1118,6 @@
     color: #715f51;
 }
 
-
 /* =====================================================
    RESULTADOS
 ===================================================== */
@@ -1258,7 +1230,6 @@
     letter-spacing: .7px;
 }
 
-
 /* =====================================================
    DESCONTO / PERCENTUAIS
 ===================================================== */
@@ -1300,7 +1271,6 @@
     font-size: 9px;
     line-height: 1.35;
 }
-
 
 /* =====================================================
    LINHAS DE DETALHES
@@ -1371,7 +1341,6 @@
     color: #4b2108;
     font-size: 12px;
 }
-
 
 /* =====================================================
    LED / METALON
@@ -1477,7 +1446,6 @@
     font-size: 13px;
     font-weight: 900;
 }
-
 
 /* =====================================================
    COMPLEMENTOS
@@ -1694,7 +1662,6 @@
     white-space: nowrap;
 }
 
-
 /* =====================================================
    RODAPÉS / ESTADOS
 ===================================================== */
@@ -1728,7 +1695,6 @@
     font-size: 12px;
 }
 
-
 /* =====================================================
    ÍCONES
 ===================================================== */
@@ -1747,13 +1713,11 @@
     height: 15px;
 }
 
-
 /* =====================================================
    RESPONSIVO
 ===================================================== */
 
 @media (max-width: 1250px) {
-
     .orcamento-lista-resumo-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -1761,19 +1725,15 @@
     .orcamento-complemento-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
 }
 
 @media (max-width: 1100px) {
-
     .orcamento-form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
 }
 
 @media (max-width: 900px) {
-
     .tabela-orcamento-lista-topo,
     .tabela-orcamento-topo,
     .orcamento-tabela-header,
@@ -1844,31 +1804,9 @@
         margin-left: 0;
         justify-content: space-between;
     }
-
-    .orcamento-over-final-conteudo {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .orcamento-over-final-campo {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .orcamento-over-final-controle {
-        width: 100%;
-    }
-
-    .orcamento-over-final-controle input {
-        flex: 1;
-        width: auto;
-        min-width: 0;
-    }
-
 }
 
 @media (max-width: 700px) {
-
     .tabela-orcamento-topo {
         align-items: stretch;
         flex-direction: column;
@@ -1950,31 +1888,12 @@
     .orcamento-extra-campo small {
         white-space: normal;
     }
-
-    .orcamento-over-final-painel {
-        padding: 20px;
-        border-radius: 14px;
-    }
-
-    .orcamento-over-final-controle {
-        align-items: stretch;
-    }
-
-    .orcamento-over-final-ok {
-        min-width: 60px;
-    }
-
-    .orcamento-over-final-resumo {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
-    }
-
 }
-
 
 /* =====================================================
    CORREÇÃO DOS BOTÕES DA LISTA
+   Garante que estilos globais de button/Bootstrap não
+   substituam a aparência dos botões do orçamento.
 ===================================================== */
 
 .tabela-orcamento-lista-page .tabela-orcamento-lista-acoes > button,
@@ -1998,50 +1917,37 @@
     letter-spacing: 0;
     text-decoration: none;
     cursor: pointer;
-    transition:
-        background-color .18s ease,
-        border-color .18s ease,
-        color .18s ease,
-        box-shadow .18s ease,
-        transform .18s ease;
+    transition: background-color .18s ease,
+                border-color .18s ease,
+                color .18s ease,
+                box-shadow .18s ease,
+                transform .18s ease;
     box-shadow: none;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-.orcamento-lista-refresh {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes .orcamento-lista-refresh {
     border: 1px solid #ddd2c9 !important;
     background: #ffffff !important;
     color: #765c4a !important;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-.orcamento-lista-refresh:hover:not(:disabled) {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes .orcamento-lista-refresh:hover:not(:disabled) {
     border-color: #cbb8a7 !important;
     background: #fcfaf8 !important;
     color: #4b2108 !important;
     transform: translateY(-1px);
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-.orcamento-salvar,
-.tabela-orcamento-lista-page
-.orcamento-lista-vazia
-.orcamento-salvar {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes .orcamento-salvar,
+.tabela-orcamento-lista-page .orcamento-lista-vazia .orcamento-salvar {
     border: 1px solid #4b2108 !important;
     background: #4b2108 !important;
     color: #ffffff !important;
     box-shadow: 0 7px 18px rgba(75, 33, 8, .12) !important;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-.orcamento-salvar:hover:not(:disabled),
-.tabela-orcamento-lista-page
-.orcamento-lista-vazia
-.orcamento-salvar:hover:not(:disabled) {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes .orcamento-salvar:hover:not(:disabled),
+.tabela-orcamento-lista-page .orcamento-lista-vazia .orcamento-salvar:hover:not(:disabled) {
     border-color: #68310d !important;
     background: #68310d !important;
     color: #ffffff !important;
@@ -2049,38 +1955,25 @@
     box-shadow: 0 9px 20px rgba(75, 33, 8, .16) !important;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-button:focus-visible,
-.tabela-orcamento-lista-page
-.orcamento-lista-vazia
-button:focus-visible {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes button:focus-visible,
+.tabela-orcamento-lista-page .orcamento-lista-vazia button:focus-visible {
     outline: 2px solid #d48821;
     outline-offset: 2px;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-button:disabled,
-.tabela-orcamento-lista-page
-.orcamento-lista-vazia
-button:disabled {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes button:disabled,
+.tabela-orcamento-lista-page .orcamento-lista-vazia button:disabled {
     opacity: .55;
     cursor: not-allowed;
     transform: none;
 }
 
-.tabela-orcamento-lista-page
-.tabela-orcamento-lista-acoes
-button svg,
-.tabela-orcamento-lista-page
-.orcamento-lista-vazia
-button svg {
+.tabela-orcamento-lista-page .tabela-orcamento-lista-acoes button svg,
+.tabela-orcamento-lista-page .orcamento-lista-vazia button svg {
     width: 15px;
     height: 15px;
     flex: 0 0 auto;
 }
-
 
 /* =====================================================
    PAINEL DE TOTAIS DO ORÇAMENTO
@@ -2247,16 +2140,13 @@ button svg {
 ===================================================== */
 
 @media (max-width: 1200px) {
-
     .orcamento-totais-grid {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
     }
-
 }
 
 @media (max-width: 700px) {
-
     .orcamento-totais-painel {
         padding: 20px;
         border-radius: 14px;
@@ -2278,7 +2168,6 @@ button svg {
     .orcamento-total-card.destaque-final strong {
         font-size: 23px;
     }
-
 }
 
 
@@ -2406,7 +2295,6 @@ button svg {
 ===================================================== */
 
 @media (max-width: 700px) {
-
     .orcamento-multiplicador-painel {
         padding: 20px;
         border-radius: 14px;
@@ -2425,7 +2313,6 @@ button svg {
     .orcamento-multiplicador-campo select {
         width: 100%;
     }
-
 }
 
 
@@ -2620,7 +2507,6 @@ button svg {
 ===================================================== */
 
 @media (max-width: 900px) {
-
     .orcamento-over-final-conteudo {
         align-items: stretch;
         flex-direction: column;
@@ -2640,11 +2526,9 @@ button svg {
         width: auto;
         min-width: 0;
     }
-
 }
 
 @media (max-width: 700px) {
-
     .orcamento-over-final-painel {
         padding: 20px;
         border-radius: 14px;
@@ -2663,5 +2547,4 @@ button svg {
         flex-direction: column;
         gap: 8px;
     }
-
 }

@@ -54,6 +54,53 @@ const MAX_LED = 5;
 
 const MAX_METALON = 30;
 
+const OBSERVACOES_PADRAO = `
+Os internos dos móveis são considerados em MDF Branco Tx, exceto quando mencionados na descrição algo diferente. No caso de móveis em que o interno é aparente, como quando contém portas de vidro e portas vazadas, o interno é considerado o mesmo MDF externo.
+
+Todas as ferragens (corrediças e dobradiças) são da marca HÄFELE com sistema de amortecimento, e no caso das gavetas, as corrediças são ocultas. Material em MDF. Caixaria interna de 15mm; Tamponamento de 30mm a 36mm e portas de 18mm. Canto 45° para os itens condizentes.
+
+Quaisquer alterações nos materiais descritos nos itens, como escolhas diferentes de MDF, outras ferragens, alterações em estruturas metálicas, alterações em medidas, podem ocasionar mudança no valor total do projeto.
+
+Atrasos nas liberações de medições podem gerar acréscimo no prazo final de entrega do projeto.
+`.trim();
+
+const obterCronogramaObservacoes = valorTotal => {
+
+    const total =
+        numberValue(valorTotal);
+
+    if (total <= 50000) {
+
+        return `60 Dias da assinatura
+Assinatura em "D0"
+Liberação de medição de pé direito - Forro/Piso em "D15"
+Liberação de medição da marmoraria - Bancadas em "D30"`;
+
+    }
+
+    if (total <= 130000) {
+
+        return `75 Dias da assinatura
+Assinatura em "D0"
+Liberação de medição de pé direito - Forro/Piso em "D15"
+Liberação de medição da marmoraria - Bancadas em "D40"`;
+
+    }
+
+    return `90 Dias da assinatura
+Assinatura em "D0"
+Liberação de medição de pé direito - Forro/Piso em "D15"
+Liberação de medição da marmoraria - Bancadas em "D50"`;
+
+};
+
+const gerarObservacoesPadrao = valorTotal => {
+
+    return `${OBSERVACOES_PADRAO}
+
+${obterCronogramaObservacoes(valorTotal)}`;
+
+};
 
 /*
 =====================================================
@@ -773,11 +820,14 @@ const [
         cliente:
             "",
 
+             arquiteto_empresa:
+        "",
+
         status:
             "rascunho",
 
         observacoes:
-            ""
+            gerarObservacoesPadrao(0)
 
     });
 
@@ -867,6 +917,18 @@ const [
         setErroBase
     ] = useState("");
 
+
+/*
+=====================================================
+SCROLL HORIZONTAL DA TABELA
+=====================================================
+*/
+
+/*
+    A tabela possui um scroll próprio por ambiente.
+    A barra superior de cada ambiente é sincronizada
+    exclusivamente com a tabela daquele mesmo ambiente.
+*/
 
     /*
     =================================================
@@ -1729,6 +1791,155 @@ useEffect(() => {
     orcamentoId,
     versaoId
 ]);
+/*
+=====================================================
+SCROLL HORIZONTAL SUPERIOR — POR AMBIENTE
+=====================================================
+*/
+
+useEffect(() => {
+
+    const atualizarLargurasBarras =
+        () => {
+
+            const ambientesElements =
+                document.querySelectorAll(
+                    ".orcamento-ambiente"
+                );
+
+            ambientesElements.forEach(
+                ambienteElement => {
+
+                    const tabelaWrapper =
+                        ambienteElement.querySelector(
+                            ".orcamento-tabela-wrapper"
+                        );
+
+                    const barraConteudo =
+                        ambienteElement.querySelector(
+                            ".orcamento-scroll-superior-conteudo"
+                        );
+
+                    if (
+                        !tabelaWrapper ||
+                        !barraConteudo
+                    ) {
+                        return;
+                    }
+
+                    barraConteudo.style.width =
+                        `${tabelaWrapper.scrollWidth}px`;
+
+                }
+            );
+
+        };
+
+
+    const frame =
+        requestAnimationFrame(
+            atualizarLargurasBarras
+        );
+
+
+    window.addEventListener(
+        "resize",
+        atualizarLargurasBarras
+    );
+
+
+    return () => {
+
+        cancelAnimationFrame(
+            frame
+        );
+
+        window.removeEventListener(
+            "resize",
+            atualizarLargurasBarras
+        );
+
+    };
+
+}, [
+    ambientes,
+    versaoAtual,
+    overFinalAplicado
+]);
+
+
+/*
+=====================================================
+BARRA SUPERIOR → TABELA
+=====================================================
+*/
+
+function sincronizarScrollSuperiorOrcamento(
+    event
+) {
+
+    const barra =
+        event.currentTarget;
+
+    const ambiente =
+        barra.closest(
+            ".orcamento-ambiente"
+        );
+
+    if (!ambiente) {
+        return;
+    }
+
+    const tabela =
+        ambiente.querySelector(
+            ".orcamento-tabela-wrapper"
+        );
+
+    if (!tabela) {
+        return;
+    }
+
+    tabela.scrollLeft =
+        barra.scrollLeft;
+
+}
+
+
+/*
+=====================================================
+TABELA → BARRA SUPERIOR
+=====================================================
+*/
+
+function sincronizarScrollTabelaOrcamento(
+    event
+) {
+
+    const tabela =
+        event.currentTarget;
+
+    const ambiente =
+        tabela.closest(
+            ".orcamento-ambiente"
+        );
+
+    if (!ambiente) {
+        return;
+    }
+
+    const barra =
+        ambiente.querySelector(
+            ".orcamento-scroll-superior-barra"
+        );
+
+    if (!barra) {
+        return;
+    }
+
+    barra.scrollLeft =
+        tabela.scrollLeft;
+
+}
     /*
     =================================================
     NORMALIZAR STATUS
@@ -1951,11 +2162,11 @@ useEffect(() => {
             });
 
             setOrcamento({
-                nome: quote.nome || "",
-                cliente: quote.cliente || "",
-                status: quote.status || "rascunho",
-                observacoes: quote.observacoes || ""
-            });
+    nome: quote.nome || "",
+    cliente: quote.cliente || "",
+    status: quote.status || "rascunho",
+    observacoes: quote.observacoes || OBSERVACOES_PADRAO
+});
 
             setAmbientes(
                 (ambientesResult.data || []).map(row => ({
@@ -2032,12 +2243,13 @@ try {
                 dados.orcamento || {
                     nome: quote.nome || "",
                     cliente: quote.cliente || "",
+                    cliente: quote.cliente || "",
                     status:
                         quote.status ||
                         "rascunho",
                     observacoes:
                         quote.observacoes ||
-                        ""
+                        gerarObservacoesPadrao(0)
                 }
             );
 
@@ -2156,8 +2368,9 @@ setOverFinalAplicado(false);
     setOrcamento({
         nome: "",
         cliente: "",
+        arquiteto_empresa: "",
         status: "rascunho",
-        observacoes: ""
+        observacoes: gerarObservacoesPadrao(0)
     });
 
     setAmbientes([
@@ -4620,7 +4833,103 @@ const totaisOverFinal = useMemo(() => {
     totaisColunas
 ]);
 
+/*
+=================================================
+VALOR BASE PARA O CRONOGRAMA DAS OBSERVAÇÕES
+=================================================
 
+Quando o Over Final estiver aplicado:
+    usa Soma de todos preço final de todos.
+
+Quando o Over Final não estiver aplicado:
+    usa Soma de todos Valor com RT arredondado.
+=================================================
+*/
+
+const valorBaseCronogramaObservacoes =
+    overFinalAplicado &&
+    numberValue(
+        totaisOverFinal.precoFinalTodos
+    ) > 0
+        ? numberValue(
+            totaisOverFinal.precoFinalTodos
+        )
+        : numberValue(
+            totaisColunas
+                .valorComRtArredondado
+        );
+
+        /*
+=================================================
+ATUALIZAR CRONOGRAMA DAS OBSERVAÇÕES
+=================================================
+*/
+
+useEffect(() => {
+
+    const novoCronograma =
+        obterCronogramaObservacoes(
+            valorBaseCronogramaObservacoes
+        );
+
+    const marcador =
+        "Atrasos nas liberações de medições podem gerar acréscimo no prazo final de entrega do projeto.";
+
+    setOrcamento(atual => {
+
+        const textoAtual =
+            atual.observacoes || "";
+
+        const posicaoMarcador =
+            textoAtual.indexOf(
+                marcador
+            );
+
+        if (
+            posicaoMarcador === -1
+        ) {
+
+            return atual;
+
+        }
+
+        const textoFixo =
+            textoAtual
+                .slice(
+                    0,
+                    posicaoMarcador +
+                    marcador.length
+                )
+                .trimEnd();
+
+        const novoTexto =
+            `${textoFixo}
+
+${novoCronograma}`;
+
+        if (
+            textoAtual ===
+            novoTexto
+        ) {
+
+            return atual;
+
+        }
+
+        return {
+
+            ...atual,
+
+            observacoes:
+                novoTexto
+
+        };
+
+    });
+
+}, [
+    valorBaseCronogramaObservacoes
+]);
 
     /*
     =================================================
@@ -5860,6 +6169,7 @@ const totaisOverFinal = useMemo(() => {
                             codigo: code,
                             nome: orcamento.nome.trim(),
                             cliente: orcamento.cliente || null,
+                            arquiteto_empresa: orcamento.arquiteto_empresa || null,
                             observacoes: orcamento.observacoes || null,
                             status: statusValue(orcamento.status),
                             versao_atual: 1,
@@ -5881,6 +6191,7 @@ const totaisOverFinal = useMemo(() => {
                         .update({
                             nome: orcamento.nome.trim(),
                             cliente: orcamento.cliente || null,
+                            arquiteto_empresa: orcamento.arquiteto_empresa || null,
                             observacoes: orcamento.observacoes || null,
                             status: statusValue(orcamento.status)
                         })
@@ -6916,7 +7227,7 @@ sessionStorage.removeItem(
 
                         <input
                             type="text"
-                            placeholder="Ex.: Residência Campoi"
+                            placeholder="Ex: ESTRADA TOCANTINS, 595, JARDIM ESTANCIA BRASIL, ATIBAIA - RMV JOICE BRITO"
                             value={
                                 orcamento.nome
                             }
@@ -6954,6 +7265,28 @@ sessionStorage.removeItem(
                         />
 
                     </div>
+                    <div className="orcamento-field">
+
+    <label>
+        Arquiteto / Empresa
+    </label>
+
+    <input
+        type="text"
+        placeholder="Nome do arquiteto ou empresa"
+        value={
+            orcamento.arquiteto_empresa
+        }
+        onChange={
+            event =>
+                atualizarCampo(
+                    "arquiteto_empresa",
+                    event.target.value
+                )
+        }
+    />
+
+</div>
 
 
                     <div className="orcamento-field">
@@ -7174,13 +7507,42 @@ sessionStorage.removeItem(
                                 </div>
 
 
-                                {/* =================================================
-                                    TABELA
-                                ================================================= */}
+{/* =================================================
+    BARRA HORIZONTAL SUPERIOR
+================================================= */}
 
-                                <div className="orcamento-tabela-wrapper">
+<div
+    className="orcamento-scroll-superior"
+>
 
-                                    <table className="orcamento-tabela">
+    <div
+        className="orcamento-scroll-superior-barra"
+        onScroll={
+            sincronizarScrollSuperiorOrcamento
+        }
+    >
+
+        <div
+            className="orcamento-scroll-superior-conteudo"
+        />
+
+    </div>
+
+</div>
+
+
+{/* =================================================
+    TABELA
+================================================= */}
+
+<div
+    className="orcamento-tabela-wrapper"
+    onScroll={
+        sincronizarScrollTabelaOrcamento
+    }
+>
+
+    <table className="orcamento-tabela">
 
                                         <thead>
 
