@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { jsPDF } from "jspdf";
 
+import { supabase } from "../../../services/supabase";
+
 import "./Estoque.scss";
 
 import {
@@ -18,6 +20,159 @@ import {
   editarSaidaItem,
   excluirSaida,
 } from "./services/estoqueService";
+
+const ESTOQUE_DRAFT_KEYS = {
+  produto: "alme-estoque-form-produto",
+  entrada: "alme-estoque-form-entrada",
+  saida: "alme-estoque-form-saida",
+  devolucao: "alme-estoque-form-devolucao",
+};
+
+const formProdutoInicial = {
+  nome: "",
+  sku: "",
+  codigoAlme: "",
+  valorUnitario: "",
+  preco: "",
+};
+
+const formEntradaInicial = {
+  produtoId: "",
+  obraId: "",
+  nfEntrada: "",
+  nomeItem: "",
+  sku: "",
+  codigoAlme: "",
+  quantidade: "",
+  valorUnitario: "",
+  valorTotal: "",
+  valorUnitarioFinal: "",
+  preco: "",
+};
+
+const formSaidaInicial = {
+  produtoId: "",
+  obraId: "",
+  quantidade: "",
+  solicitante: "",
+};
+
+const formDevolucaoInicial = {
+  obraId: "",
+  saidaItemId: "",
+  saidaId: "",
+  produtoId: "",
+  itemNome: "",
+  sku: "",
+  quantidadeRetirada: "",
+  quantidadeJaDevolvida: "",
+  quantidadeDisponivel: "",
+  solicitante: "",
+  valorRetirada: "",
+  precoUnitario: "",
+  quantidadeDevolvida: "",
+  valorDevolvido: "",
+};
+
+function lerRascunhoEstoque(chave, inicial) {
+  if (typeof window === "undefined") {
+    return { ...inicial };
+  }
+
+  try {
+    const salvo = window.sessionStorage.getItem(chave);
+
+    if (!salvo) {
+      return { ...inicial };
+    }
+
+    const parsed = JSON.parse(salvo);
+
+    if (!parsed || typeof parsed !== "object") {
+      return { ...inicial };
+    }
+
+    return {
+      ...inicial,
+      ...parsed,
+    };
+  } catch (error) {
+    console.warn(
+      "Não foi possível recuperar o rascunho do estoque:",
+      error
+    );
+
+    return { ...inicial };
+  }
+}
+
+function salvarRascunhoEstoque(chave, formulario) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const temConteudo = Object.values(formulario || {}).some(
+      (valor) =>
+        valor !== null &&
+        valor !== undefined &&
+        String(valor).trim() !== ""
+    );
+
+    if (!temConteudo) {
+      window.sessionStorage.removeItem(chave);
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      chave,
+      JSON.stringify(formulario)
+    );
+  } catch (error) {
+    console.warn(
+      "Não foi possível salvar o rascunho do estoque:",
+      error
+    );
+  }
+}
+
+function limparRascunhoEstoque(chave) {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(chave);
+  } catch (error) {
+    console.warn(
+      "Não foi possível limpar o rascunho do estoque:",
+      error
+    );
+  }
+}
+
+function calcularValorDevolucao({
+  quantidadeRetirada,
+  valorRetirada,
+  quantidadeDevolvida,
+}) {
+  const retirada = Number(quantidadeRetirada || 0);
+  const valor = Number(valorRetirada || 0);
+  const devolvida = Number(quantidadeDevolvida || 0);
+
+  if (
+    !Number.isFinite(retirada) ||
+    retirada <= 0 ||
+    !Number.isFinite(valor) ||
+    valor < 0 ||
+    !Number.isFinite(devolvida) ||
+    devolvida <= 0
+  ) {
+    return 0;
+  }
+
+  const calculado = (devolvida / retirada) * valor;
+
+  return Math.round(
+    (calculado + Number.EPSILON) * 100
+  ) / 100;
+}
 
 export default function Estoque() {
   // =====================================================
@@ -41,6 +196,23 @@ export default function Estoque() {
   const [saidas, setSaidas] = useState([]);
   const [ultimasSaidas, setUltimasSaidas] = useState([]);
 
+  // Obras cadastradas na Produção
+  const [obras, setObras] = useState([]);
+  const [loadingObras, setLoadingObras] = useState(false);
+
+  // Devoluções cadastradas no estoque
+  const [devolucoes, setDevolucoes] = useState([]);
+  const [modalDevolucao, setModalDevolucao] = useState(false);
+  const [salvandoDevolucao, setSalvandoDevolucao] = useState(false);
+  const [erroDevolucao, setErroDevolucao] = useState("");
+
+  const [formDevolucao, setFormDevolucao] = useState(() =>
+    lerRascunhoEstoque(
+      ESTOQUE_DRAFT_KEYS.devolucao,
+      formDevolucaoInicial
+    )
+  );
+
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
@@ -53,13 +225,12 @@ export default function Estoque() {
   const [salvandoProduto, setSalvandoProduto] = useState(false);
   const [erroProduto, setErroProduto] = useState("");
 
-  const [formProduto, setFormProduto] = useState({
-    nome: "",
-    sku: "",
-    codigoAlme: "",
-    valorUnitario: "",
-    preco: "",
-  });
+  const [formProduto, setFormProduto] = useState(() =>
+    lerRascunhoEstoque(
+      ESTOQUE_DRAFT_KEYS.produto,
+      formProdutoInicial
+    )
+  );
 
   // =====================================================
   // MODAL ENTRADA
@@ -70,18 +241,12 @@ export default function Estoque() {
   const [salvandoEntrada, setSalvandoEntrada] = useState(false);
   const [erroEntrada, setErroEntrada] = useState("");
 
-  const [formEntrada, setFormEntrada] = useState({
-    produtoId: "",
-    nfEntrada: "",
-    nomeItem: "",
-    sku: "",
-    codigoAlme: "",
-    quantidade: "",
-    valorUnitario: "",
-    valorTotal: "",
-    valorUnitarioFinal: "",
-    preco: "",
-  });
+  const [formEntrada, setFormEntrada] = useState(() =>
+    lerRascunhoEstoque(
+      ESTOQUE_DRAFT_KEYS.entrada,
+      formEntradaInicial
+    )
+  );
 
   // =====================================================
   // MODAL SAÍDA
@@ -92,11 +257,12 @@ export default function Estoque() {
   const [salvandoSaida, setSalvandoSaida] = useState(false);
   const [erroSaida, setErroSaida] = useState("");
 
-  const [formSaida, setFormSaida] = useState({
-    produtoId: "",
-    quantidade: "",
-    solicitante: "",
-  });
+  const [formSaida, setFormSaida] = useState(() =>
+    lerRascunhoEstoque(
+      ESTOQUE_DRAFT_KEYS.saida,
+      formSaidaInicial
+    )
+  );
 
   // =====================================================
   // MODAL DE CONFIRMAÇÃO
@@ -197,6 +363,19 @@ export default function Estoque() {
   // CARREGAR DADOS
   // =====================================================
 
+  async function listarDevolucoes() {
+    const { data, error } = await supabase
+      .from("estoque_devolucoes")
+      .select("*")
+      .order("id", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
   async function carregarDados() {
     try {
       setLoading(true);
@@ -207,17 +386,20 @@ export default function Estoque() {
         entradasData,
         saidasData,
         ultimasData,
+        devolucoesData,
       ] = await Promise.all([
         listarProdutos(),
         listarEntradas(),
         listarSaidas(),
         listarUltimasSaidas(),
+        listarDevolucoes(),
       ]);
 
       setProdutos(produtosData || []);
       setEntradas(entradasData || []);
       setSaidas(saidasData || []);
       setUltimasSaidas(ultimasData || []);
+      setDevolucoes(devolucoesData || []);
     } catch (error) {
       console.error(
         "Erro ao carregar estoque:",
@@ -233,8 +415,88 @@ export default function Estoque() {
     }
   }
 
+  async function carregarObras() {
+    try {
+      setLoadingObras(true);
+
+      const { data, error } = await supabase.functions.invoke(
+        "admin-obras",
+        {
+          body: {
+            action: "list",
+          },
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      const lista = Array.isArray(data?.obras)
+        ? data.obras
+        : [];
+
+      // Usa TODAS as obras que já existem na Produção.
+      // O filtro de obras concluídas é feito apenas na tela de Produção;
+      // aqui precisamos manter também o histórico para os movimentos do estoque.
+      const listaOrdenada = [...lista].sort((a, b) =>
+        String(a?.nome || "").localeCompare(
+          String(b?.nome || ""),
+          "pt-BR",
+          { sensitivity: "base" }
+        )
+      );
+
+      setObras(listaOrdenada);
+    } catch (error) {
+      console.error("Erro ao carregar obras da Produção:", error);
+      setObras([]);
+    } finally {
+      setLoadingObras(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!produtoEditando) {
+      salvarRascunhoEstoque(
+        ESTOQUE_DRAFT_KEYS.produto,
+        formProduto
+      );
+    }
+  }, [formProduto, produtoEditando]);
+
+  useEffect(() => {
+    if (!entradaEditando) {
+      salvarRascunhoEstoque(
+        ESTOQUE_DRAFT_KEYS.entrada,
+        formEntrada
+      );
+    }
+  }, [formEntrada, entradaEditando]);
+
+  useEffect(() => {
+    if (!saidaEditando) {
+      salvarRascunhoEstoque(
+        ESTOQUE_DRAFT_KEYS.saida,
+        formSaida
+      );
+    }
+  }, [formSaida, saidaEditando]);
+
+  useEffect(() => {
+    salvarRascunhoEstoque(
+      ESTOQUE_DRAFT_KEYS.devolucao,
+      formDevolucao
+    );
+  }, [formDevolucao]);
+
   useEffect(() => {
     carregarDados();
+    carregarObras();
   }, []);
 
   // =====================================================
@@ -315,25 +577,154 @@ export default function Estoque() {
   }, [ultimasSaidas, filtroProduto]);
 
   // =====================================================
+  // DEVOLUÇÕES — QUANTIDADE JÁ DEVOLVIDA POR ITEM
+  // =====================================================
+
+  const devolucoesPorItem = useMemo(() => {
+    const mapa = {};
+
+    (devolucoes || []).forEach((devolucao) => {
+      const itemId = String(devolucao?.saida_item_id || "");
+
+      if (!itemId) return;
+
+      mapa[itemId] =
+        Number(mapa[itemId] || 0) +
+        Number(devolucao?.quantidade_devolvida || 0);
+    });
+
+    return mapa;
+  }, [devolucoes]);
+
+  // =====================================================
+  // DEVOLUÇÕES — ITENS DAS SAÍDAS DISPONÍVEIS
+  // =====================================================
+
+  const itensSaidasDevolucao = useMemo(() => {
+    const itens = [];
+
+    (saidas || []).forEach((saida) => {
+      const itensSaida =
+        saida?.estoque_saida_itens || [];
+
+      itensSaida.forEach((item) => {
+        const produto = produtos.find(
+          (produtoAtual) =>
+            String(produtoAtual?.id) ===
+            String(item?.produto_id)
+        );
+
+        const quantidadeRetirada = Number(
+          item?.quantidade || 0
+        );
+
+        const quantidadeJaDevolvida = Number(
+          devolucoesPorItem[String(item?.id)] || 0
+        );
+
+        const quantidadeDisponivel = Math.max(
+          0,
+          quantidadeRetirada - quantidadeJaDevolvida
+        );
+
+        const precoUnitario = Number(
+          item?.preco_unitario ??
+          item?.preco ??
+          produto?.preco ??
+          0
+        );
+
+        const valorRetirada = Number(
+          item?.valor_total ??
+          quantidadeRetirada * precoUnitario
+        );
+
+        itens.push({
+          saidaId: saida?.id,
+          saidaItemId: item?.id,
+          obraId: saida?.obra_id ?? null,
+          dataSaida: saida?.data_saida,
+          produtoId: item?.produto_id,
+          itemNome:
+            produto?.nome ||
+            item?.nome ||
+            "Produto não informado",
+          sku:
+            produto?.sku ||
+            item?.sku ||
+            "-",
+          quantidadeRetirada,
+          quantidadeJaDevolvida,
+          quantidadeDisponivel,
+          solicitante:
+            saida?.solicitante ||
+            "-",
+          precoUnitario,
+          valorRetirada,
+          precoUnitario,
+        });
+      });
+    });
+
+    return itens
+      .filter(
+        (item) =>
+          Number(item.quantidadeDisponivel || 0) > 0
+      )
+      .sort((a, b) => {
+        const dataA =
+          new Date(a.dataSaida || 0).getTime() || 0;
+        const dataB =
+          new Date(b.dataSaida || 0).getTime() || 0;
+
+        if (dataA !== dataB) {
+          return dataB - dataA;
+        }
+
+        return Number(b.saidaId || 0) - Number(a.saidaId || 0);
+      });
+  }, [saidas, produtos, devolucoesPorItem]);
+
+  const saidasDevolucaoFiltradas = useMemo(() => {
+    const obraSelecionada = formDevolucao.obraId;
+
+    const chaveObra = obraSelecionada
+      ? String(obraSelecionada)
+      : "";
+
+    return itensSaidasDevolucao.filter((item) => {
+      const chaveItem = item.obraId
+        ? String(item.obraId)
+        : "";
+
+      return chaveItem === chaveObra;
+    });
+  }, [itensSaidasDevolucao, formDevolucao.obraId]);
+
+  const saidaItemSelecionadoDevolucao = useMemo(() => {
+    if (!formDevolucao.saidaItemId) return null;
+
+    return (
+      itensSaidasDevolucao.find(
+        (item) =>
+          String(item.saidaItemId) ===
+          String(formDevolucao.saidaItemId)
+      ) || null
+    );
+  }, [itensSaidasDevolucao, formDevolucao.saidaItemId]);
+
+  // =====================================================
   // PRODUTO
   // =====================================================
 
   function abrirNovoProduto() {
     setProdutoEditando(null);
-
-    setFormProduto({
-      nome: "",
-      sku: "",
-      codigoAlme: "",
-      valorUnitario: "",
-      preco: "",
-    });
-
     setErroProduto("");
     setModalProduto(true);
   }
 
   function abrirEditarProduto(produto) {
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.produto);
     setProdutoEditando(produto);
 
     setFormProduto({
@@ -356,13 +747,8 @@ export default function Estoque() {
     setProdutoEditando(null);
     setErroProduto("");
 
-    setFormProduto({
-      nome: "",
-      sku: "",
-      codigoAlme: "",
-      valorUnitario: "",
-      preco: "",
-    });
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.produto);
+    setFormProduto({ ...formProdutoInicial });
   }
 
   function alterarProduto(campo, valor) {
@@ -470,34 +856,26 @@ export default function Estoque() {
   // =====================================================
 
   function limparFormEntrada() {
-    setFormEntrada({
-      produtoId: "",
-      nfEntrada: "",
-      nomeItem: "",
-      sku: "",
-      codigoAlme: "",
-      quantidade: "",
-      valorUnitario: "",
-      valorTotal: "",
-      valorUnitarioFinal: "",
-      preco: "",
-    });
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.entrada);
+    setFormEntrada({ ...formEntradaInicial });
   }
 
   function abrirNovaEntrada() {
     setEntradaEditando(null);
-    limparFormEntrada();
 
     setErroEntrada("");
     setModalEntrada(true);
   }
 
   function abrirEditarEntrada(entrada) {
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.entrada);
     setEntradaEditando(entrada);
 
     setFormEntrada({
       produtoId:
         entrada?.produto_id ?? "",
+      obraId:
+        entrada?.obra_id ?? "",
       nfEntrada:
         entrada?.nf_entrada ?? "",
       nomeItem:
@@ -692,6 +1070,11 @@ export default function Estoque() {
           formEntrada.produtoId
         ),
 
+        // Vazio = ALME ESTOQUE (obra_id NULL)
+        obraId: formEntrada.obraId
+          ? Number(formEntrada.obraId)
+          : null,
+
         // NF agora sempre será enviada
         nfEntrada,
 
@@ -725,6 +1108,33 @@ export default function Estoque() {
       } else {
         await criarEntrada(dadosEntrada);
       }
+
+      // =================================================
+      // PDF DA ENTRADA
+      // =================================================
+
+      const hoje = new Date();
+
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const dia = String(hoje.getDate()).padStart(2, "0");
+
+      const dataEntrada = `${ano}-${mes}-${dia}`;
+
+      gerarPdfEntrada({
+        dataEntrada,
+        entradaId: entradaEditando?.id || null,
+        obra: nomeObraPorId(dadosEntrada.obraId),
+        nfEntrada,
+        nomeItem: dadosEntrada.nomeItem,
+        sku: dadosEntrada.sku,
+        codigoAlme: dadosEntrada.codigoAlme,
+        quantidade,
+        valorUnitario,
+        valorTotal,
+        valorUnitarioFinal,
+        preco: Number(formEntrada.preco || 0),
+      });
 
       await carregarDados();
 
@@ -776,16 +1186,12 @@ export default function Estoque() {
   // =====================================================
 
   function limparFormSaida() {
-    setFormSaida({
-      produtoId: "",
-      quantidade: "",
-      solicitante: "",
-    });
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.saida);
+    setFormSaida({ ...formSaidaInicial });
   }
 
   function abrirNovaSaida() {
     setSaidaEditando(null);
-    limparFormSaida();
 
     setErroSaida("");
     setModalSaida(true);
@@ -815,6 +1221,8 @@ export default function Estoque() {
     saida,
     item = null
   ) {
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.saida);
+
     const itens =
       saida?.estoque_saida_itens || [];
 
@@ -838,6 +1246,9 @@ export default function Estoque() {
     setFormSaida({
       produtoId:
         itemSelecionado.produto_id ??
+        "",
+      obraId:
+        saida?.obra_id ??
         "",
       quantidade:
         itemSelecionado.quantidade ??
@@ -938,6 +1349,10 @@ export default function Estoque() {
             produtoId: Number(
               formSaida.produtoId
             ),
+            // Vazio = ALME ESTOQUE (obra_id NULL)
+            obraId: formSaida.obraId
+              ? Number(formSaida.obraId)
+              : null,
             quantidade,
             solicitante,
             precoUnitario,
@@ -978,6 +1393,7 @@ export default function Estoque() {
           saidaId,
           dataSaida,
           solicitante,
+          obra: nomeObraPorId(formSaida.obraId),
           produto,
           quantidade,
           precoUnitario,
@@ -994,6 +1410,49 @@ export default function Estoque() {
           itemId:
             saidaEditando.itemId,
           quantidade,
+          // Mantém a obra referente da saída.
+          // O service deve persistir obraId no registro pai.
+          obraId: formSaida.obraId
+            ? Number(formSaida.obraId)
+            : null,
+        });
+
+        // =================================================
+        // PDF DA SAÍDA EDITADA
+        // =================================================
+
+        const hoje = new Date();
+
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+        const dia = String(hoje.getDate()).padStart(2, "0");
+
+        const dataSaida = `${ano}-${mes}-${dia}`;
+
+        const solicitante = String(
+          formSaida.solicitante ||
+          saidaEditando?.solicitante ||
+          ""
+        ).trim();
+
+        const precoUnitario = Number(
+          saidaEditando?.itemOriginal?.preco_unitario ??
+            saidaEditando?.itemOriginal?.preco ??
+            produto?.preco ??
+            0
+        );
+
+        const valorTotal = quantidade * precoUnitario;
+
+        gerarPdfSaida({
+          saidaId: saidaEditando.id,
+          dataSaida,
+          solicitante,
+          obra: nomeObraPorId(formSaida.obraId),
+          produto,
+          quantidade,
+          precoUnitario,
+          valorTotal,
         });
 
         await carregarDados();
@@ -1015,6 +1474,535 @@ export default function Estoque() {
     }
   }
 
+  // =====================================================
+  // DEVOLUÇÃO
+  // =====================================================
+
+  function limparFormDevolucao() {
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.devolucao);
+    setFormDevolucao({ ...formDevolucaoInicial });
+  }
+
+  function abrirNovaDevolucao() {
+    setErroDevolucao("");
+    setModalDevolucao(true);
+  }
+
+  function fecharModalDevolucao() {
+    if (salvandoDevolucao) return;
+
+    setModalDevolucao(false);
+    setErroDevolucao("");
+    limparFormDevolucao();
+  }
+
+  function alterarDevolucao(campo, valor) {
+    setFormDevolucao((prev) => {
+      const proximo = {
+        ...prev,
+        [campo]: valor,
+      };
+
+      if (campo === "quantidadeDevolvida") {
+        const valorCalculado = calcularValorDevolucao({
+          quantidadeRetirada: prev.quantidadeRetirada,
+          valorRetirada: prev.valorRetirada,
+          quantidadeDevolvida: valor,
+        });
+
+        proximo.valorDevolvido = valorCalculado.toFixed(2);
+      }
+
+      return proximo;
+    });
+  }
+
+  function selecionarObraDevolucao(valor) {
+    setFormDevolucao({
+      ...formDevolucaoInicial,
+      obraId: valor,
+    });
+
+    setErroDevolucao("");
+  }
+
+  function selecionarSaidaDevolucao(saidaItemId) {
+    const registro = itensSaidasDevolucao.find(
+      (item) =>
+        String(item.saidaItemId) ===
+        String(saidaItemId)
+    );
+
+    if (!registro) {
+      setFormDevolucao((prev) => ({
+        ...formDevolucaoInicial,
+        obraId: prev.obraId,
+      }));
+
+      return;
+    }
+
+    setFormDevolucao((prev) => ({
+      ...prev,
+      obraId:
+        registro.obraId != null
+          ? String(registro.obraId)
+          : "",
+      saidaItemId: registro.saidaItemId,
+      saidaId: registro.saidaId,
+      produtoId: registro.produtoId,
+      itemNome: registro.itemNome,
+      sku: registro.sku,
+      quantidadeRetirada:
+        registro.quantidadeRetirada,
+      quantidadeJaDevolvida:
+        registro.quantidadeJaDevolvida,
+      quantidadeDisponivel:
+        registro.quantidadeDisponivel,
+      solicitante: registro.solicitante,
+      valorRetirada: registro.valorRetirada,
+      precoUnitario: registro.precoUnitario,
+      quantidadeDevolvida: "",
+      valorDevolvido: "",
+    }));
+
+    setErroDevolucao("");
+  }
+
+  const valorDevolvidoCalculado = useMemo(() => {
+    return calcularValorDevolucao({
+      quantidadeRetirada: formDevolucao.quantidadeRetirada,
+      valorRetirada: formDevolucao.valorRetirada,
+      quantidadeDevolvida: formDevolucao.quantidadeDevolvida,
+    });
+  }, [
+    formDevolucao.quantidadeRetirada,
+    formDevolucao.valorRetirada,
+    formDevolucao.quantidadeDevolvida,
+  ]);
+
+  async function salvarDevolucao(event) {
+    event.preventDefault();
+
+    try {
+      setSalvandoDevolucao(true);
+      setErroDevolucao("");
+
+      if (!formDevolucao.saidaItemId) {
+        throw new Error(
+          "Selecione a saída referente."
+        );
+      }
+
+      const registro = itensSaidasDevolucao.find(
+        (item) =>
+          String(item.saidaItemId) ===
+          String(formDevolucao.saidaItemId)
+      );
+
+      if (!registro) {
+        throw new Error(
+          "A saída selecionada não está mais disponível para devolução."
+        );
+      }
+
+      const quantidadeDevolvida = Number(
+        formDevolucao.quantidadeDevolvida || 0
+      );
+
+      if (
+        !Number.isFinite(quantidadeDevolvida) ||
+        quantidadeDevolvida <= 0
+      ) {
+        throw new Error(
+          "Informe uma quantidade devolvida maior que zero."
+        );
+      }
+
+      if (
+        quantidadeDevolvida >
+        Number(registro.quantidadeDisponivel || 0)
+      ) {
+        throw new Error(
+          `A quantidade máxima disponível para devolução é ${Number(
+            registro.quantidadeDisponivel || 0
+          ).toLocaleString("pt-BR")}.`
+        );
+      }
+
+      const valorDevolvido =
+        valorDevolvidoCalculado;
+
+      if (
+        !Number.isFinite(valorDevolvido) ||
+        valorDevolvido < 0
+      ) {
+        throw new Error(
+          "Não foi possível calcular o valor da devolução."
+        );
+      }
+
+      const { data, error } = await supabase
+        .from("estoque_devolucoes")
+        .insert({
+          obra_id: registro.obraId
+            ? Number(registro.obraId)
+            : null,
+          saida_id: Number(registro.saidaId),
+          saida_item_id: Number(registro.saidaItemId),
+          produto_id: Number(registro.produtoId),
+          item_nome: registro.itemNome || null,
+          sku: registro.sku || null,
+          quantidade_retirada:
+            Number(registro.quantidadeRetirada || 0),
+          solicitante: registro.solicitante || null,
+          valor_retirada:
+            Number(registro.valorRetirada || 0),
+          quantidade_devolvida: quantidadeDevolvida,
+          valor_devolvido: valorDevolvido,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      gerarPdfDevolucao({
+        devolucaoId: data?.id,
+        dataDevolucao:
+          data?.data_devolucao ||
+          new Date().toISOString().slice(0, 10),
+        obra: nomeObraPorId(registro.obraId),
+        saidaId: registro.saidaId,
+        dataSaida: registro.dataSaida,
+        itemNome: registro.itemNome,
+        sku: registro.sku,
+        solicitante: registro.solicitante,
+        quantidadeRetirada:
+          registro.quantidadeRetirada,
+        valorRetirada:
+          registro.valorRetirada,
+        quantidadeDevolvida,
+        valorDevolvido,
+      });
+
+      await carregarDados();
+      fecharModalDevolucao();
+    } catch (error) {
+      console.error(
+        "Erro ao salvar devolução:",
+        error
+      );
+
+      setErroDevolucao(
+        error?.message ||
+          "Não foi possível registrar a devolução."
+      );
+    } finally {
+      setSalvandoDevolucao(false);
+    }
+  }
+
+  // =====================================================
+  // GERAR PDF DE UMA DEVOLUÇÃO DA LISTA
+  // =====================================================
+
+  function gerarPdfDevolucaoDaLinha(devolucao) {
+    const item = itensSaidasDevolucao.find(
+      (registro) =>
+        String(registro.saidaItemId) ===
+        String(devolucao?.saida_item_id)
+    );
+
+    gerarPdfDevolucao({
+      devolucaoId: devolucao?.id,
+      dataDevolucao:
+        devolucao?.data_devolucao ||
+        new Date().toISOString().slice(0, 10),
+      obra: nomeObraPorId(devolucao?.obra_id),
+      saidaId:
+        devolucao?.saida_id ||
+        item?.saidaId ||
+        "-",
+      dataSaida: item?.dataSaida,
+      itemNome:
+        devolucao?.item_nome ||
+        item?.itemNome ||
+        "-",
+      sku:
+        devolucao?.sku ||
+        item?.sku ||
+        "-",
+      solicitante:
+        devolucao?.solicitante ||
+        item?.solicitante ||
+        "-",
+      quantidadeRetirada:
+        devolucao?.quantidade_retirada ??
+        item?.quantidadeRetirada ??
+        0,
+      valorRetirada:
+        devolucao?.valor_retirada ??
+        item?.valorRetirada ??
+        0,
+      quantidadeDevolvida:
+        devolucao?.quantidade_devolvida ??
+        0,
+      valorDevolvido:
+        devolucao?.valor_devolvido ??
+        0,
+    });
+  }
+
+  // =====================================================
+  // GERAR PDF DA DEVOLUÇÃO
+  // =====================================================
+
+  function gerarPdfDevolucao({
+    devolucaoId,
+    dataDevolucao,
+    obra,
+    saidaId,
+    dataSaida,
+    itemNome,
+    sku,
+    solicitante,
+    quantidadeRetirada,
+    valorRetirada,
+    quantidadeDevolvida,
+    valorDevolvido,
+  }) {
+    const doc = new jsPDF();
+    const margem = 20;
+    const larguraUtil = 210 - margem * 2;
+
+    const numeroDevolucao =
+      devolucaoId
+        ? `#${String(devolucaoId).padStart(6, "0")}`
+        : "-";
+
+    const numeroSaida =
+      saidaId
+        ? `#${String(saidaId).padStart(6, "0")}`
+        : "-";
+
+    const obraReferente =
+      obra ||
+      "ALME ESTOQUE";
+
+    const nomeItemFormatado =
+      itemNome ||
+      "Produto não informado";
+
+    const linhasObra = doc.splitTextToSize(
+      `Obra referente: ${obraReferente}`,
+      larguraUtil
+    );
+
+    const linhasItem = doc.splitTextToSize(
+      `Item: ${nomeItemFormatado}`,
+      larguraUtil
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("ALME MARCENARIA", margem, 25);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(
+      "Controle de movimentação de estoque",
+      margem,
+      32
+    );
+
+    doc.setLineWidth(0.5);
+    doc.line(margem, 38, 210 - margem, 38);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(
+      "COMPROVANTE DE DEVOLUÇÃO",
+      margem,
+      52
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    doc.text(
+      `Número da devolução: ${numeroDevolucao}`,
+      margem,
+      65
+    );
+
+    doc.text(
+      `Data da devolução: ${formatarData(dataDevolucao)}`,
+      margem,
+      72
+    );
+
+    doc.text(
+      `Saída referente: ${numeroSaida}`,
+      margem,
+      79
+    );
+
+    doc.text(
+      `Data da saída: ${formatarData(dataSaida)}`,
+      margem,
+      86
+    );
+
+    let y = 94;
+
+    doc.text(linhasObra, margem, y);
+    y += 7 * linhasObra.length + 5;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("ITEM", margem, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    doc.text(linhasItem, margem, y + 9);
+    y += 16 + (linhasItem.length - 1) * 5;
+
+    doc.text(`SKU: ${sku || "-"}`, margem, y);
+    y += 7;
+
+    doc.text(
+      `Solicitante: ${solicitante || "-"}`,
+      margem,
+      y
+    );
+
+    y += 17;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("MOVIMENTAÇÃO", margem, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    doc.text(
+      `Quantidade que foi retirada: ${Number(
+        quantidadeRetirada || 0
+      ).toLocaleString("pt-BR")}`,
+      margem,
+      y + 10
+    );
+
+    doc.text(
+      `Valor da retirada: ${formatarMoeda(
+        valorRetirada
+      )}`,
+      margem,
+      y + 17
+    );
+
+    doc.text(
+      `Quantidade devolvida: ${Number(
+        quantidadeDevolvida || 0
+      ).toLocaleString("pt-BR")}`,
+      margem,
+      y + 24
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.text(
+      `Valor devolvido: ${formatarMoeda(
+        valorDevolvido
+      )}`,
+      margem,
+      y + 31
+    );
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+      "A quantidade devolvida foi acrescentada ao estoque do produto.",
+      margem,
+      y + 50
+    );
+
+    doc.text(
+      "Documento gerado automaticamente pelo sistema de estoque.",
+      margem,
+      y + 57
+    );
+
+    const yAssinaturas = y + 90;
+
+    doc.line(
+      margem,
+      yAssinaturas,
+      90,
+      yAssinaturas
+    );
+
+    doc.line(
+      120,
+      yAssinaturas,
+      190,
+      yAssinaturas
+    );
+
+    doc.setFontSize(8);
+
+    doc.text(
+      "Responsável pela devolução",
+      margem,
+      yAssinaturas + 7
+    );
+
+    doc.text(
+      "Responsável pelo estoque",
+      120,
+      yAssinaturas + 7
+    );
+
+    doc.save(
+      `devolucao-estoque-${
+        devolucaoId
+          ? String(devolucaoId).padStart(6, "0")
+          : "novo"
+      }.pdf`
+    );
+  }
+// =====================================================
+// EXCLUIR DEVOLUÇÃO
+// =====================================================
+
+async function removerDevolucao(devolucao) {
+  abrirConfirmacao({
+    titulo: "Excluir devolução",
+
+    mensagem: `Deseja realmente excluir a devolução #${String(
+      devolucao?.id
+    ).padStart(6, "0")}?`,
+
+    textoConfirmar: "Excluir devolução",
+
+    tipo: "danger",
+
+    acao: async () => {
+      const { error } = await supabase
+        .from("estoque_devolucoes")
+        .delete()
+        .eq("id", devolucao.id);
+
+      if (error) {
+        throw error;
+      }
+
+      await carregarDados();
+    },
+  });
+}
   // =====================================================
   // EXCLUIR SAÍDA
   // =====================================================
@@ -1092,14 +2080,352 @@ export default function Estoque() {
     );
   }
 
+  function nomeObraPorId(obraId) {
+    if (!obraId) return "ALME ESTOQUE";
+
+    const obra = obras.find(
+      (item) => String(item?.id) === String(obraId)
+    );
+
+    return obra?.nome || `Obra #${obraId}`;
+  }
+
   // =====================================================
-  // GERAR PDF
+  // GERAR PDF DA ENTRADA
+  // =====================================================
+
+  function gerarPdfEntrada({
+    entradaId,
+    dataEntrada,
+    obra,
+    nfEntrada,
+    nomeItem,
+    sku,
+    codigoAlme,
+    quantidade,
+    valorUnitario,
+    valorTotal,
+    valorUnitarioFinal,
+    preco,
+  }) {
+    const doc = new jsPDF();
+
+    const margem = 20;
+    const larguraUtil = 210 - margem * 2;
+
+    const nomeProduto =
+      nomeItem ||
+      "Produto não informado";
+
+    const dataFormatada =
+      formatarData(dataEntrada);
+
+    const obraReferente =
+      obra ||
+      "ALME ESTOQUE";
+
+    const skuFormatado =
+      sku ||
+      "-";
+
+    const codigoAlmeFormatado =
+      codigoAlme ||
+      "-";
+
+    const nfFormatada =
+      nfEntrada ||
+      "-";
+
+    const numeroEntrada =
+      entradaId
+        ? `#${String(entradaId).padStart(6, "0")}`
+        : "-";
+
+    // =====================================================
+    // CABEÇALHO
+    // =====================================================
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setFontSize(20);
+
+    doc.text(
+      "ALME MARCENARIA",
+      margem,
+      25
+    );
+
+    doc.setFontSize(10);
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.text(
+      "Controle de movimentação de estoque",
+      margem,
+      32
+    );
+
+    doc.setLineWidth(0.5);
+
+    doc.line(
+      margem,
+      38,
+      210 - margem,
+      38
+    );
+
+    // =====================================================
+    // TÍTULO
+    // =====================================================
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setFontSize(16);
+
+    doc.text(
+      "COMPROVANTE DE ENTRADA",
+      margem,
+      52
+    );
+
+    // =====================================================
+    // INFORMAÇÕES
+    // =====================================================
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.setFontSize(10);
+
+    doc.text(
+      `Número da entrada: ${numeroEntrada}`,
+      margem,
+      65
+    );
+
+    doc.text(
+      `Data: ${dataFormatada}`,
+      margem,
+      72
+    );
+
+    doc.text(
+      `Nota fiscal: ${nfFormatada}`,
+      margem,
+      79
+    );
+
+    const linhasObra = doc.splitTextToSize(
+      `Obra referente: ${obraReferente}`,
+      larguraUtil
+    );
+
+    doc.text(
+      linhasObra,
+      margem,
+      86
+    );
+
+    // =====================================================
+    // PRODUTO
+    // =====================================================
+
+    const yProduto =
+      99 + (linhasObra.length - 1) * 5;
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+      "PRODUTO",
+      margem,
+      yProduto
+    );
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.setFontSize(10);
+
+    const nomeLinhas = doc.splitTextToSize(
+      `Nome: ${nomeProduto}`,
+      larguraUtil
+    );
+
+    doc.text(
+      nomeLinhas,
+      margem,
+      yProduto + 9
+    );
+
+    let yProdutoInfo =
+      yProduto + 16 + (nomeLinhas.length - 1) * 5;
+
+    doc.text(
+      `SKU: ${skuFormatado}`,
+      margem,
+      yProdutoInfo
+    );
+
+    yProdutoInfo += 7;
+
+    doc.text(
+      `Código ALME: ${codigoAlmeFormatado}`,
+      margem,
+      yProdutoInfo
+    );
+
+    // =====================================================
+    // MOVIMENTAÇÃO
+    // =====================================================
+
+    const yMovimentacao =
+      yProdutoInfo + 17;
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setFontSize(11);
+
+    doc.text(
+      "MOVIMENTAÇÃO",
+      margem,
+      yMovimentacao
+    );
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.setFontSize(10);
+
+    doc.text(
+      `Quantidade recebida: ${Number(
+        quantidade || 0
+      ).toLocaleString("pt-BR")}`,
+      margem,
+      yMovimentacao + 10
+    );
+
+    doc.text(
+      `Valor unitário: ${formatarMoeda(
+        valorUnitario
+      )}`,
+      margem,
+      yMovimentacao + 17
+    );
+
+    doc.text(
+      `Valor unitário final: ${formatarMoeda(
+        valorUnitarioFinal
+      )}`,
+      margem,
+      yMovimentacao + 24
+    );
+
+    doc.text(
+      `Preço de venda: ${formatarMoeda(
+        preco
+      )}`,
+      margem,
+      yMovimentacao + 31
+    );
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.text(
+      `Valor total da entrada: ${formatarMoeda(
+        valorTotal
+      )}`,
+      margem,
+      yMovimentacao + 40
+    );
+
+    // =====================================================
+    // OBSERVAÇÃO
+    // =====================================================
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    doc.setFontSize(9);
+
+    doc.text(
+      "Documento gerado automaticamente pelo sistema de estoque.",
+      margem,
+      yMovimentacao + 63
+    );
+
+    // =====================================================
+    // ASSINATURAS
+    // =====================================================
+
+    const yAssinaturas =
+      yMovimentacao + 98;
+
+    doc.line(
+      margem,
+      yAssinaturas,
+      90,
+      yAssinaturas
+    );
+
+    doc.line(
+      120,
+      yAssinaturas,
+      190,
+      yAssinaturas
+    );
+
+    doc.setFontSize(8);
+
+    
+
+   
+
+    doc.save(
+      `entrada-estoque-${
+        entradaId
+          ? String(entradaId).padStart(6, "0")
+          : nfFormatada.replace(/[^a-zA-Z0-9]/g, "-")
+      }.pdf`
+    );
+  }
+
+  // =====================================================
+  // GERAR PDF DA SAÍDA
   // =====================================================
 
   function gerarPdfSaida({
     saidaId,
     dataSaida,
     solicitante,
+    obra,
     produto,
     quantidade,
     precoUnitario,
@@ -1212,6 +2538,21 @@ export default function Estoque() {
       79
     );
 
+    const obraReferente =
+      obra ||
+      "ALME ESTOQUE";
+
+    const linhasObra = doc.splitTextToSize(
+      `Obra referente: ${obraReferente}`,
+      210 - margem * 2
+    );
+
+    doc.text(
+      linhasObra,
+      margem,
+      86
+    );
+
     // =====================================================
     // PRODUTO
     // =====================================================
@@ -1226,7 +2567,7 @@ export default function Estoque() {
     doc.text(
       "PRODUTO",
       margem,
-      95
+      99 + (linhasObra.length - 1) * 5
     );
 
     doc.setFont(
@@ -1239,19 +2580,19 @@ export default function Estoque() {
     doc.text(
       `Nome: ${nomeProduto}`,
       margem,
-      104
+      108 + (linhasObra.length - 1) * 5
     );
 
     doc.text(
       `SKU: ${sku}`,
       margem,
-      111
+      115 + (linhasObra.length - 1) * 5
     );
 
     doc.text(
       `Código ALME: ${codigoAlme}`,
       margem,
-      118
+      122 + (linhasObra.length - 1) * 5
     );
 
     // =====================================================
@@ -1268,7 +2609,7 @@ export default function Estoque() {
     doc.text(
       "MOVIMENTAÇÃO",
       margem,
-      135
+      139 + (linhasObra.length - 1) * 5
     );
 
     doc.setFont(
@@ -1283,7 +2624,7 @@ export default function Estoque() {
         quantidade || 0
       ).toLocaleString("pt-BR")}`,
       margem,
-      145
+      149 + (linhasObra.length - 1) * 5
     );
 
     doc.text(
@@ -1291,7 +2632,7 @@ export default function Estoque() {
         precoUnitario
       )}`,
       margem,
-      152
+      156 + (linhasObra.length - 1) * 5
     );
 
     doc.setFont(
@@ -1304,7 +2645,7 @@ export default function Estoque() {
         valorTotal
       )}`,
       margem,
-      162
+      166 + (linhasObra.length - 1) * 5
     );
 
     // =====================================================
@@ -1321,25 +2662,28 @@ export default function Estoque() {
     doc.text(
       "Documento gerado automaticamente pelo sistema de estoque.",
       margem,
-      185
+      189 + (linhasObra.length - 1) * 5
     );
 
     // =====================================================
     // ASSINATURAS
     // =====================================================
 
+    const yAssinaturas =
+      220 + (linhasObra.length - 1) * 5;
+
     doc.line(
       margem,
-      220,
+      yAssinaturas,
       90,
-      220
+      yAssinaturas
     );
 
     doc.line(
       120,
-      220,
+      yAssinaturas,
       190,
-      220
+      yAssinaturas
     );
 
     doc.setFontSize(8);
@@ -1347,13 +2691,13 @@ export default function Estoque() {
     doc.text(
       "Responsável pela retirada",
       margem,
-      227
+      yAssinaturas + 7
     );
 
     doc.text(
       "Responsável pelo estoque",
       120,
-      227
+      yAssinaturas + 7
     );
 
     // =====================================================
@@ -1621,6 +2965,20 @@ export default function Estoque() {
           }
         >
           Saídas
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba === "devolucoes"
+              ? "active"
+              : ""
+          }
+          onClick={() =>
+            setAba("devolucoes")
+          }
+        >
+          Devoluções
         </button>
 
       </nav>
@@ -2044,36 +3402,6 @@ export default function Estoque() {
                                 )}
                               </td>
 
-                              <td>
-
-                                <div className="table-actions">
-
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      abrirEditarProduto(
-                                        produto
-                                      )
-                                    }
-                                  >
-                                    Editar
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    className="danger"
-                                    onClick={() =>
-                                      removerProduto(
-                                        produto
-                                      )
-                                    }
-                                  >
-                                    Excluir
-                                  </button>
-
-                                </div>
-
-                              </td>
 
                             </tr>
 
@@ -2133,6 +3461,7 @@ export default function Estoque() {
                       <tr>
                         <th>NF</th>
                         <th>Data</th>
+                        <th>Obra</th>
                         <th>Produto</th>
                         <th>SKU</th>
                         <th>Quantidade</th>
@@ -2150,7 +3479,7 @@ export default function Estoque() {
                         <tr>
 
                           <td
-                            colSpan="7"
+                            colSpan="8"
                             className="table-empty"
                           >
                             Nenhuma entrada encontrada.
@@ -2180,6 +3509,12 @@ export default function Estoque() {
                                 {formatarData(
                                   entrada.data_entrada
                                 )}
+                              </td>
+
+                              <td>
+                                <strong>
+                                  {nomeObraPorId(entrada.obra_id)}
+                                </strong>
                               </td>
 
                               <td>
@@ -2302,6 +3637,7 @@ export default function Estoque() {
                       <tr>
                         <th>Nº</th>
                         <th>Data</th>
+                        <th>Obra</th>
                         <th>Produto</th>
                         <th>SKU</th>
                         <th>Solicitante</th>
@@ -2321,7 +3657,7 @@ export default function Estoque() {
                         <tr>
 
                           <td
-                            colSpan="9"
+                            colSpan="10"
                             className="table-empty"
                           >
                             Nenhuma saída encontrada.
@@ -2419,6 +3755,12 @@ export default function Estoque() {
                                     </td>
 
                                     <td>
+                                      <strong>
+                                        {nomeObraPorId(saida.obra_id)}
+                                      </strong>
+                                    </td>
+
+                                    <td>
 
                                       <strong>
                                         {
@@ -2501,6 +3843,197 @@ export default function Estoque() {
                             );
                           }
                         )
+
+                      )}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              </section>
+            )}
+
+            {/* =================================================
+                DEVOLUÇÕES
+            ================================================= */}
+
+            {aba === "devolucoes" && (
+              <section className="estoque-content">
+
+                <div className="estoque-section-title">
+
+                  <div>
+
+                    <span>
+                      RETORNO AO ESTOQUE
+                    </span>
+
+                    <h2>
+                      Devoluções
+                    </h2>
+
+                    <p className="estoque-section-description">
+                      Registre materiais que foram retirados para uma obra e retornaram ao estoque.
+                    </p>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={abrirNovaDevolucao}
+                  >
+                    + Nova devolução
+                  </button>
+
+                </div>
+
+                <div className="estoque-table-wrapper estoque-devolucoes-table-wrapper">
+
+                  <table className="estoque-table estoque-devolucoes-table">
+
+                    <thead>
+                      <tr>
+                        <th>Nº</th>
+                        <th>Data</th>
+                        <th>Obra</th>
+                        <th>Saída</th>
+                        <th>Item</th>
+                        <th>Solicitante</th>
+                        <th>Qtd. retirada</th>
+                        <th>Qtd. devolvida</th>
+                        <th>Valor retirada</th>
+                        <th>Valor devolvido</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+
+                      {devolucoes.length === 0 ? (
+
+                        <tr>
+                          <td
+                            colSpan="11"
+                            className="table-empty"
+                          >
+                            Nenhuma devolução registrada.
+                          </td>
+                        </tr>
+
+                      ) : (
+
+                        devolucoes.map((devolucao) => (
+
+                          <tr key={devolucao.id}>
+
+                            <td>
+                              #
+                              {String(
+                                devolucao.id
+                              ).padStart(6, "0")}
+                            </td>
+
+                            <td>
+                              {formatarData(
+                                devolucao.data_devolucao
+                              )}
+                            </td>
+
+                            <td>
+                              <strong>
+                                {nomeObraPorId(
+                                  devolucao.obra_id
+                                )}
+                              </strong>
+                            </td>
+
+                            <td>
+                              #
+                              {String(
+                                devolucao.saida_id
+                              ).padStart(6, "0")}
+                            </td>
+
+                            <td>
+                              <strong>
+                                {devolucao.item_nome || "-"}
+                              </strong>
+
+                              {devolucao.sku && (
+                                <small className="estoque-devolucao-sku">
+                                  SKU: {devolucao.sku}
+                                </small>
+                              )}
+                            </td>
+
+                            <td>
+                              {devolucao.solicitante || "-"}
+                            </td>
+
+                            <td>
+                              {Number(
+                                devolucao.quantidade_retirada || 0
+                              ).toLocaleString("pt-BR")}
+                            </td>
+
+                            <td>
+                              <span className="estoque-devolucao-quantidade">
+                                {Number(
+                                  devolucao.quantidade_devolvida || 0
+                                ).toLocaleString("pt-BR")}
+                              </span>
+                            </td>
+
+                            <td>
+                              {formatarMoeda(
+                                devolucao.valor_retirada
+                              )}
+                            </td>
+
+                            <td>
+                              <strong>
+                                {formatarMoeda(
+                                  devolucao.valor_devolvido
+                                )}
+                              </strong>
+                            </td>
+
+                            <td>
+                              <div className="table-actions">
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    gerarPdfDevolucaoDaLinha(
+                                      devolucao
+                                    )
+                                  }
+                                >
+                                  PDF
+                                </button>
+
+                                <button
+                                  type="button"
+                                  className="danger"
+                                  title="Excluir devolução"
+                                  onClick={() =>
+                                    removerDevolucao(
+                                      devolucao
+                                    )
+                                  }
+                                >
+                                  Excluir
+                                </button>
+
+                              </div>
+                            </td>
+
+                          </tr>
+
+                        ))
 
                       )}
 
@@ -2909,6 +4442,48 @@ export default function Estoque() {
 
               </div>
 
+              <div className="estoque-form-group full">
+
+                <label htmlFor="entrada-obra">
+                  Obra referente
+                </label>
+
+                <select
+                  id="entrada-obra"
+                  value={formEntrada.obraId}
+                  onChange={(event) =>
+                    alterarEntrada(
+                      "obraId",
+                      event.target.value
+                    )
+                  }
+                  disabled={
+                    salvandoEntrada ||
+                    loadingObras
+                  }
+                >
+                  <option value="">
+                    ALME ESTOQUE
+                  </option>
+
+                  {obras.map((obra) => (
+                    <option
+                      key={obra.id}
+                      value={obra.id}
+                    >
+                      {obra.nome || `Obra #${obra.id}`}
+                    </option>
+                  ))}
+                </select>
+
+                <small className="estoque-campo-ajuda">
+                  {loadingObras
+                    ? "Carregando obras da Produção..."
+                    : "Selecione uma obra cadastrada em Produção ou mantenha ALME ESTOQUE."}
+                </small>
+
+              </div>
+
               <div className="estoque-form-grid">
 
                 <div className="estoque-form-group">
@@ -3253,6 +4828,48 @@ export default function Estoque() {
 
               </div>
 
+              <div className="estoque-form-group full">
+
+                <label htmlFor="saida-obra">
+                  Obra referente
+                </label>
+
+                <select
+                  id="saida-obra"
+                  value={formSaida.obraId}
+                  onChange={(event) =>
+                    alterarSaida(
+                      "obraId",
+                      event.target.value
+                    )
+                  }
+                  disabled={
+                    salvandoSaida ||
+                    loadingObras
+                  }
+                >
+                  <option value="">
+                    ALME ESTOQUE
+                  </option>
+
+                  {obras.map((obra) => (
+                    <option
+                      key={obra.id}
+                      value={obra.id}
+                    >
+                      {obra.nome || `Obra #${obra.id}`}
+                    </option>
+                  ))}
+                </select>
+
+                <small className="estoque-campo-ajuda">
+                  {loadingObras
+                    ? "Carregando obras da Produção..."
+                    : "Selecione uma obra cadastrada em Produção ou mantenha ALME ESTOQUE."}
+                </small>
+
+              </div>
+
               {formSaida.produtoId &&
                 !saidaEditando && (
                   <div className="estoque-form-help">
@@ -3380,6 +4997,378 @@ export default function Estoque() {
                     : saidaEditando
                       ? "Salvar alterações"
                       : "Registrar saída"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* =====================================================
+          MODAL DEVOLUÇÃO
+      ===================================================== */}
+
+      {modalDevolucao && (
+        <div
+          className="estoque-modal-overlay"
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              fecharModalDevolucao();
+            }
+          }}
+        >
+
+          <div
+            className="estoque-modal estoque-modal-devolucao"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="estoque-modal-header">
+
+              <div>
+
+                <span>
+                  RETORNO AO ESTOQUE
+                </span>
+
+                <h2>
+                  Nova devolução
+                </h2>
+
+                <p>
+                  Selecione a obra e a saída para carregar automaticamente os dados do material retirado.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                className="estoque-modal-close"
+                onClick={fecharModalDevolucao}
+                disabled={salvandoDevolucao}
+              >
+                ×
+              </button>
+
+            </div>
+
+            <form
+              className="estoque-modal-form"
+              onSubmit={salvarDevolucao}
+            >
+
+              <div className="estoque-form-group full">
+
+                <label htmlFor="devolucao-obra">
+                  Obra referente
+                </label>
+
+                <select
+                  id="devolucao-obra"
+                  value={formDevolucao.obraId}
+                  onChange={(event) =>
+                    selecionarObraDevolucao(
+                      event.target.value
+                    )
+                  }
+                  disabled={
+                    salvandoDevolucao ||
+                    loadingObras
+                  }
+                >
+
+                  <option value="">
+                    ALME ESTOQUE
+                  </option>
+
+                  {obras.map((obra) => (
+                    <option
+                      key={obra.id}
+                      value={obra.id}
+                    >
+                      {obra.nome ||
+                        `Obra #${obra.id}`}
+                    </option>
+                  ))}
+
+                </select>
+
+                <small className="estoque-campo-ajuda">
+                  {loadingObras
+                    ? "Carregando obras da Produção..."
+                    : "As saídas abaixo serão filtradas pela obra selecionada."}
+                </small>
+
+              </div>
+
+              <div className="estoque-form-group full">
+
+                <label htmlFor="devolucao-saida">
+                  Saída referente
+                </label>
+
+                <select
+                  id="devolucao-saida"
+                  value={formDevolucao.saidaItemId}
+                  onChange={(event) =>
+                    selecionarSaidaDevolucao(
+                      event.target.value
+                    )
+                  }
+                  disabled={
+                    salvandoDevolucao ||
+                    !formDevolucao.obraId &&
+                      !saidasDevolucaoFiltradas.length &&
+                      false
+                  }
+                >
+
+                  <option value="">
+                    {formDevolucao.obraId
+                      ? saidasDevolucaoFiltradas.length
+                        ? "Selecione a saída"
+                        : "Nenhuma saída disponível para devolução"
+                      : "Selecione a obra primeiro"}
+                  </option>
+
+                  {saidasDevolucaoFiltradas.map(
+                    (item) => (
+                      <option
+                        key={item.saidaItemId}
+                        value={item.saidaItemId}
+                      >
+                        #{String(item.saidaId).padStart(6, "0")}
+                        {" — "}
+                        {item.itemNome}
+                        {" — disponível: "}
+                        {Number(
+                          item.quantidadeDisponivel || 0
+                        ).toLocaleString("pt-BR")}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+                <small className="estoque-campo-ajuda">
+                  A lista mostra somente itens da obra escolhida que ainda possuem quantidade disponível para devolução.
+                </small>
+
+              </div>
+
+              {saidaItemSelecionadoDevolucao && (
+                <>
+
+                  <div className="estoque-devolucao-info-card">
+
+                    <div className="estoque-devolucao-info-header">
+                      <span>
+                        DADOS DA SAÍDA
+                      </span>
+
+                      <strong>
+                        #{String(
+                          saidaItemSelecionadoDevolucao.saidaId
+                        ).padStart(6, "0")}
+                      </strong>
+                    </div>
+
+                    <div className="estoque-devolucao-info-grid">
+
+                      <div>
+                        <span>Item</span>
+                        <strong>
+                          {saidaItemSelecionadoDevolucao.itemNome}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Quantidade retirada</span>
+                        <strong>
+                          {Number(
+                            saidaItemSelecionadoDevolucao.quantidadeRetirada || 0
+                          ).toLocaleString("pt-BR")}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Já devolvido</span>
+                        <strong>
+                          {Number(
+                            saidaItemSelecionadoDevolucao.quantidadeJaDevolvida || 0
+                          ).toLocaleString("pt-BR")}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Disponível para devolução</span>
+                        <strong className="estoque-devolucao-disponivel">
+                          {Number(
+                            saidaItemSelecionadoDevolucao.quantidadeDisponivel || 0
+                          ).toLocaleString("pt-BR")}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Solicitante</span>
+                        <strong>
+                          {saidaItemSelecionadoDevolucao.solicitante}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Valor da retirada</span>
+                        <strong>
+                          {formatarMoeda(
+                            saidaItemSelecionadoDevolucao.valorRetirada
+                          )}
+                        </strong>
+                      </div>
+
+                      <div>
+                        <span>Preço unitário da retirada</span>
+                        <strong>
+                          {formatarMoeda(
+                            saidaItemSelecionadoDevolucao.precoUnitario
+                          )}
+                        </strong>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div className="estoque-form-grid">
+
+                    <div className="estoque-form-group">
+
+                      <label htmlFor="devolucao-quantidade">
+                        Quantidade devolvida
+                      </label>
+
+                      <input
+                        id="devolucao-quantidade"
+                        type="number"
+                        min="0"
+                        max={
+                          saidaItemSelecionadoDevolucao.quantidadeDisponivel
+                        }
+                        step="0.01"
+                        value={
+                          formDevolucao.quantidadeDevolvida
+                        }
+                        onChange={(event) =>
+                          alterarDevolucao(
+                            "quantidadeDevolvida",
+                            event.target.value
+                          )
+                        }
+                        placeholder="0"
+                        disabled={salvandoDevolucao}
+                      />
+
+                    </div>
+
+                    <div className="estoque-form-group">
+
+                      <label htmlFor="devolucao-valor">
+                        Valor devolvido
+                      </label>
+
+                      <div className="estoque-input-money">
+                        <span>
+                          R$
+                        </span>
+
+                        <input
+                          id="devolucao-valor"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={
+                            valorDevolvidoCalculado.toFixed(2)
+                          }
+                          readOnly
+                          disabled={salvandoDevolucao}
+                        />
+
+                      </div>
+
+                      <small className="estoque-campo-ajuda">
+                        Calculado automaticamente pela proporção entre a quantidade devolvida e a quantidade retirada, usando o valor da retirada.
+                      </small>
+
+                    </div>
+
+                  </div>
+
+                  {formDevolucao.quantidadeDevolvida && (
+                    <>
+                      <div className="estoque-form-help">
+                        Valor calculado da devolução: {" "}
+                        <strong>
+                          {formatarMoeda(valorDevolvidoCalculado)}
+                        </strong>
+                      </div>
+
+                      <div className="estoque-form-help">
+                        Após esta devolução, restarão aproximadamente{" "}
+                        <strong>
+                        {Math.max(
+                          0,
+                          Number(
+                            saidaItemSelecionadoDevolucao.quantidadeDisponivel || 0
+                          ) -
+                            Number(
+                              formDevolucao.quantidadeDevolvida || 0
+                            )
+                        ).toLocaleString("pt-BR")}
+                      </strong>{" "}
+                        unidade(s) da saída disponíveis para devolução.
+                      </div>
+                    </>
+                  )}
+
+                </>
+              )}
+
+              {erroDevolucao && (
+                <div className="estoque-modal-error">
+                  {erroDevolucao}
+                </div>
+              )}
+
+              <div className="estoque-modal-footer">
+
+                <button
+                  type="button"
+                  className="estoque-modal-cancel"
+                  onClick={fecharModalDevolucao}
+                  disabled={salvandoDevolucao}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="estoque-modal-save"
+                  disabled={
+                    salvandoDevolucao ||
+                    !saidaItemSelecionadoDevolucao
+                  }
+                >
+                  {salvandoDevolucao
+                    ? "Salvando..."
+                    : "Registrar devolução"}
                 </button>
 
               </div>
