@@ -1,6 +1,7 @@
 import React, {
     useEffect,
     useMemo,
+    useRef,
     useState
 } from "react";
 
@@ -43,6 +44,126 @@ const SESSION_STATE_KEY =
 
 const SESSION_SCROLL_KEY =
     "alme_orcamento_scroll";
+
+const BASE_CACHE_STORAGE_KEY =
+    "alme_orcamento_base_cache_v2";
+
+const BASE_CACHE_TTL =
+    5 * 60 * 1000;
+
+/*
+=====================================================
+CACHE GLOBAL DO MÓDULO
+=====================================================
+
+Evita nova consulta da base de orçamento toda vez
+que a tela é desmontada e montada novamente ao
+trocar de página/guia dentro do CRM.
+=====================================================
+*/
+
+let baseRuntimeCache = null;
+let baseRuntimePromise = null;
+let arquitetosRuntimeCache = null;
+let arquitetosRuntimePromise = null;
+
+const getSessionStateKey = (
+    orcamentoId = "",
+    versaoId = ""
+) => {
+
+    const quoteKey =
+        String(orcamentoId || "novo").trim() || "novo";
+
+    const versionKey =
+        String(versaoId || "auto").trim() || "auto";
+
+    return `${SESSION_STATE_KEY}:${quoteKey}:${versionKey}`;
+
+};
+
+const getScrollStateKey = (
+    orcamentoId = "",
+    versaoId = ""
+) => {
+
+    const quoteKey =
+        String(orcamentoId || "novo").trim() || "novo";
+
+    const versionKey =
+        String(versaoId || "auto").trim() || "auto";
+
+    return `${SESSION_SCROLL_KEY}:${quoteKey}:${versionKey}`;
+
+};
+
+const readBaseStorageCache = () => {
+
+    try {
+
+        const raw =
+            sessionStorage.getItem(
+                BASE_CACHE_STORAGE_KEY
+            );
+
+        if (!raw) {
+            return null;
+        }
+
+        const parsed =
+            JSON.parse(raw);
+
+        if (!parsed?.timestamp) {
+            return null;
+        }
+
+        if (
+            Date.now() - Number(parsed.timestamp) >
+            BASE_CACHE_TTL
+        ) {
+            sessionStorage.removeItem(
+                BASE_CACHE_STORAGE_KEY
+            );
+            return null;
+        }
+
+        return parsed;
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao ler cache da base do orçamento:",
+            error
+        );
+
+        return null;
+
+    }
+
+};
+
+const writeBaseStorageCache = data => {
+
+    try {
+
+        sessionStorage.setItem(
+            BASE_CACHE_STORAGE_KEY,
+            JSON.stringify({
+                timestamp: Date.now(),
+                ...data
+            })
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao salvar cache da base do orçamento:",
+            error
+        );
+
+    }
+
+};
 
 const MAX_COMPLEMENTOS = 5;
 
@@ -290,6 +411,154 @@ const getColorNumber = (
 
 };
 
+const parseMoneyInput = value => {
+
+    let raw =
+        String(value ?? "")
+            .trim()
+            .replace(/[^\d,.-]/g, "");
+
+    if (!raw) {
+        return 0;
+    }
+
+    if (raw.includes(",")) {
+
+        raw =
+            raw
+                .replace(/\./g, "")
+                .replace(",", ".");
+
+    }
+
+    const parsed =
+        Number(raw);
+
+    return Number.isFinite(parsed)
+        ? Math.max(0, parsed)
+        : 0;
+};
+/*
+=====================================================
+CAMPO DE BUSCA PARA LISTAS
+=====================================================
+
+Permite localizar itens e MDFs digitando o nome.
+O valor salvo só muda quando a opção digitada
+corresponde exatamente a uma opção da lista.
+=====================================================
+*/
+
+const CampoBuscaLista = ({
+    value,
+    selectedLabel = "",
+    options = [],
+    onSelect,
+    placeholder = "Digite para buscar...",
+    listId,
+    className = "orcamento-tabela-input"
+}) => {
+
+    const optionSelecionada =
+        (options || []).find(
+            option =>
+                String(option?.value ?? "") ===
+                String(value ?? "")
+        );
+
+    const labelAtual =
+        selectedLabel ||
+        optionSelecionada?.label ||
+        "";
+
+    const [texto, setTexto] = useState(
+        labelAtual
+    );
+
+    useEffect(() => {
+        setTexto(labelAtual);
+    }, [labelAtual]);
+
+    const selecionarPorTexto = event => {
+
+        const novoTexto =
+            event.target.value;
+
+        setTexto(novoTexto);
+
+        if (!novoTexto.trim()) {
+            onSelect("");
+            return;
+        }
+
+        const textoNormalizado =
+            normalizeText(novoTexto);
+
+        const encontrada =
+            (options || []).find(
+                option =>
+                    normalizeText(
+                        option?.label ?? ""
+                    ) ===
+                    textoNormalizado
+            );
+
+        if (encontrada) {
+            onSelect(encontrada.value);
+        }
+
+    };
+
+    const restaurarTexto = () => {
+
+        const textoNormalizado =
+            normalizeText(texto);
+
+        const encontrada =
+            (options || []).find(
+                option =>
+                    normalizeText(
+                        option?.label ?? ""
+                    ) ===
+                    textoNormalizado
+            );
+
+        if (!encontrada) {
+            setTexto(labelAtual);
+        }
+
+    };
+
+    return (
+        <>
+
+            <input
+                className={className}
+                type="text"
+                value={texto}
+                placeholder={placeholder}
+                list={listId}
+                autoComplete="off"
+                onChange={selecionarPorTexto}
+                onBlur={restaurarTexto}
+            />
+
+            <datalist id={listId}>
+                {(options || []).map(
+                    option => (
+                        <option
+                            key={String(option.value)}
+                            value={option.label}
+                        />
+                    )
+                )}
+            </datalist>
+
+        </>
+    );
+
+};
+
 
 /*
 =====================================================
@@ -342,6 +611,11 @@ const novoItem = () => ({
 
     quantidade:
         1,
+        m2_total_manual:
+    null,
+
+    valor_minimo_proposta_manual:
+        null,
 
     nome_item:
         "",
@@ -803,6 +1077,11 @@ const [
     overFinalAplicado,
     setOverFinalAplicado
 ] = useState(false);
+
+const [
+    campoMoedaFocado,
+    setCampoMoedaFocado
+] = useState("");
     /*
     =================================================
     DADOS DO ORÇAMENTO
@@ -977,6 +1256,8 @@ SCROLL HORIZONTAL DA TABELA
         setRascunhoCarregado
     ] = useState(false);
 
+    const estadoHidratadoRef = useRef(false);
+
 
     /*
     =================================================
@@ -996,27 +1277,69 @@ SCROLL HORIZONTAL DA TABELA
 
                     try {
 
-                        setCarregandoBase(
-                            true
-                        );
-
                         setErroBase(
                             ""
                         );
 
+                        /*
+                        =====================================================
+                        PRIMEIRO: CACHE EM MEMÓRIA / SESSIONSTORAGE
+                        =====================================================
+                        */
 
-                        const [
+                        const cache =
+                            baseRuntimeCache ||
+                            readBaseStorageCache();
 
-                            itensAtivosResult,
+                        if (
+                            cache &&
+                            Array.isArray(cache.itensAtivos) &&
+                            Array.isArray(cache.itensInativos) &&
+                            Array.isArray(cache.valores) &&
+                            Array.isArray(cache.mdfs)
+                        ) {
 
-                            itensInativosResult,
+                            baseRuntimeCache = cache;
 
-                            valoresResult,
+                            if (!ativo) {
+                                return;
+                            }
 
-                            mdfsResult
+                            setItensBase(
+                                cache.itensAtivos
+                            );
 
-                        ] =
-                            await Promise.all([
+                            setItensComplementares(
+                                cache.itensInativos
+                            );
+
+                            setValoresBase(
+                                cache.valores
+                            );
+
+                            setMdfs(
+                                cache.mdfs
+                            );
+
+                            setCarregandoBase(
+                                false
+                            );
+
+                            return;
+
+                        }
+
+                        setCarregandoBase(
+                            true
+                        );
+
+                        let promessaBase =
+                            baseRuntimePromise;
+
+                        if (!promessaBase) {
+
+                            promessaBase =
+                                Promise.all([
 
 
                                 supabase
@@ -1138,6 +1461,47 @@ SCROLL HORIZONTAL DA TABELA
 
                             ]);
 
+                            baseRuntimePromise =
+                                promessaBase;
+
+                        }
+
+                        let resultadoBase;
+
+                        try {
+
+                            resultadoBase =
+                                await promessaBase;
+
+                        } finally {
+
+                            if (
+                                baseRuntimePromise ===
+                                promessaBase
+                            ) {
+
+                                baseRuntimePromise =
+                                    null;
+
+                            }
+
+                        }
+
+                        if (!Array.isArray(resultadoBase)) {
+
+                            throw new Error(
+                                "Não foi possível carregar a base do orçamento. O resultado retornado não é válido."
+                            );
+
+                        }
+
+                        const [
+                            itensAtivosResult,
+                            itensInativosResult,
+                            valoresResult,
+                            mdfsResult
+                        ] = resultadoBase;
+
 
                         if (
                             itensAtivosResult.error
@@ -1192,27 +1556,40 @@ SCROLL HORIZONTAL DA TABELA
                         }
 
 
-                        setItensBase(
-                            itensAtivosResult.data ||
-                            []
+                        const dadosBase = {
+                            itensAtivos:
+                                itensAtivosResult.data || [],
+                            itensInativos:
+                                itensInativosResult.data || [],
+                            valores:
+                                valoresResult.data || [],
+                            mdfs:
+                                mdfsResult.data || []
+                        };
+
+                        baseRuntimeCache = {
+                            timestamp: Date.now(),
+                            ...dadosBase
+                        };
+
+                        writeBaseStorageCache(
+                            dadosBase
                         );
 
+                        setItensBase(
+                            dadosBase.itensAtivos
+                        );
 
                         setItensComplementares(
-                            itensInativosResult.data ||
-                            []
+                            dadosBase.itensInativos
                         );
-
 
                         setValoresBase(
-                            valoresResult.data ||
-                            []
+                            dadosBase.valores
                         );
 
-
                         setMdfs(
-                            mdfsResult.data ||
-                            []
+                            dadosBase.mdfs
                         );
 
 
@@ -1264,117 +1641,7 @@ SCROLL HORIZONTAL DA TABELA
 
             };
 
-       /*
-=====================================================
-CARREGAR ARQUITETOS / PARCEIROS
-ROLE 6 = PARCEIRO
-=====================================================
-*/
-
-useEffect(() => {
-
-    let ativo = true;
-
-    const carregarArquitetosParceiros =
-        async () => {
-
-            try {
-
-                setCarregandoArquitetos(
-                    true
-                );
-
-                const {
-                    data,
-                    error
-                } =
-                    await supabase.functions.invoke(
-                        "admin-users",
-                        {
-                            body: {
-                                action: "list"
-                            }
-                        }
-                    );
-
-                if (error) {
-                    throw error;
-                }
-
-                if (data?.error) {
-                    throw new Error(
-                        data.error
-                    );
-                }
-
-                const usuarios =
-                    Array.isArray(
-                        data?.users
-                    )
-                        ? data.users
-                        : [];
-
-                const parceiros =
-                    usuarios.filter(
-                        usuario =>
-                            Number(
-                                usuario.role_id
-                            ) === 6
-                    );
-
-                console.log(
-                    "ARQUITETOS / PARCEIROS:",
-                    parceiros
-                );
-
-                if (ativo) {
-
-                    setArquitetosParceiros(
-                        parceiros
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Erro ao carregar arquitetos parceiros:",
-                    error
-                );
-
-                if (ativo) {
-
-                    setArquitetosParceiros(
-                        []
-                    );
-
-                }
-
-            } finally {
-
-                if (ativo) {
-
-                    setCarregandoArquitetos(
-                        false
-                    );
-
-                }
-
-            }
-
-        };
-
-
-    carregarArquitetosParceiros();
-
-
-    return () => {
-
-        ativo = false;
-
-    };
-
-}, []);
+       
 
         },
         []
@@ -1396,59 +1663,93 @@ useEffect(() => {
 
             try {
 
+                if (
+                    Array.isArray(arquitetosRuntimeCache)
+                ) {
+
+                    setArquitetosParceiros(
+                        arquitetosRuntimeCache
+                    );
+
+                    setCarregandoArquitetos(
+                        false
+                    );
+
+                    return;
+
+                }
+
                 setCarregandoArquitetos(
                     true
                 );
 
-                const {
-                    data,
-                    error
-                } =
-                    await supabase.functions.invoke(
-                        "admin-users",
-                        {
-                            body: {
-                                action: "list"
-                            }
+                if (arquitetosRuntimePromise) {
+
+                    const parceiros =
+                        await arquitetosRuntimePromise;
+
+                    if (ativo) {
+                        setArquitetosParceiros(
+                            parceiros
+                        );
+                    }
+
+                    return;
+
+                }
+
+                arquitetosRuntimePromise =
+                    (async () => {
+
+                        const {
+                            data,
+                            error
+                        } =
+                            await supabase.functions.invoke(
+                                "admin-users",
+                                {
+                                    body: {
+                                        action: "list"
+                                    }
+                                }
+                            );
+
+                        if (error) {
+                            throw error;
                         }
-                    );
 
-                if (error) {
-                    throw error;
-                }
+                        if (data?.error) {
+                            throw new Error(
+                                data.error
+                            );
+                        }
 
-                if (data?.error) {
-                    throw new Error(
-                        data.error
-                    );
-                }
+                        const usuarios =
+                            Array.isArray(
+                                data?.users
+                            )
+                                ? data.users
+                                : [];
 
-                const usuarios =
-                    Array.isArray(
-                        data?.users
-                    )
-                        ? data.users
-                        : [];
+                        return usuarios.filter(
+                            usuario =>
+                                Number(
+                                    usuario.role_id
+                                ) === 6
+                        );
+
+                    })();
 
                 const parceiros =
-                    usuarios.filter(
-                        usuario =>
-                            Number(
-                                usuario.role_id
-                            ) === 6
-                    );
+                    await arquitetosRuntimePromise;
 
-                console.log(
-                    "ARQUITETOS / PARCEIROS:",
-                    parceiros
-                );
+                arquitetosRuntimeCache =
+                    parceiros || [];
 
                 if (ativo) {
-
                     setArquitetosParceiros(
-                        parceiros
+                        arquitetosRuntimeCache
                     );
-
                 }
 
             } catch (error) {
@@ -1459,35 +1760,25 @@ useEffect(() => {
                 );
 
                 if (ativo) {
-
-                    setArquitetosParceiros(
-                        []
-                    );
-
+                    setArquitetosParceiros([]);
                 }
 
             } finally {
 
+                arquitetosRuntimePromise = null;
+
                 if (ativo) {
-
-                    setCarregandoArquitetos(
-                        false
-                    );
-
+                    setCarregandoArquitetos(false);
                 }
 
             }
 
         };
 
-
     carregarArquitetosParceiros();
 
-
     return () => {
-
         ativo = false;
-
     };
 
 }, []);
@@ -1495,179 +1786,209 @@ useEffect(() => {
 =================================================
 RECUPERAR ESTADO DA SESSÃO
 =================================================
+
+A sessão tem prioridade quando o usuário retorna para
+o mesmo orçamento e a mesma versão, evitando que uma
+leitura do banco substitua alterações ainda não salvas.
+=================================================
 */
 
-useEffect(
-    () => {
+useEffect(() => {
 
-        if (!isEditor) {
+    estadoHidratadoRef.current = false;
+
+    if (!isEditor) {
+        setRascunhoCarregado(true);
+        return;
+    }
+
+    try {
+
+        const chaveSessao =
+            getSessionStateKey(
+                urlOrcamentoId,
+                urlVersaoId || ""
+            );
+
+        let salvo =
+            sessionStorage.getItem(
+                chaveSessao
+            );
+
+        /*
+        Quando a URL não informa a versão, encontra o estado
+        mais recente dessa mesma cotação.
+        */
+        if (
+            !salvo &&
+            urlOrcamentoId &&
+            !urlVersaoId
+        ) {
+
+            const prefixo =
+                `${SESSION_STATE_KEY}:${String(
+                    urlOrcamentoId
+                ).trim()}:`;
+
+            const candidatos = [];
+
+            for (
+                let indice = 0;
+                indice < sessionStorage.length;
+                indice += 1
+            ) {
+
+                const chave =
+                    sessionStorage.key(indice);
+
+                if (
+                    chave &&
+                    chave.startsWith(prefixo)
+                ) {
+                    candidatos.push(chave);
+                }
+
+            }
+
+            candidatos.sort();
+
+            for (
+                let indice = candidatos.length - 1;
+                indice >= 0;
+                indice -= 1
+            ) {
+
+                const candidato =
+                    sessionStorage.getItem(
+                        candidatos[indice]
+                    );
+
+                if (candidato) {
+                    salvo = candidato;
+                    break;
+                }
+
+            }
+
+        }
+
+        /*
+        Compatibilidade com a versão anterior, que usava
+        uma única chave global.
+        */
+        if (!salvo) {
+            salvo =
+                sessionStorage.getItem(
+                    SESSION_STATE_KEY
+                );
+        }
+
+        if (!salvo) {
             setRascunhoCarregado(true);
             return;
         }
 
-        try {
+        const dados =
+            JSON.parse(salvo);
 
-            const salvo =
-                sessionStorage.getItem(
-                    SESSION_STATE_KEY
-                );
-
-            if (!salvo) {
-                setRascunhoCarregado(true);
-                return;
-            }
-
-            const dados =
-                JSON.parse(salvo);
-
-            /*
-            =================================================
-            CONFERE SE O ESTADO É DA MESMA TELA
-            =================================================
-            */
-
-            const mesmaTela =
-                String(
-                    dados.orcamentoId || ""
-                ) ===
-                String(
-                    urlOrcamentoId || ""
-                ) &&
-                String(
-                    dados.versaoId || ""
-                ) ===
-                String(
-                    urlVersaoId || ""
-                );
-
-            /*
-            =================================================
-            NOVO ORÇAMENTO
-            =================================================
-            */
-
-            if (
-                !urlOrcamentoId &&
-                dados.orcamentoId
-            ) {
-
-                setRascunhoCarregado(true);
-                return;
-
-            }
-
-            /*
-            =================================================
-            ORÇAMENTO EXISTENTE
-            =================================================
-            */
-
-            if (
-                urlOrcamentoId &&
-                !mesmaTela
-            ) {
-
-                setRascunhoCarregado(true);
-                return;
-
-            }
-
-            if (
-                dados.orcamento
-            ) {
-
-                setOrcamento(
-                    atual => ({
-                        ...atual,
-                        ...dados.orcamento
-                    })
-                );
-
-            }
-
-            if (
-                Array.isArray(
-                    dados.ambientes
-                )
-            ) {
-
-                setAmbientes(
-                    dados.ambientes.length > 0
-                        ? dados.ambientes
-                        : [
-                            novoAmbiente()
-                        ]
-                );
-
-            }
-
-            /*
-            =================================================
-            MULTIPLICADOR
-            =================================================
-            */
-
-            if (
-                [1, 1.1, 1.2, 1.3, 1.5]
-                    .includes(
-                        Number(
-                            dados.multiplicador
-                        )
-                    )
-            ) {
-
-                setMultiplicador(
-                    Number(
-                        dados.multiplicador
-                    )
-                );
-
-            }
-if (
-    dados.valorFinalDesejado !==
-    undefined
-) {
-    setValorFinalDesejado(
-        dados.valorFinalDesejado
-    );
-}
-
-if (
-    dados.overFinalAplicado !==
-    undefined
-) {
-    setOverFinalAplicado(
-        Boolean(
-            dados.overFinalAplicado
-        )
-    );
-}
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "Erro ao recuperar estado da sessão:",
-                error
+        const mesmaTela =
+            String(dados.orcamentoId || "") ===
+                String(urlOrcamentoId || "") &&
+            (
+                !urlVersaoId ||
+                !dados.versaoId ||
+                String(dados.versaoId || "") ===
+                    String(urlVersaoId || "")
             );
 
-        } finally {
-
-            setRascunhoCarregado(
-                true
-            );
-
+        if (!mesmaTela) {
+            setRascunhoCarregado(true);
+            return;
         }
 
-    },
-    [
-        isEditor,
-        urlOrcamentoId,
-        urlVersaoId
-    ]
-);
+        if (dados.orcamento) {
+            setOrcamento(
+                atual => ({
+                    ...atual,
+                    ...dados.orcamento
+                })
+            );
+        }
 
-   /*
+        if (Array.isArray(dados.ambientes)) {
+            setAmbientes(
+                dados.ambientes.length > 0
+                    ? dados.ambientes
+                    : [novoAmbiente()]
+            );
+        }
+
+        if (dados.versaoId) {
+            setVersaoId(
+                dados.versaoId
+            );
+        }
+
+        if (dados.versaoAtual !== undefined) {
+            setVersaoAtual(
+                Number(dados.versaoAtual) || 0
+            );
+        }
+
+        if (Array.isArray(dados.versoesOrcamento)) {
+            setVersoesOrcamento(
+                dados.versoesOrcamento
+            );
+        }
+
+        if (
+            [1, 1.1, 1.2, 1.3, 1.5].includes(
+                Number(dados.multiplicador)
+            )
+        ) {
+            setMultiplicador(
+                Number(dados.multiplicador)
+            );
+        }
+
+        if (dados.valorFinalDesejado !== undefined) {
+            setValorFinalDesejado(
+                dados.valorFinalDesejado
+            );
+        }
+
+        if (dados.overFinalAplicado !== undefined) {
+            setOverFinalAplicado(
+                Boolean(dados.overFinalAplicado)
+            );
+        }
+
+        if (dados.arquitetoManual !== undefined) {
+            setArquitetoManual(
+                Boolean(dados.arquitetoManual)
+            );
+        }
+
+        estadoHidratadoRef.current = true;
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao recuperar estado da sessão:",
+            error
+        );
+
+    } finally {
+        setRascunhoCarregado(true);
+    }
+
+}, [
+    isEditor,
+    urlOrcamentoId,
+    urlVersaoId
+]);
+
+/*
 =================================================
 SALVAR ESTADO DA SESSÃO AUTOMATICAMENTE
 =================================================
@@ -1687,28 +2008,46 @@ useEffect(
 
         try {
 
+            const chaveSessao =
+                getSessionStateKey(
+                    orcamentoId,
+                    versaoId
+                );
+
             sessionStorage.setItem(
-                SESSION_STATE_KEY,
+                chaveSessao,
                 JSON.stringify({
-    orcamentoId:
-        orcamentoId || "",
+                    orcamentoId:
+                        orcamentoId || "",
 
-    versaoId:
-        versaoId || "",
+                    versaoId:
+                        versaoId || "",
 
-    orcamento,
+                    versaoAtual,
 
-    ambientes,
+                    versoesOrcamento,
 
-    multiplicador,
+                    orcamento,
 
-    valorFinalDesejado,
+                    ambientes,
 
-    overFinalAplicado,
+                    multiplicador,
 
-    atualizadoEm:
-        Date.now()
-})
+                    valorFinalDesejado,
+
+                    overFinalAplicado,
+
+                    arquitetoManual,
+
+                    versaoAtual,
+
+                    versaoId,
+
+                    versoesOrcamento,
+
+                    atualizadoEm:
+                        Date.now()
+                })
             );
 
             /*
@@ -1725,7 +2064,13 @@ useEffect(
 
                     ambientes,
 
-                    multiplicador
+                    multiplicador,
+
+                    valorFinalDesejado,
+
+                    overFinalAplicado,
+
+                    arquitetoManual
 
                 })
             );
@@ -1751,7 +2096,11 @@ useEffect(
         multiplicador,
         rascunhoCarregado,
         valorFinalDesejado,
-overFinalAplicado,
+        overFinalAplicado,
+        arquitetoManual,
+        versaoAtual,
+        versaoId,
+        versoesOrcamento
     ]
 );
 
@@ -1783,7 +2132,10 @@ useEffect(() => {
             }
 
             sessionStorage.setItem(
-                SESSION_SCROLL_KEY,
+                getScrollStateKey(
+                    orcamentoId,
+                    versaoId
+                ),
                 JSON.stringify({
                     orcamentoId:
                         orcamentoId || "",
@@ -1941,6 +2293,12 @@ useEffect(() => {
             }
 
             const salvo =
+                sessionStorage.getItem(
+                    getScrollStateKey(
+                        orcamentoId,
+                        versaoId
+                    )
+                ) ||
                 sessionStorage.getItem(
                     SESSION_SCROLL_KEY
                 );
@@ -2352,7 +2710,8 @@ function sincronizarScrollTabelaOrcamento(
                     item_nome: complemento.item_nome || "",
                     item_descricao: complemento.item_descricao || "",
                     padrao_medicao: complemento.padrao_medicao || "",
-                    cor_complexidade_id: "",
+                    cor_complexidade_id:
+                        complemento.cor_complexidade_id || "",
                     cor_complexidade_cor:
                         complemento.cor_complexidade_cor ?? "",
                     cor_complexidade_nivel:
@@ -2394,12 +2753,17 @@ function sincronizarScrollTabelaOrcamento(
                     mdf_id: row.mdf_id || "",
                     mdf_nome: row.mdf_nome || "",
                     mdf_cor: row.mdf_cor ?? "",
-                    cor_complexidade_id: "",
+                    cor_complexidade_id:
+                        row.cor_complexidade_id || "",
                     cor_complexidade_cor:
                         row.cor_complexidade_cor ?? "",
                     cor_complexidade_nivel:
                         row.cor_complexidade_nivel ?? "",
                     valor_m2: row.valor_m2 ?? 0,
+                    m2_total_manual:
+                        row.m2_total_manual ?? null,
+                    valor_minimo_proposta_manual:
+                        row.valor_minimo_proposta_manual ?? null,
                     possui_complementos:
                         Boolean(row.possui_complementos),
                     complementos:
@@ -2420,11 +2784,21 @@ function sincronizarScrollTabelaOrcamento(
             });
 
             setOrcamento({
-    nome: quote.nome || "",
-    cliente: quote.cliente || "",
-    status: quote.status || "rascunho",
-    observacoes: quote.observacoes || OBSERVACOES_PADRAO
-});
+                nome: quote.nome || "",
+                cliente: quote.cliente || "",
+                arquiteto_empresa:
+                    quote.arquiteto_empresa || "",
+                status: quote.status || "rascunho",
+                observacoes:
+                    quote.observacoes ||
+                    OBSERVACOES_PADRAO
+            });
+
+            setArquitetoManual(
+                Boolean(
+                    quote.arquiteto_manual
+                )
+            );
 
             setAmbientes(
                 (ambientesResult.data || []).map(row => ({
@@ -2456,119 +2830,17 @@ setMultiplicador(
         : 1
 );
 
-/*
-=================================================
-RESTAURAR ALTERAÇÕES NÃO SALVAS DA SESSÃO
-=================================================
-*/
+setValorFinalDesejado(
+    version.valor_final_desejado ?? ""
+);
 
-try {
+setOverFinalAplicado(
+    Boolean(
+        version.over_final_aplicado
+    )
+);
 
-    const salvo =
-        sessionStorage.getItem(
-            SESSION_STATE_KEY
-        );
-
-    if (salvo) {
-
-        const dados =
-            JSON.parse(
-                salvo
-            );
-
-        const mesmaTela =
-            String(
-                dados.orcamentoId || ""
-            ) ===
-            String(
-                quote.id
-            ) &&
-            String(
-                dados.versaoId || ""
-            ) ===
-            String(
-                version.id
-            );
-
-        if (
-            mesmaTela &&
-            Array.isArray(
-                dados.ambientes
-            )
-        ) {
-
-            setOrcamento(
-                dados.orcamento || {
-                    nome: quote.nome || "",
-                    cliente: quote.cliente || "",
-                    cliente: quote.cliente || "",
-                    status:
-                        quote.status ||
-                        "rascunho",
-                    observacoes:
-                        quote.observacoes ||
-                        gerarObservacoesPadrao(0)
-                }
-            );
-
-            setAmbientes(
-                dados.ambientes.length > 0
-                    ? dados.ambientes
-                    : [novoAmbiente()]
-            );
-
-            if (
-                [1, 1.1, 1.2, 1.3, 1.5]
-                    .includes(
-                        Number(
-                            dados.multiplicador
-                        )
-                    )
-            ) {
-
-                setMultiplicador(
-                    Number(
-                        dados.multiplicador
-                    )
-                ); if (
-    dados.valorFinalDesejado !==
-    undefined
-) {
-    setValorFinalDesejado(
-        dados.valorFinalDesejado
-    );
-}
-
-if (
-    dados.overFinalAplicado !==
-    undefined
-) {
-    setOverFinalAplicado(
-        Boolean(
-            dados.overFinalAplicado
-        )
-    );
-}
-
-            }
-
-        }
-
-    }
-
-} catch (
-    error
-) {
-
-    console.error(
-        "Erro ao restaurar alterações da sessão:",
-        error
-    );
-
-}
-setRascunhoCarregado(true);
-
-        } catch (error) {
+} catch (error) {
             console.error("Erro ao carregar orçamento:", error);
             setErroBase(
                 error.message ||
@@ -2595,24 +2867,206 @@ setRascunhoCarregado(true);
 
     useEffect(() => {
 
-        if (!isEditor || !urlOrcamentoId) return;
+        if (
+            !isEditor ||
+            !urlOrcamentoId ||
+            !rascunhoCarregado ||
+            carregandoBase
+        ) {
+            return;
+        }
 
-        carregarOrcamento(
-            urlOrcamentoId,
-            urlVersaoId || ""
-        );
+        let deveCarregarDoBanco = true;
 
-    }, [isEditor, urlOrcamentoId, urlVersaoId]);
+        try {
+
+            /*
+            =====================================================
+            O ESTADO DA SESSÃO É O PRIMEIRO NÍVEL DO CRM
+            =====================================================
+
+            Quando o usuário retorna para a mesma cotação, não
+            reconstruímos a tela nem substituímos os dados por uma
+            nova leitura do banco. O orçamento já está hidratado
+            pela sessão e continua disponível imediatamente.
+            =====================================================
+            */
+
+            const chaveSessaoExata =
+                getSessionStateKey(
+                    urlOrcamentoId,
+                    urlVersaoId || ""
+                );
+
+            let salvo =
+                sessionStorage.getItem(
+                    chaveSessaoExata
+                );
+
+            /*
+            Quando a URL ainda não contém a versão, procura também
+            o estado "auto" e as chaves de versões salvas do mesmo
+            orçamento. Isso evita uma nova carga apenas porque a
+            página foi aberta sem ?versao=.
+            */
+            if (!salvo && !urlVersaoId) {
+
+                const prefixo =
+                    `${SESSION_STATE_KEY}:${String(
+                        urlOrcamentoId
+                    ).trim()}:`;
+
+                const candidatos = [];
+
+                for (
+                    let indice = 0;
+                    indice < sessionStorage.length;
+                    indice += 1
+                ) {
+
+                    const chave =
+                        sessionStorage.key(indice);
+
+                    if (
+                        chave &&
+                        chave.startsWith(prefixo)
+                    ) {
+                        candidatos.push(chave);
+                    }
+
+                }
+
+                candidatos.sort();
+
+                for (
+                    let indice = candidatos.length - 1;
+                    indice >= 0;
+                    indice -= 1
+                ) {
+
+                    const candidato =
+                        sessionStorage.getItem(
+                            candidatos[indice]
+                        );
+
+                    if (candidato) {
+                        salvo = candidato;
+                        break;
+                    }
+
+                }
+
+            }
+
+            /*
+            Compatibilidade com o estado legado global.
+            */
+            if (!salvo) {
+                salvo =
+                    sessionStorage.getItem(
+                        SESSION_STATE_KEY
+                    );
+            }
+
+            if (salvo) {
+
+                const dados =
+                    JSON.parse(salvo);
+
+                const mesmaCotacao =
+                    String(dados.orcamentoId || "") ===
+                    String(urlOrcamentoId || "");
+
+                const mesmaVersao =
+                    !urlVersaoId ||
+                    !dados.versaoId ||
+                    String(dados.versaoId || "") ===
+                    String(urlVersaoId || "");
+
+                if (
+                    mesmaCotacao &&
+                    mesmaVersao &&
+                    Array.isArray(dados.ambientes)
+                ) {
+
+                    deveCarregarDoBanco = false;
+
+                    /*
+                    Se a URL não possui versão, sincroniza a URL com
+                    a versão real do estado sem desmontar a tela.
+                    */
+                    if (
+                        !urlVersaoId &&
+                        dados.versaoId
+                    ) {
+
+                        setSearchParams(
+                            {
+                                orcamento:
+                                    urlOrcamentoId,
+                                versao:
+                                    dados.versaoId
+                            },
+                            { replace: true }
+                        );
+
+                    }
+                }
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao verificar estado da sessão antes do carregamento:",
+                error
+            );
+
+        }
+
+        if (deveCarregarDoBanco) {
+
+            carregarOrcamento(
+                urlOrcamentoId,
+                urlVersaoId || ""
+            );
+
+        }
+
+    }, [
+        isEditor,
+        urlOrcamentoId,
+        urlVersaoId,
+        rascunhoCarregado,
+        carregandoBase
+    ]);
 
 
    const abrirNovoOrcamento = () => {
-    sessionStorage.removeItem(
-    SESSION_STATE_KEY
-);
 
-sessionStorage.removeItem(
-    SESSION_SCROLL_KEY
-);
+    sessionStorage.removeItem(
+        getSessionStateKey(
+            "",
+            ""
+        )
+    );
+
+    sessionStorage.removeItem(
+        getScrollStateKey(
+            "",
+            ""
+        )
+    );
+
+    /*
+    Compatibilidade com versões antigas do armazenamento.
+    */
+    sessionStorage.removeItem(
+        SESSION_STATE_KEY
+    );
+
+    sessionStorage.removeItem(
+        SESSION_SCROLL_KEY
+    );
 
     setOrcamentoId("");
     setVersaoId("");
@@ -2621,7 +3075,8 @@ sessionStorage.removeItem(
 
     setMultiplicador(1);
     setValorFinalDesejado("");
-setOverFinalAplicado(false);
+    setOverFinalAplicado(false);
+    setArquitetoManual(false);
 
     setOrcamento({
         nome: "",
@@ -2655,6 +3110,9 @@ setOverFinalAplicado(false);
         const selectedVersionId = event.target.value;
 
         if (!selectedVersionId || !urlOrcamentoId) return;
+
+        setRascunhoCarregado(false);
+        estadoHidratadoRef.current = false;
 
         setSearchParams({
             orcamento: urlOrcamentoId,
@@ -3446,27 +3904,35 @@ try {
     );
 
 }
-setValoresBase(
-    atual => {
+if (
+    valoresDoItem.length > 0
+) {
 
-        const semValoresDoItem =
-            atual.filter(
-                valor =>
-                    String(
-                        valor?.item_id ?? ""
-                    ).trim() !==
-                    String(
-                        baseId ?? ""
-                    ).trim()
-            );
+    setValoresBase(
+        atual => {
 
-        return [
-            ...semValoresDoItem,
-            ...valoresDoItem
-        ];
+            const chave =
+                String(
+                    baseId ?? ""
+                ).trim();
 
-    }
-);
+            const semValoresDoItem =
+                (atual || []).filter(
+                    valor =>
+                        String(
+                            valor?.item_id ?? ""
+                        ).trim() !== chave
+                );
+
+            return [
+                ...semValoresDoItem,
+                ...valoresDoItem
+            ];
+
+        }
+    );
+
+}
             setAmbientes(
                 atual =>
                     atual.map(
@@ -3648,6 +4114,103 @@ setValoresBase(
             );
 
         };
+
+
+    const garantirValoresItemBase =
+    async (
+        baseId
+    ) => {
+
+        const chave =
+            String(
+                baseId || ""
+            ).trim();
+
+        if (!chave) {
+            return [];
+        }
+
+        const existentes =
+            (valoresBase || []).filter(
+                valor =>
+                    String(
+                        valor?.item_id ?? ""
+                    ).trim() === chave
+            );
+
+        if (existentes.length > 0) {
+            return existentes;
+        }
+
+        try {
+
+            const {
+                data,
+                error
+            } = await supabase
+                .from("tabela_preco_valores")
+                .select(
+                    [
+                        "id",
+                        "item_id",
+                        "cor",
+                        "complexidade",
+                        "formula",
+                        "valor_calculado",
+                        "valor_manual",
+                        "usar_valor_manual",
+                        "ativo"
+                    ].join(",")
+                )
+                .eq("item_id", baseId)
+                .eq("ativo", true)
+                .order("cor", { ascending: true })
+                .order("complexidade", { ascending: true });
+
+            if (error) {
+                throw error;
+            }
+
+            const valores =
+                data || [];
+
+            if (valores.length > 0) {
+
+                setValoresBase(
+                    atual => {
+
+                        const semMesmoItem =
+                            (atual || []).filter(
+                                valor =>
+                                    String(
+                                        valor?.item_id ?? ""
+                                    ).trim() !== chave
+                            );
+
+                        return [
+                            ...semMesmoItem,
+                            ...valores
+                        ];
+
+                    }
+                );
+
+            }
+
+            return valores;
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao garantir valores do item da base:",
+                error
+            );
+
+            return [];
+
+        }
+
+    };
 
 
     const obterValoresDisponiveis =
@@ -4613,6 +5176,190 @@ const selecionarComplexidadeComplemento =
 
 /*
 =================================================
+RESTAURAR IDS DE COR / COMPLEXIDADE
+=================================================
+
+Versões antigas podem guardar a cor e a complexidade,
+mas não o ID da combinação. O sistema reconstrói apenas
+os IDs ausentes e preserva qualquer seleção já definida.
+=================================================
+*/
+
+useEffect(() => {
+
+    if (!ambientes.length) {
+        return;
+    }
+
+    const ids =
+        new Set();
+
+    ambientes.forEach(
+        ambiente => {
+            (ambiente.itens || []).forEach(
+                item => {
+                    if (item?.base_item_id) {
+                        ids.add(
+                            String(
+                                item.base_item_id
+                            ).trim()
+                        );
+                    }
+                }
+            );
+        }
+    );
+
+    ids.forEach(
+        id => {
+            garantirValoresItemBase(
+                id
+            );
+        }
+    );
+
+    if (!valoresBase.length) {
+        return;
+    }
+
+    setAmbientes(atual => {
+
+        let mudou = false;
+
+        const proximo = atual.map(
+            ambiente => ({
+                ...ambiente,
+                itens: (ambiente.itens || []).map(
+                    item => {
+
+                        if (
+                            item.cor_complexidade_id ||
+                            !item.base_item_id ||
+                            item.mdf_cor === "" ||
+                            item.cor_complexidade_cor === "" ||
+                            item.cor_complexidade_nivel === ""
+                        ) {
+                            return item;
+                        }
+
+                        const corMdf =
+                            getColorNumber(item.mdf_cor);
+
+                        const corSelecionada =
+                            getColorNumber(
+                                item.cor_complexidade_cor
+                            );
+
+                        const registro =
+                            valoresBase.find(
+                                valor =>
+                                    String(valor.item_id) ===
+                                        String(item.base_item_id) &&
+                                    getColorNumber(valor.cor) ===
+                                        corMdf &&
+                                    getColorNumber(valor.cor) ===
+                                        corSelecionada &&
+                                    Number(valor.complexidade) ===
+                                        Number(item.cor_complexidade_nivel)
+                            );
+
+                        if (!registro) {
+                            return item;
+                        }
+
+                        mudou = true;
+
+                        return {
+                            ...item,
+                            cor_complexidade_id:
+                                registro.id
+                        };
+                    }
+                )
+            })
+        );
+
+        return mudou
+            ? proximo
+            : atual;
+
+    });
+
+}, [ambientes, valoresBase]);
+
+useEffect(() => {
+
+    if (!Object.keys(valoresComplementos).length) {
+        return;
+    }
+
+    setAmbientes(atual => {
+
+        let mudou = false;
+
+        const proximo = atual.map(
+            ambiente => ({
+                ...ambiente,
+                itens: (ambiente.itens || []).map(
+                    item => ({
+                        ...item,
+                        complementos:
+                            (item.complementos || []).map(
+                                complemento => {
+
+                                    if (
+                                        complemento.cor_complexidade_id ||
+                                        !complemento.item_id ||
+                                        complemento.cor_complexidade_cor === "" ||
+                                        complemento.cor_complexidade_nivel === ""
+                                    ) {
+                                        return complemento;
+                                    }
+
+                                    const valores =
+                                        valoresComplementos[
+                                            String(
+                                                complemento.item_id
+                                            ).trim()
+                                        ] || [];
+
+                                    const registro =
+                                        valores.find(
+                                            valor =>
+                                                getColorNumber(valor.cor) ===
+                                                    getColorNumber(complemento.cor_complexidade_cor) &&
+                                                Number(valor.complexidade) ===
+                                                    Number(complemento.cor_complexidade_nivel)
+                                        );
+
+                                    if (!registro) {
+                                        return complemento;
+                                    }
+
+                                    mudou = true;
+
+                                    return {
+                                        ...complemento,
+                                        cor_complexidade_id:
+                                            registro.id
+                                    };
+                                }
+                            )
+                    })
+                )
+            })
+        );
+
+        return mudou
+            ? proximo
+            : atual;
+
+    });
+
+}, [valoresComplementos]);
+
+/*
+=================================================
 CÁLCULOS
 =================================================
 */
@@ -4662,10 +5409,16 @@ const ambientesCalculados =
                                 ==============================
                                 */
 
-                                const m2Total =
-                                    m2 *
-                                    quantidade;
+                                const m2TotalAutomatico =
+    m2 *
+    quantidade;
 
+const m2Total =
+    item.m2_total_manual !== null &&
+    item.m2_total_manual !== undefined &&
+    item.m2_total_manual !== ""
+        ? numberValue(item.m2_total_manual)
+        : m2TotalAutomatico;
 
                                 /*
                                 ==============================
@@ -4808,9 +5561,18 @@ const ambientesCalculados =
     valorLed +
     valorMetalon;
 
-const valorMinimoPropostaAlme =
+const valorMinimoPropostaAlmeAutomatico =
     valorMinimoPropostaAlmeBase *
     multiplicador;
+
+const valorMinimoPropostaAlme =
+    item.valor_minimo_proposta_manual !== null &&
+    item.valor_minimo_proposta_manual !== undefined &&
+    item.valor_minimo_proposta_manual !== ""
+        ? numberValue(
+            item.valor_minimo_proposta_manual
+        )
+        : valorMinimoPropostaAlmeAutomatico;
 
                                 /*
                                 =====================================================
@@ -6510,11 +7272,7 @@ ${novoCronograma}`;
 
                 doc.setFontSize(7.5);
 
-                doc.text(
-                    `Versão V${versaoAtual}`,
-                    margem,
-                    y
-                );
+                
 
                 if (
                     overFinalAplicado &&
@@ -6523,14 +7281,7 @@ ${novoCronograma}`;
                     ) > 0
                 ) {
 
-                    doc.text(
-                        `Valor final desejado: ${money(valorFinalDesejado)}`,
-                        pageWidth - margem,
-                        y,
-                        {
-                            align: "right"
-                        }
-                    );
+                
 
                 }
 
@@ -6888,6 +7639,8 @@ ${novoCronograma}`;
                             arquiteto_empresa: orcamento.arquiteto_empresa || null,
                             observacoes: orcamento.observacoes || null,
                             status: statusValue(orcamento.status),
+                            arquiteto_manual:
+                                Boolean(arquitetoManual),
                             versao_atual: 1,
                             created_by: userId
                         })
@@ -6909,7 +7662,9 @@ ${novoCronograma}`;
                             cliente: orcamento.cliente || null,
                             arquiteto_empresa: orcamento.arquiteto_empresa || null,
                             observacoes: orcamento.observacoes || null,
-                            status: statusValue(orcamento.status)
+                            status: statusValue(orcamento.status),
+                            arquiteto_manual:
+                                Boolean(arquitetoManual)
                         })
                         .eq("id", quoteId);
 
@@ -7045,6 +7800,12 @@ ${novoCronograma}`;
                     precoFinalTotal,
                 over_total:
                     overTotal,
+                valor_final_desejado:
+                    valorFinalDesejado === ""
+                        ? null
+                        : numberValue(valorFinalDesejado),
+                over_final_aplicado:
+                    Boolean(overFinalAplicado),
                 created_by: userId
             };
 
@@ -7127,7 +7888,11 @@ ${novoCronograma}`;
                             preco_final_total:
                                 dadosVersao.preco_final_total,
                             over_total:
-                                dadosVersao.over_total
+                                dadosVersao.over_total,
+                            valor_final_desejado:
+                                dadosVersao.valor_final_desejado,
+                            over_final_aplicado:
+                                dadosVersao.over_final_aplicado
                         })
                         .eq("id", versaoIdParaSalvar)
                         .select("*")
@@ -7216,6 +7981,8 @@ ${novoCronograma}`;
                                     item.mdf_cor === ""
                                         ? null
                                         : numberValue(item.mdf_cor),
+                                cor_complexidade_id:
+                                    item.cor_complexidade_id || null,
                                 cor_complexidade_cor:
                                     item.cor_complexidade_cor === ""
                                         ? null
@@ -7228,6 +7995,14 @@ ${novoCronograma}`;
                                     numberValue(item.calculadoM2),
                                 m2_total:
                                     numberValue(item.calculadoM2Total),
+                                    m2_total_manual:
+    item.m2_total_manual === null ||
+    item.m2_total_manual === undefined ||
+    item.m2_total_manual === ""
+        ? null
+        : numberValue(
+            item.m2_total_manual
+        ),
                                 valor_m2:
                                     numberValue(item.calculadoValorM2),
                                 valor_final_m2:
@@ -7264,6 +8039,14 @@ ${novoCronograma}`;
                                     numberValue(item.calculadoValorUnitario),
                                 valor_minimo_proposta:
                                     numberValue(item.calculadoValorMinimoPropostaAlme),
+                                valor_minimo_proposta_manual:
+                                    item.valor_minimo_proposta_manual === null ||
+                                    item.valor_minimo_proposta_manual === undefined ||
+                                    item.valor_minimo_proposta_manual === ""
+                                        ? null
+                                        : numberValue(
+                                            item.valor_minimo_proposta_manual
+                                        ),
                                 valor_memorial_descritivo:
                                     numberValue(item.calculadoValorMemorialDescritivo),
                                 over_analista_percentual:
@@ -7316,6 +8099,8 @@ ${novoCronograma}`;
                                         complemento.item_descricao || null,
                                     padrao_medicao:
                                         complemento.padrao_medicao || null,
+                                    cor_complexidade_id:
+                                        complemento.cor_complexidade_id || null,
                                     cor_complexidade_cor:
                                         complemento.cor_complexidade_cor === ""
                                             ? null
@@ -7348,26 +8133,83 @@ ${novoCronograma}`;
             setVersaoId(savedVersion.id);
             setVersaoAtual(versaoNumero);
 
+            try {
+                sessionStorage.setItem(
+                    getSessionStateKey(
+                        quoteId,
+                        savedVersion.id
+                    ),
+                    JSON.stringify({
+                        orcamentoId: quoteId,
+                        versaoId: savedVersion.id,
+                        versaoAtual: versaoNumero,
+                        orcamento: {
+                            ...orcamento,
+                            arquiteto_empresa:
+                                orcamento.arquiteto_empresa || ""
+                        },
+                        ambientes,
+                        multiplicador,
+                        valorFinalDesejado,
+                        overFinalAplicado,
+                        arquitetoManual,
+                        atualizadoEm: Date.now()
+                    })
+                );
+            } catch (error) {
+                console.error(
+                    "Erro ao consolidar estado salvo da sessão:",
+                    error
+                );
+            }
+
+            setVersoesOrcamento(
+                atual => {
+                    const semAtual =
+                        (atual || []).filter(
+                            version =>
+                                version.id !==
+                                savedVersion.id
+                        );
+
+                    return [
+                        savedVersion,
+                        ...semAtual
+                    ].sort(
+                        (a, b) =>
+                            Number(b.versao) -
+                            Number(a.versao)
+                    );
+                }
+            );
+
             localStorage.removeItem(DRAFT_STORAGE_KEY);
+
+            /*
+            O estado da sessão da versão salva permanece
+            armazenado na chave própria da cotação/versão.
+            Isso permite voltar para a tela sem reconstruí-la
+            do zero e sem perder alterações locais.
+            */
             sessionStorage.removeItem(
-    SESSION_STATE_KEY
-);
+                SESSION_STATE_KEY
+            );
 
-sessionStorage.removeItem(
-    SESSION_SCROLL_KEY
-);
             sessionStorage.removeItem(
-    SESSION_STATE_KEY
-);
+                SESSION_SCROLL_KEY
+            );
 
-sessionStorage.removeItem(
-    SESSION_SCROLL_KEY
-);
-
-            setSearchParams({
-                orcamento: quoteId,
-                versao: savedVersion.id
-            });
+            if (
+                String(urlOrcamentoId || "") !==
+                    String(quoteId || "") ||
+                String(urlVersaoId || "") !==
+                    String(savedVersion.id || "")
+            ) {
+                setSearchParams({
+                    orcamento: quoteId,
+                    versao: savedVersion.id
+                });
+            }
 
             const mensagem = deveCriarNovaVersao
                 ? `Nova versão V${versaoNumero} criada com sucesso.`
@@ -8539,10 +9381,40 @@ sessionStorage.removeItem(
                                                         index
                                                     ) => {
 
-                                                        const valores =
+                                                        const valoresDisponiveis =
                                                             obterValoresDisponiveis(
                                                                 item
                                                             );
+
+                                                        const valorSelecionado =
+                                                            item.cor_complexidade_id
+                                                                ? (valoresBase || []).find(
+                                                                    valor =>
+                                                                        String(
+                                                                            valor?.id ?? ""
+                                                                        ).trim() ===
+                                                                        String(
+                                                                            item.cor_complexidade_id ?? ""
+                                                                        ).trim()
+                                                                )
+                                                                : null;
+
+                                                        const valores =
+                                                            valorSelecionado &&
+                                                            !valoresDisponiveis.some(
+                                                                valor =>
+                                                                    String(
+                                                                        valor?.id ?? ""
+                                                                    ).trim() ===
+                                                                    String(
+                                                                        valorSelecionado.id ?? ""
+                                                                    ).trim()
+                                                            )
+                                                                ? [
+                                                                    valorSelecionado,
+                                                                    ...valoresDisponiveis
+                                                                ]
+                                                                : valoresDisponiveis;
 
 
                                                         const complementos =
@@ -8714,100 +9586,72 @@ sessionStorage.removeItem(
 
                                                                     <td>
 
-                                                                        <select
-                                                                            className="orcamento-tabela-select"
+                                                                        <CampoBuscaLista
                                                                             value={
                                                                                 item.base_item_id
                                                                             }
-                                                                            onChange={
-                                                                                event =>
+                                                                            selectedLabel={
+                                                                                item.base_item_nome
+                                                                            }
+                                                                            options={
+                                                                                itensBase.map(
+                                                                                    base => ({
+                                                                                        value:
+                                                                                            base.id,
+                                                                                        label:
+                                                                                            base.nome || ""
+                                                                                    })
+                                                                                )
+                                                                            }
+                                                                            listId={
+                                                                                `orcamento-itens-base-${ambiente.id}-${item.id}`
+                                                                            }
+                                                                            placeholder="Buscar item..."
+                                                                            onSelect={
+                                                                                valor =>
                                                                                     selecionarItemBase(
                                                                                         ambiente.id,
                                                                                         item.id,
-                                                                                        event.target.value
+                                                                                        valor
                                                                                     )
                                                                             }
-                                                                        >
-
-                                                                            <option value="">
-                                                                                Selecione
-                                                                            </option>
-
-
-                                                                            {
-                                                                                itensBase.map(
-                                                                                    base => (
-
-                                                                                        <option
-                                                                                            key={
-                                                                                                base.id
-                                                                                            }
-                                                                                            value={
-                                                                                                base.id
-                                                                                            }
-                                                                                        >
-
-                                                                                            {
-                                                                                                base.nome
-                                                                                            }
-
-                                                                                        </option>
-
-                                                                                    )
-                                                                                )
-                                                                            }
-
-                                                                        </select>
+                                                                        />
 
                                                                     </td>
 
 
                                                                     <td>
 
-                                                                        <select
-                                                                            className="orcamento-tabela-select"
+                                                                        <CampoBuscaLista
                                                                             value={
                                                                                 item.mdf_id
                                                                             }
-                                                                            onChange={
-                                                                                event =>
+                                                                            selectedLabel={
+                                                                                item.mdf_nome
+                                                                            }
+                                                                            options={
+                                                                                mdfs.map(
+                                                                                    mdf => ({
+                                                                                        value:
+                                                                                            mdf.id,
+                                                                                        label:
+                                                                                            mdf.nome || ""
+                                                                                    })
+                                                                                )
+                                                                            }
+                                                                            listId={
+                                                                                `orcamento-mdfs-${ambiente.id}-${item.id}`
+                                                                            }
+                                                                            placeholder="Buscar MDF..."
+                                                                            onSelect={
+                                                                                valor =>
                                                                                     selecionarMdf(
                                                                                         ambiente.id,
                                                                                         item.id,
-                                                                                        event.target.value
+                                                                                        valor
                                                                                     )
                                                                             }
-                                                                        >
-
-                                                                            <option value="">
-                                                                                Selecione
-                                                                            </option>
-
-
-                                                                            {
-                                                                                mdfs.map(
-                                                                                    mdf => (
-
-                                                                                        <option
-                                                                                            key={
-                                                                                                mdf.id
-                                                                                            }
-                                                                                            value={
-                                                                                                mdf.id
-                                                                                            }
-                                                                                        >
-
-                                                                                            {
-                                                                                                mdf.nome
-                                                                                            }
-
-                                                                                        </option>
-
-                                                                                    )
-                                                                                )
-                                                                            }
-
-                                                                        </select>
+                                                                        />
 
                                                                     </td>
 
@@ -8939,20 +9783,35 @@ sessionStorage.removeItem(
                                                                     </td>
 
 
-                                                                    <td>
+                                                                <td>
 
-                                                                        <div className="orcamento-resultado orcamento-resultado-destaque">
+    <input
+        className="orcamento-tabela-input input-number orcamento-input-m2-total"
+        type="number"
+        min="0"
+        step="0.0001"
+        value={
+            item.m2_total_manual !== null &&
+            item.m2_total_manual !== undefined
+                ? item.m2_total_manual
+                : item.calculadoM2Total
+        }
+        onChange={
+            event =>
+                atualizarItem(
+                    ambiente.id,
+                    item.id,
+                    "m2_total_manual",
+                    event.target.value === ""
+                        ? null
+                        : numberValue(
+                            event.target.value
+                        )
+                )
+        }
+    />
 
-                                                                            {
-                                                                                decimal(
-                                                                                    item.calculadoM2Total,
-                                                                                    4
-                                                                                )
-                                                                            }
-
-                                                                        </div>
-
-                                                                    </td>
+</td>
 
 
                                                                     <td>
@@ -9039,15 +9898,102 @@ sessionStorage.removeItem(
                                                                     </td>
 <td>
 
-    <div className="orcamento-resultado orcamento-resultado-proposta-alme">
+   {(() => {
 
-        {
-            money(
-                item.calculadoValorMinimoPropostaAlme
+    const chaveMoeda =
+        `${ambiente.id}::${item.id}`;
+
+    const valorEfetivo =
+        item.valor_minimo_proposta_manual !== null &&
+        item.valor_minimo_proposta_manual !== undefined
+            ? numberValue(
+                item.valor_minimo_proposta_manual
             )
-        }
+            : numberValue(
+                item.calculadoValorMinimoPropostaAlme
+            );
 
-    </div>
+    const editando =
+        campoMoedaFocado === chaveMoeda;
+
+    return (
+
+        <input
+            className="orcamento-tabela-input input-number orcamento-input-proposta-alme"
+            type="text"
+            inputMode="decimal"
+            value={
+                editando
+                    ? String(
+                        valorEfetivo
+                    ).replace(
+                        ".",
+                        ","
+                    )
+                    : money(
+                        valorEfetivo
+                    )
+            }
+
+            onFocus={
+                event => {
+
+                    setCampoMoedaFocado(
+                        chaveMoeda
+                    );
+
+                    event.target.select();
+
+                }
+            }
+
+            onChange={
+                event => {
+
+                    const valor =
+                        event.target.value;
+
+                    if (
+                        valor.trim() === ""
+                    ) {
+
+                        atualizarItem(
+                            ambiente.id,
+                            item.id,
+                            "valor_minimo_proposta_manual",
+                            null
+                        );
+
+                        return;
+
+                    }
+
+                    atualizarItem(
+                        ambiente.id,
+                        item.id,
+                        "valor_minimo_proposta_manual",
+                        parseMoneyInput(
+                            valor
+                        )
+                    );
+
+                }
+            }
+
+            onBlur={
+                () => {
+
+                    setCampoMoedaFocado(
+                        ""
+                    );
+
+                }
+            }
+        />
+
+    );
+
+})()}
 
 </td>
 {/* =================================================
@@ -9867,50 +10813,37 @@ sessionStorage.removeItem(
                                                                                                                         Descrição do complemento
                                                                                                                     </label>
 
-                                                                                                                    <select
+                                                                                                                    <CampoBuscaLista
                                                                                                                         value={
                                                                                                                             complemento.item_id
                                                                                                                         }
-                                                                                                                        onChange={
-                                                                                                                            event =>
+                                                                                                                        selectedLabel={
+                                                                                                                            complemento.item_nome
+                                                                                                                        }
+                                                                                                                        options={
+                                                                                                                            itensComplementares.map(
+                                                                                                                                complementoBase => ({
+                                                                                                                                    value:
+                                                                                                                                        complementoBase.id,
+                                                                                                                                    label:
+                                                                                                                                        complementoBase.nome || ""
+                                                                                                                                })
+                                                                                                                            )
+                                                                                                                        }
+                                                                                                                        listId={
+                                                                                                                            `orcamento-complementos-base-${ambiente.id}-${item.id}-${complemento.id}`
+                                                                                                                        }
+                                                                                                                        placeholder="Buscar complemento..."
+                                                                                                                        onSelect={
+                                                                                                                            valor =>
                                                                                                                                 selecionarItemComplemento(
                                                                                                                                     ambiente.id,
                                                                                                                                     item.id,
                                                                                                                                     complemento.id,
-                                                                                                                                    event.target.value
+                                                                                                                                    valor
                                                                                                                                 )
                                                                                                                         }
-                                                                                                                    >
-
-                                                                                                                        <option value="">
-                                                                                                                            Selecione
-                                                                                                                        </option>
-
-
-                                                                                                                        {
-                                                                                                                            itensComplementares.map(
-                                                                                                                                complementoBase => (
-
-                                                                                                                                    <option
-                                                                                                                                        key={
-                                                                                                                                            complementoBase.id
-                                                                                                                                        }
-                                                                                                                                        value={
-                                                                                                                                            complementoBase.id
-                                                                                                                                        }
-                                                                                                                                    >
-
-                                                                                                                                        {
-                                                                                                                                            complementoBase.nome
-                                                                                                                                        }
-
-                                                                                                                                    </option>
-
-                                                                                                                                )
-                                                                                                                            )
-                                                                                                                        }
-
-                                                                                                                    </select>
+                                                                                                                    />
 
                                                                                                                 </div>
 
@@ -10195,6 +11128,19 @@ sessionStorage.removeItem(
                 Aplica o multiplicador sobre o valor mínimo
                 da proposta ALME de cada item e recalcula
                 os valores comerciais seguintes.
+
+                <br />
+                Aplique o multiplicador seguindo a seguinte regra: 
+ <br />
+1 = R$25.000,00 para cima
+ <br /> <br />
+1.1 = R$17.500 - R$25.000,00
+ <br /> <br />
+1.2 = R$10.000 - R$17.500,00
+ <br /> <br />
+1.3 = R$5.000 - R$10.000,00
+ <br /> <br />
+1.5 = Até R$5.000,00
             </small>
 
         </div>
