@@ -880,7 +880,24 @@ const [
         valoresBase,
         setValoresBase
     ] = useState([]);
+/*
+=================================================
+VALORES DOS COMPLEMENTOS
+=================================================
 
+Guarda as combinações de cor + complexidade
+de cada item que estiver sendo usado como
+complemento.
+
+Chave:
+ID DO ITEM DO COMPLEMENTO
+=================================================
+*/
+
+const [
+    valoresComplementos,
+    setValoresComplementos
+] = useState({});
 
     /*
     =================================================
@@ -3351,12 +3368,12 @@ const alternarExtra =
     =================================================
     */
 
-    const selecionarItemBase =
-        (
-            ambienteId,
-            itemId,
-            baseId
-        ) => {
+const selecionarItemBase =
+    async (
+        ambienteId,
+        itemId,
+        baseId
+    ) => {
 
             const base =
                 itensBase.find(
@@ -3365,7 +3382,91 @@ const alternarExtra =
                         baseId
                 );
 
+let valoresDoItem = [];
 
+try {
+
+    if (baseId) {
+
+        const {
+            data,
+            error
+        } = await supabase
+            .from(
+                "tabela_preco_valores"
+            )
+            .select(
+                [
+                    "id",
+                    "item_id",
+                    "cor",
+                    "complexidade",
+                    "formula",
+                    "valor_calculado",
+                    "valor_manual",
+                    "usar_valor_manual",
+                    "ativo"
+                ].join(",")
+            )
+            .eq(
+                "item_id",
+                baseId
+            )
+            .eq(
+                "ativo",
+                true
+            )
+            .order(
+                "cor",
+                {
+                    ascending: true
+                }
+            )
+            .order(
+                "complexidade",
+                {
+                    ascending: true
+                }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        valoresDoItem =
+            data || [];
+
+    }
+
+} catch (error) {
+
+    console.error(
+        "Erro ao carregar variações do item:",
+        error
+    );
+
+}
+setValoresBase(
+    atual => {
+
+        const semValoresDoItem =
+            atual.filter(
+                valor =>
+                    String(
+                        valor?.item_id ?? ""
+                    ).trim() !==
+                    String(
+                        baseId ?? ""
+                    ).trim()
+            );
+
+        return [
+            ...semValoresDoItem,
+            ...valoresDoItem
+        ];
+
+    }
+);
             setAmbientes(
                 atual =>
                     atual.map(
@@ -3499,29 +3600,7 @@ const alternarExtra =
                                             }
 
 
-                                            const complementos =
-                                                (
-                                                    item.complementos ||
-                                                    []
-                                                ).map(
-                                                    complemento => ({
-
-                                                        ...complemento,
-
-                                                        cor_complexidade_id:
-                                                            "",
-
-                                                        cor_complexidade_cor:
-                                                            "",
-
-                                                        cor_complexidade_nivel:
-                                                            "",
-
-                                                        valor_m2:
-                                                            0
-
-                                                    })
-                                                );
+                                           
 
 
                                             return {
@@ -3553,9 +3632,9 @@ const alternarExtra =
                                                     "",
 
                                                 valor_m2:
-                                                    0,
+                                                    0
 
-                                                complementos
+                                             
 
                                             };
 
@@ -3571,182 +3650,692 @@ const alternarExtra =
         };
 
 
-    /*
-    =================================================
-    VALORES DISPONÍVEIS DO ITEM PRINCIPAL
-    =================================================
-    */
-
     const obterValoresDisponiveis =
-        (
-            item
-        ) => {
+    (
+        item
+    ) => {
 
-            if (
-                !item.base_item_id ||
-                item.mdf_cor ===
-                    ""
-            ) {
+        if (
+            !item?.base_item_id ||
+            item?.mdf_cor === "" ||
+            item?.mdf_cor === null ||
+            item?.mdf_cor === undefined
+        ) {
 
-                return [];
+            return [];
 
-            }
+        }
 
 
-            return valoresBase.filter(
-                valor =>
+        const itemBaseId =
+            String(
+                item.base_item_id
+            ).trim();
 
-                    valor.item_id ===
-                        item.base_item_id &&
 
-                    Number(
-                        valor.cor
-                    ) ===
-                        Number(
-                            item.mdf_cor
-                        )
-
+        const tipoCorMdf =
+            getColorNumber(
+                item.mdf_cor
             );
 
-        };
+
+        if (
+            !itemBaseId ||
+            tipoCorMdf === null
+        ) {
+
+            return [];
+
+        }
 
 
-    /*
-    =================================================
-    VALORES DISPONÍVEIS DO COMPLEMENTO
-    =================================================
-    */
+        return (
+            valoresBase || []
+        )
+            .filter(
+                valor => {
 
-    const obterValoresComplemento =
-        (
-            item,
-            complemento
-        ) => {
-
-            if (
-                !complemento?.item_id ||
-                item.mdf_cor ===
-                    ""
-            ) {
-
-                return [];
-
-            }
+                    const valorItemId =
+                        String(
+                            valor?.item_id ?? ""
+                        ).trim();
 
 
-            return valoresBase.filter(
-                valor =>
+                    const valorCor =
+                        getColorNumber(
+                            valor?.cor
+                        );
 
-                    valor.item_id ===
-                        complemento.item_id &&
 
-                    Number(
-                        valor.cor
-                    ) ===
-                        Number(
-                            item.mdf_cor
+                    return (
+
+                        valorItemId ===
+                            itemBaseId &&
+
+                        valorCor ===
+                            tipoCorMdf &&
+
+                        Boolean(
+                            valor?.ativo
                         )
 
+                    );
+
+                }
+            )
+            .sort(
+                (
+                    a,
+                    b
+                ) =>
+                    Number(
+                        a.complexidade
+                    ) -
+                    Number(
+                        b.complexidade
+                    )
             );
 
-        };
+    };
+/*
+=================================================
+CARREGAR VALORES DO COMPLEMENTO
+=================================================
+
+Busca diretamente na tabela de preços todas
+as combinações de cor + complexidade do item
+selecionado como complemento.
+
+IMPORTANTE:
+
+O complemento NÃO depende do MDF do item
+principal.
+=================================================
+*/
+
+const carregarValoresComplemento =
+    async (
+        complementoItemId
+    ) => {
+
+        if (
+            !complementoItemId
+        ) {
+
+            return [];
+
+        }
 
 
-    /*
-    =================================================
-    SELECIONAR ITEM DO COMPLEMENTO
-    =================================================
-    */
+        const chave =
+            String(
+                complementoItemId
+            ).trim();
 
-    const selecionarItemComplemento =
-        (
-            ambienteId,
-            itemId,
-            complementoId,
-            complementoItemId
-        ) => {
 
-            const baseComplemento =
-                itensComplementares.find(
-                    item =>
-                        item.id ===
-                        complementoItemId
+        /*
+        =========================================
+        SE JÁ FOI CARREGADO, USA O CACHE
+        =========================================
+        */
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                valoresComplementos,
+                chave
+            )
+        ) {
+
+            return (
+                valoresComplementos[
+                    chave
+                ] || []
+            );
+
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } = await supabase
+
+                .from(
+                    "tabela_preco_valores"
+                )
+
+                .select(
+                    [
+                        "id",
+                        "item_id",
+                        "cor",
+                        "complexidade",
+                        "formula",
+                        "valor_calculado",
+                        "valor_manual",
+                        "usar_valor_manual",
+                        "ativo"
+                    ].join(",")
+                )
+
+                .eq(
+                    "item_id",
+                    complementoItemId
+                )
+
+                .eq(
+                    "ativo",
+                    true
+                )
+
+                .order(
+                    "cor",
+                    {
+                        ascending:
+                            true
+                    }
+                )
+
+                .order(
+                    "complexidade",
+                    {
+                        ascending:
+                            true
+                    }
                 );
 
 
-            setAmbientes(
-                atual =>
-                    atual.map(
-                        ambiente => {
+            if (
+                error
+            ) {
+
+                throw error;
+
+            }
+
+
+            /*
+            =========================================
+            SOMENTE COMBINAÇÕES PREENCHIDAS
+            =========================================
+
+            Uma combinação será exibida se tiver:
+
+            - fórmula
+            OU
+            - valor manual ativado
+            =========================================
+            */
+
+            const valores =
+                (
+                    data || []
+                )
+                    .filter(
+                        valor => {
+
+                            const possuiFormula =
+                                String(
+                                    valor?.formula ??
+                                    ""
+                                ).trim()
+                                !==
+                                "";
+
+
+                            const possuiValorManual =
+                                Boolean(
+                                    valor?.usar_valor_manual
+                                ) &&
+                                valor?.valor_manual !==
+                                    null &&
+                                valor?.valor_manual !==
+                                    "";
+
+
+                            return (
+                                possuiFormula ||
+                                possuiValorManual
+                            );
+
+                        }
+                    )
+                    .sort(
+                        (
+                            a,
+                            b
+                        ) => {
+
+                            const corA =
+                                Number(
+                                    a?.cor
+                                ) || 0;
+
+                            const corB =
+                                Number(
+                                    b?.cor
+                                ) || 0;
+
 
                             if (
-                                ambiente.id !==
-                                ambienteId
+                                corA !==
+                                corB
                             ) {
 
-                                return ambiente;
+                                return (
+                                    corA -
+                                    corB
+                                );
 
                             }
 
 
-                            return {
+                            return (
+                                (
+                                    Number(
+                                        a?.complexidade
+                                    ) || 0
+                                ) -
+                                (
+                                    Number(
+                                        b?.complexidade
+                                    ) || 0
+                                )
+                            );
 
-                                ...ambiente,
-
-                                itens:
-                                    ambiente.itens.map(
-                                        item => {
-
-                                            if (
-                                                item.id !==
-                                                itemId
-                                            ) {
-
-                                                return item;
-
-                                            }
+                        }
+                    );
 
 
-                                            return {
+            /*
+            =========================================
+            SALVA NO CACHE
+            =========================================
+            */
 
-                                                ...item,
+            setValoresComplementos(
+                atual => ({
+                    ...atual,
 
-                                                complementos:
-                                                    (
-                                                        item.complementos ||
-                                                        []
-                                                    ).map(
-                                                        complemento => {
+                    [chave]:
+                        valores
 
-                                                            if (
-                                                                complemento.id !==
-                                                                complementoId
-                                                            ) {
+                })
+            );
 
-                                                                return complemento;
 
-                                                            }
+            return valores;
 
+        } catch (
+            error
+        ) {
+
+            console.error(
+                "Erro ao carregar valores do complemento:",
+                error
+            );
+
+
+            setValoresComplementos(
+                atual => ({
+                    ...atual,
+
+                    [chave]:
+                        []
+
+                })
+            );
+
+
+            return [];
+
+        }
+
+    };
+/*
+=================================================
+CARREGAR VALORES DOS COMPLEMENTOS EXISTENTES
+=================================================
+*/
+
+useEffect(() => {
+
+    const ids =
+        new Set();
+
+
+    ambientes.forEach(
+        ambiente => {
+
+            (
+                ambiente.itens ||
+                []
+            ).forEach(
+                item => {
+
+                    (
+                        item.complementos ||
+                        []
+                    ).forEach(
+                        complemento => {
+
+                            if (
+                                complemento?.item_id
+                            ) {
+
+                                ids.add(
+                                    String(
+                                        complemento.item_id
+                                    ).trim()
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    ids.forEach(
+        id => {
+
+            carregarValoresComplemento(
+                id
+            );
+
+        }
+    );
+
+}, [
+    ambientes
+]);
+   /*
+=================================================
+VALORES DISPONÍVEIS DO COMPLEMENTO
+=================================================
+
+O complemento NÃO depende do MDF.
+
+Retorna somente as combinações que foram
+carregadas especificamente para o item do
+complemento.
+=================================================
+*/
+
+const obterValoresComplemento =
+    (
+        complemento
+    ) => {
+
+        if (
+            !complemento?.item_id
+        ) {
+
+            return [];
+
+        }
+
+
+        const chave =
+            String(
+                complemento.item_id
+            ).trim();
+
+
+        return (
+            valoresComplementos[
+                chave
+            ] || []
+        );
+
+    };
+    /*
+=================================================
+SELECIONAR ITEM DO COMPLEMENTO
+=================================================
+*/
+
+const selecionarItemComplemento =
+    async (
+        ambienteId,
+        itemId,
+        complementoId,
+        complementoItemId
+    ) => {
+
+        const baseComplemento =
+            itensComplementares.find(
+                item =>
+                    String(
+                        item.id
+                    ) ===
+                    String(
+                        complementoItemId
+                    )
+            );
+
+
+        /*
+        =========================================
+        CARREGA AS COMBINAÇÕES DO COMPLEMENTO
+        =========================================
+        */
+
+        await carregarValoresComplemento(
+            complementoItemId
+        );
+
+
+        setAmbientes(
+            atual =>
+                atual.map(
+                    ambiente => {
+
+                        if (
+                            ambiente.id !==
+                            ambienteId
+                        ) {
+
+                            return ambiente;
+
+                        }
+
+
+                        return {
+
+                            ...ambiente,
+
+                            itens:
+                                ambiente.itens.map(
+                                    item => {
+
+                                        if (
+                                            item.id !==
+                                            itemId
+                                        ) {
+
+                                            return item;
+
+                                        }
+
+
+                                        return {
+
+                                            ...item,
+
+                                            complementos:
+                                                (
+                                                    item.complementos ||
+                                                    []
+                                                ).map(
+                                                    complemento => {
+
+                                                        if (
+                                                            complemento.id !==
+                                                            complementoId
+                                                        ) {
+
+                                                            return complemento;
+
+                                                        }
+
+
+                                                        return {
+
+                                                            ...complemento,
+
+                                                            item_id:
+                                                                baseComplemento?.id ||
+                                                                "",
+
+                                                            item_nome:
+                                                                baseComplemento?.nome ||
+                                                                "",
+
+                                                            item_descricao:
+                                                                baseComplemento?.descricao ||
+                                                                "",
+
+                                                            padrao_medicao:
+                                                                baseComplemento?.padrao_medicao ||
+                                                                "",
+
+                                                            cor_complexidade_id:
+                                                                "",
+
+                                                            cor_complexidade_cor:
+                                                                "",
+
+                                                            cor_complexidade_nivel:
+                                                                "",
+
+                                                            valor_m2:
+                                                                0
+
+                                                        };
+
+                                                    }
+                                                )
+
+                                        };
+
+                                    }
+                                )
+
+                        };
+
+                    }
+                )
+        );
+
+    };
+   /*
+=================================================
+SELECIONAR COMPLEXIDADE DO COMPLEMENTO
+=================================================
+*/
+
+const selecionarComplexidadeComplemento =
+    (
+        ambienteId,
+        itemId,
+        complementoId,
+        complementoItemId,
+        valorId
+    ) => {
+
+        const chave =
+            String(
+                complementoItemId
+            ).trim();
+
+
+        const valores =
+            valoresComplementos[
+                chave
+            ] || [];
+
+
+        const registro =
+            valores.find(
+                valor =>
+                    String(
+                        valor?.id ?? ""
+                    ).trim() ===
+                    String(
+                        valorId ?? ""
+                    ).trim()
+            );
+
+
+        setAmbientes(
+            atual =>
+                atual.map(
+                    ambiente => {
+
+                        if (
+                            ambiente.id !==
+                            ambienteId
+                        ) {
+
+                            return ambiente;
+
+                        }
+
+
+                        return {
+
+                            ...ambiente,
+
+                            itens:
+                                ambiente.itens.map(
+                                    item => {
+
+                                        if (
+                                            item.id !==
+                                            itemId
+                                        ) {
+
+                                            return item;
+
+                                        }
+
+
+                                        return {
+
+                                            ...item,
+
+                                            complementos:
+                                                (
+                                                    item.complementos ||
+                                                    []
+                                                ).map(
+                                                    complemento => {
+
+                                                        if (
+                                                            complemento.id !==
+                                                            complementoId
+                                                        ) {
+
+                                                            return complemento;
+
+                                                        }
+
+
+                                                        if (
+                                                            !registro
+                                                        ) {
 
                                                             return {
 
                                                                 ...complemento,
-
-                                                                item_id:
-                                                                    baseComplemento?.id ||
-                                                                    "",
-
-                                                                item_nome:
-                                                                    baseComplemento?.nome ||
-                                                                    "",
-
-                                                                item_descricao:
-                                                                    baseComplemento?.descricao ||
-                                                                    "",
-
-                                                                padrao_medicao:
-                                                                    baseComplemento?.padrao_medicao ||
-                                                                    "",
 
                                                                 cor_complexidade_id:
                                                                     "",
@@ -3763,163 +4352,49 @@ const alternarExtra =
                                                             };
 
                                                         }
-                                                    )
-
-                                            };
-
-                                        }
-                                    )
-
-                            };
-
-                        }
-                    )
-            );
-
-        };
 
 
-    /*
-    =================================================
-    SELECIONAR COMPLEXIDADE DO COMPLEMENTO
-    =================================================
-    */
+                                                        return {
 
-    const selecionarComplexidadeComplemento =
-        (
-            ambienteId,
-            itemId,
-            complementoId,
-            valorId
-        ) => {
+                                                            ...complemento,
 
-            const registro =
-                valoresBase.find(
-                    valor =>
-                        valor.id ===
-                        valorId
-                );
+                                                            cor_complexidade_id:
+                                                                registro.id,
 
+                                                            cor_complexidade_cor:
+                                                                Number(
+                                                                    registro.cor
+                                                                ),
 
-            setAmbientes(
-                atual =>
-                    atual.map(
-                        ambiente => {
+                                                            cor_complexidade_nivel:
+                                                                Number(
+                                                                    registro.complexidade
+                                                                ),
 
-                            if (
-                                ambiente.id !==
-                                ambienteId
-                            ) {
+                                                            valor_m2:
+                                                                getValorBase(
+                                                                    registro
+                                                                )
 
-                                return ambiente;
+                                                        };
 
-                            }
+                                                    }
+                                                )
 
+                                        };
 
-                            return {
+                                    }
+                                )
 
-                                ...ambiente,
+                        };
 
-                                itens:
-                                    ambiente.itens.map(
-                                        item => {
+                    }
+                )
+        );
 
-                                            if (
-                                                item.id !==
-                                                itemId
-                                            ) {
+    };
 
-                                                return item;
-
-                                            }
-
-
-                                            return {
-
-                                                ...item,
-
-                                                complementos:
-                                                    (
-                                                        item.complementos ||
-                                                        []
-                                                    ).map(
-                                                        complemento => {
-
-                                                            if (
-                                                                complemento.id !==
-                                                                complementoId
-                                                            ) {
-
-                                                                return complemento;
-
-                                                            }
-
-
-                                                            if (
-                                                                !registro
-                                                            ) {
-
-                                                                return {
-
-                                                                    ...complemento,
-
-                                                                    cor_complexidade_id:
-                                                                        "",
-
-                                                                    cor_complexidade_cor:
-                                                                        "",
-
-                                                                    cor_complexidade_nivel:
-                                                                        "",
-
-                                                                    valor_m2:
-                                                                        0
-
-                                                                };
-
-                                                            }
-
-
-                                                            return {
-
-                                                                ...complemento,
-
-                                                                cor_complexidade_id:
-                                                                    registro.id,
-
-                                                                cor_complexidade_cor:
-                                                                    Number(
-                                                                        registro.cor
-                                                                    ),
-
-                                                                cor_complexidade_nivel:
-                                                                    Number(
-                                                                        registro.complexidade
-                                                                    ),
-
-                                                                valor_m2:
-                                                                    getValorBase(
-                                                                        registro
-                                                                    )
-
-                                                            };
-
-                                                        }
-                                                    )
-
-                                            };
-
-                                        }
-                                    )
-
-                            };
-
-                        }
-                    )
-            );
-
-        };
-
+    
 
     /*
     =================================================
@@ -9326,10 +9801,9 @@ sessionStorage.removeItem(
                                                                                                 ) => {
 
                                                                                                     const valoresComplemento =
-                                                                                                        obterValoresComplemento(
-                                                                                                            item,
-                                                                                                            complemento
-                                                                                                        );
+    obterValoresComplemento(
+        complemento
+    );
 
 
                                                                                                     return (
@@ -9488,19 +9962,18 @@ sessionStorage.removeItem(
                                                                                                                             complemento.cor_complexidade_id
                                                                                                                         }
                                                                                                                         disabled={
-                                                                                                                            !complemento.item_id ||
-                                                                                                                            item.mdf_cor ===
-                                                                                                                            ""
-                                                                                                                        }
+    !complemento.item_id
+}
                                                                                                                         onChange={
-                                                                                                                            event =>
-                                                                                                                                selecionarComplexidadeComplemento(
-                                                                                                                                    ambiente.id,
-                                                                                                                                    item.id,
-                                                                                                                                    complemento.id,
-                                                                                                                                    event.target.value
-                                                                                                                                )
-                                                                                                                        }
+    event =>
+        selecionarComplexidadeComplemento(
+            ambiente.id,
+            item.id,
+            complemento.id,
+            complemento.item_id,
+            event.target.value
+        )
+}
                                                                                                                     >
 
                                                                                                                         <option value="">
@@ -9542,21 +10015,19 @@ sessionStorage.removeItem(
                                                                                                                     </select>
 
 
-                                                                                                                    {
-                                                                                                                        complemento.item_id &&
-                                                                                                                        item.mdf_cor !==
-                                                                                                                            "" &&
-                                                                                                                        valoresComplemento.length ===
-                                                                                                                            0 && (
+                                                                                {
+    complemento.item_id &&
+    valoresComplemento.length ===
+        0 && (
 
-                                                                                                                            <small className="orcamento-sem-complexidade complemento">
+        <small className="orcamento-sem-complexidade complemento">
 
-                                                                                                                                Nenhuma combinação cadastrada para este complemento e esta cor.
+            Nenhuma combinação de cor e complexidade cadastrada para este complemento.
 
-                                                                                                                            </small>
+        </small>
 
-                                                                                                                        )
-                                                                                                                    }
+    )
+}
 
                                                                                                                 </div>
 

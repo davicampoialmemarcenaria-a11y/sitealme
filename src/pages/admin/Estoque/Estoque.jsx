@@ -3397,13 +3397,44 @@ async function removerDevolucao(devolucao) {
                               </td>
 
                               <td>
-                                {formatarMoeda(
-                                  produto.preco
-                                )}
-                              </td>
+  {formatarMoeda(
+    produto.preco
+  )}
+</td>
+
+<td>
+  <div className="table-actions">
+
+    <button
+      type="button"
+      onClick={() =>
+        abrirEditarProduto(
+          produto
+        )
+      }
+    >
+      Editar
+    </button>
+
+    <button
+      type="button"
+      className="danger"
+      onClick={() =>
+        removerProduto(
+          produto
+        )
+      }
+    >
+      Excluir
+    </button>
+
+  </div>
+</td>
+
+</tr>
 
 
-                            </tr>
+                            
 
                           )
                         )
