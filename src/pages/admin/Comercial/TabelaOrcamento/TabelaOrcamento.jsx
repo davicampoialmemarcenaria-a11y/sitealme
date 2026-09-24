@@ -6240,8 +6240,8 @@ ${novoCronograma}`;
             ) => {
 
                 const itemNome =
-                    item.base_item_nome ||
                     item.nome_item ||
+    item.base_item_nome ||
                     "-";
 
                 const dimensoes =
@@ -10613,6 +10613,23 @@ sessionStorage.removeItem(
                     Informe o valor final desejado para
                     distribuir o acréscimo proporcionalmente
                     entre os itens desta versão.
+
+                        <br />
+    <br />
+
+
+                    Aplique o multiplicador seguindo a seguinte regra: 
+ <br />
+    <br />
+1 = R$25.000,00 para cima
+<br />
+1.1 = R$17.500 - R$25.000,00
+<br />
+1.2 = R$10.000 - R$17.500,00
+<br />
+1.3 = R$5.000 - R$10.000,00
+<br />
+1.5 = Até R$5.000,00
                 </small>
 
             </div>
