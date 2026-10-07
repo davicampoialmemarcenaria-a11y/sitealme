@@ -2548,3 +2548,140 @@
         gap: 8px;
     }
 }
+/* =====================================================
+   FILTRO / PESQUISA DE ORÇAMENTOS
+===================================================== */
+
+.orcamento-lista-filtros {
+
+    width: 100%;
+
+    padding: 0 0 24px;
+
+}
+
+
+.orcamento-lista-pesquisa {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    max-width: 520px;
+
+    height: 48px;
+
+    border: 1px solid #e0e0d8;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+
+.orcamento-lista-pesquisa > svg {
+
+    flex-shrink: 0;
+
+    margin-left: 16px;
+
+    font-size: 19px;
+
+    color: #89490A;
+
+}
+
+
+.orcamento-lista-pesquisa input {
+
+    width: 100%;
+
+    height: 100%;
+
+    border: 0;
+
+    outline: none;
+
+    background: transparent;
+
+    padding: 0 44px 0 12px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    color: #431C01;
+
+}
+
+
+.orcamento-lista-pesquisa input::placeholder {
+
+    color: #999999;
+
+}
+
+
+.orcamento-lista-pesquisa:focus-within {
+
+    border-color: #89490A;
+
+    box-shadow:
+        0 0 0 3px rgba(137, 73, 10, 0.08);
+
+}
+
+
+.orcamento-lista-pesquisa-limpar {
+
+    position: absolute;
+
+    right: 10px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 30px;
+
+    height: 30px;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    color: #777777;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+
+}
+
+
+.orcamento-lista-pesquisa-limpar:hover {
+
+    background: #f2f2f0;
+
+    color: #431C01;
+
+}

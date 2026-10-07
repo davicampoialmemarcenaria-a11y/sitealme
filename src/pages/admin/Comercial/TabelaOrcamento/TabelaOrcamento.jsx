@@ -18,7 +18,8 @@ import {
     FiX,
     FiEdit2,
     FiRefreshCw,
-    FiDownload
+    FiDownload,
+    FiSearch,
 } from "react-icons/fi";
 
 import { jsPDF } from "jspdf";
@@ -1049,6 +1050,9 @@ export default function TabelaOrcamento() {
 
     const [erroLista, setErroLista] =
         useState("");
+
+        const [pesquisaCliente, setPesquisaCliente] =
+    useState("");
 
     const [salvando, setSalvando] =
         useState(false);
@@ -2584,6 +2588,8 @@ function sincronizarScrollTabelaOrcamento(
         if (normalized === "cancelado") return "cancelado";
         return "rascunho";
     };
+
+    
 
 
     /*
@@ -8400,6 +8406,18 @@ ${novoCronograma}`;
         }
     };
 
+    const orcamentosFiltrados =
+  listaOrcamentos.filter(item => {
+    const pesquisa = normalizeText(pesquisaCliente);
+
+    const cliente = normalizeText(item.cliente || "");
+    const nomeOrcamento = normalizeText(item.nome || "");
+
+    return (
+      cliente.includes(pesquisa) ||
+      nomeOrcamento.includes(pesquisa)
+    );
+  });
 
     /*
     =================================================
@@ -8489,18 +8507,58 @@ ${novoCronograma}`;
                 )}
 
                 <section className="orcamento-lista-card">
-                    <div className="orcamento-lista-card-header">
-                        <div>
-                            <span>GESTÃO</span>
-                            <h2>Orçamentos cadastrados</h2>
-                        </div>
-                    </div>
+
+    <div className="orcamento-lista-card-header">
+
+        <div>
+            <span>GESTÃO</span>
+            <h2>Orçamentos cadastrados</h2>
+        </div>
+
+    </div>
+
+
+    <div className="orcamento-lista-filtros">
+
+        <div className="orcamento-lista-pesquisa">
+
+            <FiSearch />
+
+            <input
+                type="text"
+                value={pesquisaCliente}
+                onChange={
+                    event =>
+                        setPesquisaCliente(
+                            event.target.value
+                        )
+                }
+                placeholder="Pesquisar por cliente..."
+            />
+
+            {pesquisaCliente && (
+                <button
+                    type="button"
+                    className="orcamento-lista-pesquisa-limpar"
+                    onClick={
+                        () =>
+                            setPesquisaCliente("")
+                    }
+                    title="Limpar pesquisa"
+                >
+                    <FiX />
+                </button>
+            )}
+
+        </div>
+
+    </div>
 
                     {carregandoLista && listaOrcamentos.length === 0 ? (
                         <div className="orcamento-lista-loading">
                             Carregando orçamentos...
                         </div>
-                    ) : listaOrcamentos.length === 0 ? (
+                    ) : orcamentosFiltrados.length === 0 ? (
                         <div className="orcamento-lista-vazia">
                             <strong>Nenhum orçamento cadastrado</strong>
                             <span>
@@ -8532,8 +8590,9 @@ ${novoCronograma}`;
                                     </tr>
                                 </thead>
 
-                                <tbody>
-                                    {listaOrcamentos.map(row => (
+                                
+                                   <tbody>
+    {orcamentosFiltrados.map(row => (
                                         <tr key={row.id}>
                                             <td>
                                                 <strong>{row.codigo}</strong>
