@@ -1038,6 +1038,8 @@ export default function TabelaOrcamento() {
     const urlVersaoId =
         searchParams.get("versao");
 
+        
+
     const isEditor =
         searchParams.get("novo") === "1" ||
         Boolean(urlOrcamentoId);
@@ -1062,6 +1064,13 @@ export default function TabelaOrcamento() {
 
     const [versaoId, setVersaoId] =
         useState(urlVersaoId || "");
+
+        const orcamentoAtualId =
+    String(
+        orcamentoId ||
+        urlOrcamentoId ||
+        ""
+    ).trim();
 
     const [versaoAtual, setVersaoAtual] =
         useState(0);
@@ -1092,27 +1101,27 @@ const [
     =================================================
     */
 
-    const [
-        orcamento,
-        setOrcamento
-    ] = useState({
+  const [
+    orcamento,
+    setOrcamento
+] = useState({
 
-        nome:
-            "",
+    nome: "",
 
-        cliente:
-            "",
+    cliente: "",
 
-             arquiteto_empresa:
-        "",
+    assistente_responsavel_id: "",
 
-        status:
-            "rascunho",
+    vendedor_responsavel_id: "",
 
-        observacoes:
-            gerarObservacoesPadrao(0)
+    arquiteto_empresa: "",
 
-    });
+    status: "rascunho",
+
+    observacoes:
+        gerarObservacoesPadrao(0)
+
+});
 
 
     /*
@@ -1237,6 +1246,145 @@ const [
     arquitetoManual,
     setArquitetoManual
 ] = useState(false);
+
+/*
+=====================================================
+USUÁRIOS — ASSISTENTES / VENDEDORES
+ROLE 1 OU ROLE 2
+=====================================================
+*/
+
+const [
+    usuariosResponsaveis,
+    setUsuariosResponsaveis
+] = useState([]);
+
+const [
+    carregandoResponsaveis,
+    setCarregandoResponsaveis
+] = useState(false);
+
+/*
+=====================================================
+CARREGAR USUÁRIOS DAS ROLES 1 E 2
+=====================================================
+*/
+
+useEffect(() => {
+
+    let ativo = true;
+
+    const carregarResponsaveis = async () => {
+
+        try {
+
+            setCarregandoResponsaveis(true);
+
+            const {
+                data,
+                error
+            } = await supabase.functions.invoke(
+                "admin-users",
+                {
+                    body: {
+                        action: "list"
+                    }
+                }
+            );
+
+            if (error) {
+                throw error;
+            }
+
+            if (data?.error) {
+                throw new Error(
+                    data.error
+                );
+            }
+
+            const usuarios =
+                Array.isArray(data?.users)
+                    ? data.users
+                    : [];
+
+            const filtrados =
+                usuarios.filter(
+                    usuario =>
+                        [1, 2].includes(
+                            Number(usuario.role_id)
+                        )
+                );
+
+            if (ativo) {
+
+                setUsuariosResponsaveis(
+                    filtrados
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao carregar usuários responsáveis:",
+                error
+            );
+
+            if (ativo) {
+
+                setUsuariosResponsaveis([]);
+
+            }
+
+        } finally {
+
+            if (ativo) {
+
+                setCarregandoResponsaveis(
+                    false
+                );
+
+            }
+
+        }
+
+    };
+
+    carregarResponsaveis();
+
+    return () => {
+
+        ativo = false;
+
+    };
+
+}, []);
+
+const nomeUsuarioResponsavel = userId => {
+
+    if (!userId) {
+        return "—";
+    }
+
+    const usuario =
+        usuariosResponsaveis.find(
+            item =>
+                String(item.id) ===
+                String(userId)
+        );
+
+    if (!usuario) {
+        return "Usuário";
+    }
+
+    return (
+        usuario.nome ||
+        usuario.username ||
+        usuario.email ||
+        "Usuário"
+    );
+
+};
 /*
 =====================================================
 SCROLL HORIZONTAL DA TABELA
@@ -2605,7 +2753,7 @@ function sincronizarScrollTabelaOrcamento(
             setErroLista("");
 
             const { data, error } = await supabase
-                .from("vw_orcamentos_resumo")
+                .from("vw_orcamentos_resumo_responsaveis")
                 .select("*")
                 .order("updated_at", { ascending: false });
 
@@ -2790,15 +2938,30 @@ function sincronizarScrollTabelaOrcamento(
             });
 
             setOrcamento({
-                nome: quote.nome || "",
-                cliente: quote.cliente || "",
-                arquiteto_empresa:
-                    quote.arquiteto_empresa || "",
-                status: quote.status || "rascunho",
-                observacoes:
-                    quote.observacoes ||
-                    OBSERVACOES_PADRAO
-            });
+
+    nome:
+        quote.nome || "",
+
+    cliente:
+        quote.cliente || "",
+
+    assistente_responsavel_id:
+        quote.assistente_responsavel_id || "",
+
+    vendedor_responsavel_id:
+        quote.vendedor_responsavel_id || "",
+
+    arquiteto_empresa:
+        quote.arquiteto_empresa || "",
+
+    status:
+        quote.status || "rascunho",
+
+    observacoes:
+        quote.observacoes ||
+        OBSERVACOES_PADRAO
+
+});
 
             setArquitetoManual(
                 Boolean(
@@ -3084,13 +3247,24 @@ setOverFinalAplicado(
     setOverFinalAplicado(false);
     setArquitetoManual(false);
 
-    setOrcamento({
-        nome: "",
-        cliente: "",
-        arquiteto_empresa: "",
-        status: "rascunho",
-        observacoes: gerarObservacoesPadrao(0)
-    });
+  setOrcamento({
+
+    nome: "",
+
+    cliente: "",
+
+    assistente_responsavel_id: "",
+
+    vendedor_responsavel_id: "",
+
+    arquiteto_empresa: "",
+
+    status: "rascunho",
+
+    observacoes:
+        gerarObservacoesPadrao(0)
+
+});
 
     setAmbientes([
         novoAmbiente()
@@ -7627,8 +7801,32 @@ ${novoCronograma}`;
             const userResult = await supabase.auth.getUser();
             const userId = userResult.data?.user?.id || null;
 
-            const eraNovoOrcamento = !orcamentoId;
-            let quoteId = orcamentoId;
+            /*
+=====================================================
+IDENTIFICAR ORÇAMENTO ATUAL
+=====================================================
+
+Para orçamento existente, a URL também é uma fonte
+confiável do ID.
+
+Isso evita que uma perda momentânea do estado React
+faça o sistema criar outro orçamento.
+=====================================================
+*/
+
+const quoteIdDaUrl =
+    String(urlOrcamentoId || "").trim();
+
+const quoteIdDoEstado =
+    String(orcamentoId || "").trim();
+
+let quoteId =
+    quoteIdDoEstado ||
+    quoteIdDaUrl;
+
+const eraNovoOrcamento =
+    !quoteId &&
+    searchParams.get("novo") === "1";
 
             if (!quoteId) {
 
@@ -7638,18 +7836,39 @@ ${novoCronograma}`;
                 const { data: createdQuote, error: quoteError } =
                     await supabase
                         .from("orcamentos")
-                        .insert({
-                            codigo: code,
-                            nome: orcamento.nome.trim(),
-                            cliente: orcamento.cliente || null,
-                            arquiteto_empresa: orcamento.arquiteto_empresa || null,
-                            observacoes: orcamento.observacoes || null,
-                            status: statusValue(orcamento.status),
-                            arquiteto_manual:
-                                Boolean(arquitetoManual),
-                            versao_atual: 1,
-                            created_by: userId
-                        })
+                       .insert({
+    codigo: code,
+
+    nome:
+        orcamento.nome.trim(),
+
+    cliente:
+        orcamento.cliente || null,
+
+    assistente_responsavel_id:
+        orcamento.assistente_responsavel_id || null,
+
+    vendedor_responsavel_id:
+        orcamento.vendedor_responsavel_id || null,
+
+    arquiteto_empresa:
+        orcamento.arquiteto_empresa || null,
+
+    observacoes:
+        orcamento.observacoes || null,
+
+    status:
+        statusValue(orcamento.status),
+
+    arquiteto_manual:
+        Boolean(arquitetoManual),
+
+    versao_atual:
+        1,
+
+    created_by:
+        userId
+})
                         .select("*")
                         .single();
 
@@ -7664,14 +7883,33 @@ ${novoCronograma}`;
                     await supabase
                         .from("orcamentos")
                         .update({
-                            nome: orcamento.nome.trim(),
-                            cliente: orcamento.cliente || null,
-                            arquiteto_empresa: orcamento.arquiteto_empresa || null,
-                            observacoes: orcamento.observacoes || null,
-                            status: statusValue(orcamento.status),
-                            arquiteto_manual:
-                                Boolean(arquitetoManual)
-                        })
+                        
+
+    nome:
+        orcamento.nome.trim(),
+
+    cliente:
+        orcamento.cliente || null,
+
+    assistente_responsavel_id:
+        orcamento.assistente_responsavel_id || null,
+
+    vendedor_responsavel_id:
+        orcamento.vendedor_responsavel_id || null,
+
+    arquiteto_empresa:
+        orcamento.arquiteto_empresa || null,
+
+    observacoes:
+        orcamento.observacoes || null,
+
+    status:
+        statusValue(orcamento.status),
+
+    arquiteto_manual:
+        Boolean(arquitetoManual)
+
+})
                         .eq("id", quoteId);
 
                 if (quoteUpdateError) throw quoteUpdateError;
@@ -7686,16 +7924,46 @@ ${novoCronograma}`;
 
             if (versionsError) throw versionsError;
 
-            const versoesExistentes = versions || [];
-            const versaoSelecionada =
-                versoesExistentes.find(
-                    version => version.id === versaoId
-                ) || versoesExistentes[0] || null;
+            const versoesExistentes =
+    versions || [];
 
-            const deveCriarNovaVersao =
-                eraNovoOrcamento ||
-                criarNovaVersao ||
-                !versaoSelecionada;
+
+/*
+=====================================================
+IDENTIFICAR A VERSÃO ATUAL
+=====================================================
+*/
+
+const versaoIdAtual =
+    String(
+        versaoId ||
+        urlVersaoId ||
+        ""
+    ).trim();
+
+const versaoSelecionada =
+    versoesExistentes.find(
+        version =>
+            String(version.id) ===
+            versaoIdAtual
+    ) ||
+    (
+        !criarNovaVersao &&
+        !eraNovoOrcamento
+            ? versoesExistentes[0] || null
+            : null
+    );
+
+
+/*
+=====================================================
+DECIDIR SE É NOVA VERSÃO
+=====================================================
+*/
+
+const deveCriarNovaVersao =
+    eraNovoOrcamento ||
+    criarNovaVersao;
 
             let versaoNumero;
             let versaoIdParaSalvar = "";
@@ -8578,15 +8846,27 @@ ${novoCronograma}`;
                             <table className="orcamento-lista-table">
                                 <thead>
                                     <tr>
-                                        <th>Código</th>
-                                        <th>Orçamento</th>
-                                        <th>Cliente</th>
-                                        <th>Versão</th>
-                                        <th>Valor mínimo</th>
-                                        <th>Preço final</th>
-                                        <th>Status</th>
-                                        <th>Atualizado</th>
-                                        <th>Ações</th>
+                                       <th>Código</th>
+
+<th>Orçamento</th>
+
+<th>Cliente</th>
+
+<th>Assistente responsável</th>
+
+<th>Vendedor responsável</th>
+
+<th>Versão</th>
+
+<th>Valor mínimo</th>
+
+<th>Preço final</th>
+
+<th>Status</th>
+
+<th>Atualizado</th>
+
+<th>Ações</th>
                                     </tr>
                                 </thead>
 
@@ -8598,12 +8878,27 @@ ${novoCronograma}`;
                                                 <strong>{row.codigo}</strong>
                                             </td>
                                             <td>{row.nome}</td>
-                                            <td>{row.cliente || "—"}</td>
-                                            <td>
-                                                <span className="orcamento-lista-versao">
-                                                    V{row.versao_atual || 1}
-                                                </span>
-                                            </td>
+                                           <td>
+    {row.cliente || "—"}
+</td>
+
+<td>
+    {nomeUsuarioResponsavel(
+        row.assistente_responsavel_id
+    )}
+</td>
+
+<td>
+    {nomeUsuarioResponsavel(
+        row.vendedor_responsavel_id
+    )}
+</td>
+
+<td>
+    <span className="orcamento-lista-versao">
+        V{row.versao_atual || 1}
+    </span>
+</td>
                                             <td>
                                                 {money(row.valor_minimo_total)}
                                             </td>
@@ -8694,7 +8989,7 @@ ${novoCronograma}`;
 
                 <div className="tabela-orcamento-topo-acoes">
 
-                    {orcamentoId && (
+                    {orcamentoAtualId && (
                         <button
                             type="button"
                             className="orcamento-nova-versao"
@@ -8756,12 +9051,12 @@ ${novoCronograma}`;
                         <FiSave />
 
                         <span>
-                            {salvando
-                                ? "Salvando..."
-                                : orcamentoId
-                                    ? `Salvar V${versaoAtual || ""}`
-                                    : "Salvar orçamento"}
-                        </span>
+    {salvando
+        ? "Salvando..."
+        : orcamentoAtualId
+            ? `Salvar V${versaoAtual || ""}`
+            : "Salvar orçamento"}
+</span>
 
                     </button>
 
@@ -8883,6 +9178,132 @@ ${novoCronograma}`;
 
                     </div>
                     <div className="orcamento-field">
+                    <div className="orcamento-field">
+
+    <label>
+        Assistente responsável
+    </label>
+
+    <select
+        value={
+            orcamento.assistente_responsavel_id
+        }
+        onChange={
+            event =>
+                atualizarCampo(
+                    "assistente_responsavel_id",
+                    event.target.value
+                )
+        }
+        disabled={
+            carregandoResponsaveis
+        }
+    >
+
+        <option value="">
+            {
+                carregandoResponsaveis
+                    ? "Carregando usuários..."
+                    : "Selecione o assistente"
+            }
+        </option>
+
+        {
+            usuariosResponsaveis.map(
+                usuario => {
+
+                    const nomeExibicao =
+                        usuario.nome ||
+                        usuario.username ||
+                        usuario.email ||
+                        "Usuário";
+
+                    return (
+
+                        <option
+                            key={
+                                usuario.id
+                            }
+                            value={
+                                usuario.id
+                            }
+                        >
+                            {nomeExibicao}
+                        </option>
+
+                    );
+
+                }
+            )
+        }
+
+    </select>
+
+</div>
+
+
+<div className="orcamento-field">
+
+    <label>
+        Vendedor responsável
+    </label>
+
+    <select
+        value={
+            orcamento.vendedor_responsavel_id
+        }
+        onChange={
+            event =>
+                atualizarCampo(
+                    "vendedor_responsavel_id",
+                    event.target.value
+                )
+        }
+        disabled={
+            carregandoResponsaveis
+        }
+    >
+
+        <option value="">
+            {
+                carregandoResponsaveis
+                    ? "Carregando usuários..."
+                    : "Selecione o vendedor"
+            }
+        </option>
+
+        {
+            usuariosResponsaveis.map(
+                usuario => {
+
+                    const nomeExibicao =
+                        usuario.nome ||
+                        usuario.username ||
+                        usuario.email ||
+                        "Usuário";
+
+                    return (
+
+                        <option
+                            key={
+                                usuario.id
+                            }
+                            value={
+                                usuario.id
+                            }
+                        >
+                            {nomeExibicao}
+                        </option>
+
+                    );
+
+                }
+            )
+        }
+
+    </select>
+
+</div>
 
     <label>
         Arquiteto / Empresa
