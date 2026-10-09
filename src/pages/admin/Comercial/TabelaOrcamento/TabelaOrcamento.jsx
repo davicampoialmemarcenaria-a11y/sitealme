@@ -6996,7 +6996,7 @@ ${novoCronograma}`;
                     "bold"
                 );
 
-                doc.setFontSize(13);
+                doc.setFontSize(7);
 
                 doc.text(
                     orcamento.nome ||
@@ -7423,7 +7423,7 @@ ${novoCronograma}`;
                 "normal"
             );
 
-            doc.setFontSize(8.5);
+            doc.setFontSize(5.5);
 
             doc.text(
                 `Cliente: ${orcamento.cliente || "-"}`,
@@ -8850,7 +8850,7 @@ const deveCriarNovaVersao =
 
 <th>Orçamento</th>
 
-<th>Cliente</th>
+<th>Arquitetos/Empresa</th>
 
 <th>Assistente responsável</th>
 
