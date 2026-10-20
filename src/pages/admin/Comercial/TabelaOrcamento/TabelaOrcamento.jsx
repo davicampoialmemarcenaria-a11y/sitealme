@@ -8883,15 +8883,11 @@ const deveCriarNovaVersao =
 </td>
 
 <td>
-    {nomeUsuarioResponsavel(
-        row.assistente_responsavel_id
-    )}
+    {row.assistente_responsavel_nome || "—"}
 </td>
 
 <td>
-    {nomeUsuarioResponsavel(
-        row.vendedor_responsavel_id
-    )}
+    {row.vendedor_responsavel_nome || "—"}
 </td>
 
 <td>
