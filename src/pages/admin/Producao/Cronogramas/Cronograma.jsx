@@ -1639,13 +1639,7 @@ export default function Cronograma() {
                                 </div>
                             </td>
 
-                            <td class="date-cell">
-                                ${escaparHtml(
-                                    formatarDataImpressao(
-                                        linha.data_prevista
-                                    )
-                                )}
-                            </td>
+                           
 
                             <td class="date-cell">
                                 ${escaparHtml(
@@ -2505,7 +2499,7 @@ export default function Cronograma() {
 
                             <col class="col-item" />
 
-                            <col class="col-date" />
+                          
 
                             <col class="col-date" />
 
@@ -2523,11 +2517,7 @@ export default function Cronograma() {
                                     ITENS
                                 </th>
 
-                                <th>
-                                    DATA DE FINALIZAÇÃO
-                                    <br />
-                                    PREVISTA
-                                </th>
+                               
 
                                 <th>
                                     DATA DE FINALIZAÇÃO
@@ -3076,11 +3066,7 @@ export default function Cronograma() {
                                         ITENS
                                     </th>
 
-                                    <th className="col-date">
-                                        DATA DE FINALIZAÇÃO
-                                        <br />
-                                        PREVISTA
-                                    </th>
+                                   
 
                                     <th className="col-date">
                                         DATA DE FINALIZAÇÃO
@@ -3112,7 +3098,7 @@ export default function Cronograma() {
                                             <tr>
 
                                                 <td
-                                                    colSpan="6"
+                                                    colSpan="5"
                                                     className="cronograma-empty"
                                                 >
                                                     Nenhuma linha cadastrada.
@@ -3166,23 +3152,7 @@ export default function Cronograma() {
 
                                                         </td>
 
-                                                        <td>
-
-                                                            <input
-                                                                type="date"
-                                                                value={
-                                                                    linha.data_prevista
-                                                                }
-                                                                onChange={e =>
-                                                                    alterarLinha(
-                                                                        linha.id,
-                                                                        "data_prevista",
-                                                                        e.target.value
-                                                                    )
-                                                                }
-                                                            />
-
-                                                        </td>
+                                                      
 
                                                         <td>
 

@@ -2089,7 +2089,306 @@ async function removerDevolucao(devolucao) {
 
     return obra?.nome || `Obra #${obraId}`;
   }
+  // =====================================================
+  // EXPORTAR TODAS AS MOVIMENTAÇÕES PARA CSV / EXCEL
+  // =====================================================
 
+  function exportarMovimentacoesCSV() {
+    const cabecalhos = [
+      "Tipo de movimentação",
+      "ID da movimentação",
+      "ID da saída relacionada",
+      "ID do item de saída",
+      "Data",
+      "Nota fiscal",
+      "Obra",
+      "Produto",
+      "SKU",
+      "Código ALME",
+      "Solicitante",
+      "Quantidade",
+      "Quantidade retirada",
+      "Quantidade já devolvida",
+      "Quantidade devolvida",
+      "Valor unitário",
+      "Valor total",
+      "Valor unitário final",
+      "Preço de venda",
+      "Valor da retirada",
+      "Valor devolvido",
+    ];
+
+    const movimentos = [];
+
+    function adicionarMovimento(data, valores) {
+      movimentos.push({
+        dataOrdenacao: data
+          ? new Date(data).getTime() || 0
+          : 0,
+        valores,
+      });
+    }
+
+    function dataFormatadaCSV(data) {
+      if (!data) return "";
+
+      const texto = String(data).slice(0, 10);
+      const partes = texto.split("-");
+
+      if (
+        partes.length === 3 &&
+        partes[0].length === 4
+      ) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+
+      return texto;
+    }
+
+    function textoCSV(valor) {
+      if (valor === null || valor === undefined) {
+        return "";
+      }
+
+      let texto = String(valor);
+
+      // Evita interpretar conteúdos como fórmulas do Excel.
+      if (/^[\s]*[=+@]/.test(texto)) {
+        texto = `'${texto}`;
+      }
+
+      return `"${texto.replace(/"/g, '""')}"`;
+    }
+
+    function numeroCSV(valor) {
+      if (
+        valor === null ||
+        valor === undefined ||
+        valor === ""
+      ) {
+        return "";
+      }
+
+      const numero = Number(valor);
+
+      if (!Number.isFinite(numero)) return "";
+
+      return numero.toLocaleString("pt-BR", {
+        useGrouping: false,
+        maximumFractionDigits: 8,
+      });
+    }
+
+    // ENTRADAS
+    (entradas || []).forEach((entrada) => {
+      const produto = produtos.find(
+        (item) =>
+          String(item.id) ===
+          String(entrada.produto_id)
+      );
+
+      const data =
+        entrada.data_entrada ||
+        entrada.created_at;
+
+      adicionarMovimento(data, [
+        "Entrada",
+        entrada.id,
+        "",
+        "",
+        dataFormatadaCSV(data),
+        entrada.nf_entrada || "",
+        nomeObraPorId(entrada.obra_id),
+        entrada.nome_item ||
+          produto?.nome ||
+          entrada.nome ||
+          "",
+        entrada.sku || produto?.sku || "",
+        entrada.codigo_alme ||
+          produto?.codigo_alme ||
+          "",
+        "",
+        entrada.quantidade,
+        "",
+        "",
+        "",
+        entrada.valor_unitario,
+        entrada.valor_total,
+        entrada.valor_unitario_final,
+        entrada.preco ?? produto?.preco,
+        "",
+        "",
+      ]);
+    });
+
+    // SAÍDAS
+    (saidas || []).forEach((saida) => {
+      const itens = Array.isArray(
+        saida.estoque_saida_itens
+      )
+        ? saida.estoque_saida_itens
+        : [];
+
+      itens.forEach((item) => {
+        const produto = produtos.find(
+          (p) =>
+            String(p.id) ===
+            String(item.produto_id)
+        );
+
+        const quantidade = Number(
+          item.quantidade || 0
+        );
+
+        const valorUnitario = Number(
+          item.preco_unitario ??
+            item.preco ??
+            produto?.preco ??
+            0
+        );
+
+        const valorTotal = Number(
+          item.valor_total ??
+            quantidade * valorUnitario
+        );
+
+        const data =
+          saida.data_saida ||
+          saida.created_at;
+
+        adicionarMovimento(data, [
+          "Saída",
+          saida.id,
+          saida.id,
+          item.id,
+          dataFormatadaCSV(data),
+          "",
+          nomeObraPorId(saida.obra_id),
+          produto?.nome ||
+            item.nome ||
+            item.item_nome ||
+            "",
+          produto?.sku || item.sku || "",
+          produto?.codigo_alme ||
+            item.codigo_alme ||
+            "",
+          saida.solicitante || "",
+          quantidade,
+          quantidade,
+          "",
+          "",
+          valorUnitario,
+          valorTotal,
+          "",
+          produto?.preco,
+          "",
+          "",
+        ]);
+      });
+    });
+
+    // DEVOLUÇÕES
+    (devolucoes || []).forEach((devolucao) => {
+      const produto = produtos.find(
+        (item) =>
+          String(item.id) ===
+          String(devolucao.produto_id)
+      );
+
+      const saida = saidas.find(
+        (item) =>
+          String(item.id) ===
+          String(devolucao.saida_id)
+      );
+
+      const data =
+        devolucao.data_devolucao ||
+        devolucao.created_at;
+
+      adicionarMovimento(data, [
+        "Devolução",
+        devolucao.id,
+        devolucao.saida_id,
+        devolucao.saida_item_id,
+        dataFormatadaCSV(data),
+        "",
+        nomeObraPorId(
+          devolucao.obra_id ?? saida?.obra_id
+        ),
+        devolucao.item_nome ||
+          produto?.nome ||
+          "",
+        devolucao.sku || produto?.sku || "",
+        produto?.codigo_alme || "",
+        devolucao.solicitante ||
+          saida?.solicitante ||
+          "",
+        devolucao.quantidade_devolvida,
+        devolucao.quantidade_retirada,
+        "",
+        devolucao.quantidade_devolvida,
+        "",
+        "",
+        "",
+        produto?.preco,
+        devolucao.valor_retirada,
+        devolucao.valor_devolvido,
+      ]);
+    });
+
+    // Mais recentes primeiro.
+    movimentos.sort(
+      (a, b) => b.dataOrdenacao - a.dataOrdenacao
+    );
+
+    const colunasNumericas = new Set([
+      1, 2, 3, 11, 12, 13, 14,
+      15, 16, 17, 18, 19, 20,
+    ]);
+
+    const csv = [
+      cabecalhos.map(textoCSV).join(";"),
+
+      ...movimentos.map(({ valores }) =>
+        valores
+          .map((valor, indice) =>
+            colunasNumericas.has(indice)
+              ? numeroCSV(valor)
+              : textoCSV(valor)
+          )
+          .join(";")
+      ),
+    ].join("\r\n");
+
+    // BOM UTF-8 para preservar os acentos no Excel.
+    const blob = new Blob(
+      ["\uFEFF", csv],
+      { type: "text/csv;charset=utf-8;" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    const hoje = new Date();
+    const dataArquivo = [
+      hoje.getFullYear(),
+      String(hoje.getMonth() + 1).padStart(2, "0"),
+      String(hoje.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    link.href = url;
+    link.download =
+      `alme-movimentacoes-estoque-${dataArquivo}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Dá tempo para o navegador iniciar o download.
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  }
   // =====================================================
   // GERAR PDF DA ENTRADA
   // =====================================================
@@ -2740,6 +3039,13 @@ async function removerDevolucao(devolucao) {
         </div>
 
         <div className="estoque-header-actions">
+          <button
+  type="button"
+  className="btn-secondary"
+  onClick={exportarMovimentacoesCSV}
+>
+  Baixar planilha de movimentações
+</button>
 
           <button
             type="button"
@@ -5517,3 +5823,5 @@ async function removerDevolucao(devolucao) {
     </main>
   );
 }
+
+
