@@ -2700,3 +2700,129 @@
 .orcamento-lista-table td:nth-child(5) {
     white-space: nowrap;
 }
+
+/* =====================================================
+   POP-UPS PERSONALIZADOS — ALME
+===================================================== */
+
+.orcamento-toast {
+    position: fixed;
+    top: 22px;
+    right: 22px;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    max-width: min(440px, calc(100vw - 32px));
+    padding: 15px 18px;
+
+    border: 1px solid #d8c2a8;
+    border-left: 5px solid #d48821;
+    border-radius: 10px;
+
+    background: #fffaf4;
+    color: #4b2108;
+    box-shadow: 0 12px 32px rgba(45, 25, 10, .18);
+
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.orcamento-toast-sucesso {
+    border-left-color: #527452;
+}
+
+.orcamento-toast-erro {
+    border-left-color: #a64b3f;
+}
+
+.orcamento-toast button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #765c4a;
+    cursor: pointer;
+}
+
+.orcamento-toast button:hover {
+    background: #f1e5d8;
+}
+
+.orcamento-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    background: rgba(35, 20, 10, .48);
+}
+
+.orcamento-modal {
+    width: min(460px, 100%);
+    padding: 26px;
+
+    border: 1px solid #e7ded6;
+    border-radius: 14px;
+    background: #fff;
+    color: #4b2108;
+
+    box-shadow: 0 24px 70px rgba(25, 15, 8, .25);
+}
+
+.orcamento-modal h3 {
+    margin: 0 0 12px;
+    color: #4b2108;
+    font-size: 19px;
+}
+
+.orcamento-modal p {
+    margin: 0;
+    color: #765c4a;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+.orcamento-modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.orcamento-modal-acoes button {
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.orcamento-modal-cancelar {
+    border: 1px solid #d9cec3;
+    background: #fff;
+    color: #765c4a;
+}
+
+.orcamento-modal-confirmar {
+    border: 1px solid #4b2108;
+    background: #4b2108;
+    color: #fff;
+}

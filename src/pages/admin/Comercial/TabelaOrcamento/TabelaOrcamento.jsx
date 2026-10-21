@@ -1053,6 +1053,12 @@ export default function TabelaOrcamento() {
     const [erroLista, setErroLista] =
         useState("");
 
+const [avisoPersonalizado, setAvisoPersonalizado] =
+    useState(null);
+
+const [confirmacaoPersonalizada, setConfirmacaoPersonalizada] =
+    useState(null);
+
         const [pesquisaCliente, setPesquisaCliente] =
     useState("");
 
@@ -1095,6 +1101,25 @@ const [
     campoMoedaFocado,
     setCampoMoedaFocado
 ] = useState("");
+
+
+const mostrarAviso = (mensagem, tipo = "erro") => {
+    setAvisoPersonalizado({
+        mensagem,
+        tipo
+    });
+};
+
+const pedirConfirmacao = ({
+    mensagem,
+    onConfirmar
+}) => {
+    setConfirmacaoPersonalizada({
+        mensagem,
+        onConfirmar
+    });
+};
+
     /*
     =================================================
     DADOS DO ORÇAMENTO
@@ -3300,37 +3325,50 @@ setOverFinalAplicado(
         });
     };
 
+const excluirOrcamento = row => {
+    pedirConfirmacao({
+        mensagem:
+            `Excluir o orçamento "${row.nome}"?\n\n` +
+            "Todas as versões, ambientes, itens e complementos vinculados serão removidos.",
 
-    const excluirOrcamento = async row => {
+        onConfirmar: async () => {
+            try {
+                setCarregandoLista(true);
+                setErroLista("");
 
-        const confirmado = window.confirm(
-            `Excluir o orçamento "${row.nome}"?\n\nTodas as versões, ambientes, itens e complementos vinculados serão removidos.`
-        );
+                const { error } = await supabase
+                    .from("orcamentos")
+                    .delete()
+                    .eq("id", row.id);
 
-        if (!confirmado) return;
+                if (error) throw error;
 
-        try {
-            setCarregandoLista(true);
-            setErroLista("");
+                await carregarListaOrcamentos();
 
-            const { error } = await supabase
-                .from("orcamentos")
-                .delete()
-                .eq("id", row.id);
+                mostrarAviso(
+                    "Orçamento excluído com sucesso.",
+                    "sucesso"
+                );
 
-            if (error) throw error;
+            } catch (error) {
+                console.error(error);
 
-            await carregarListaOrcamentos();
+                setErroLista(
+                    error.message ||
+                    "Não foi possível excluir o orçamento."
+                );
 
-        } catch (error) {
-            console.error(error);
-            setErroLista(
-                error.message ||
-                "Não foi possível excluir o orçamento."
-            );
+                mostrarAviso(
+                    error.message ||
+                    "Não foi possível excluir o orçamento."
+                );
+
+            } finally {
+                setCarregandoLista(false);
+            }
         }
-    };
-
+    });
+};
 
     /*
     =================================================
@@ -6609,9 +6647,7 @@ ${novoCronograma}`;
                 );
 
             if (!itensComDados) {
-                window.alert(
-                    "Adicione pelo menos um item da base antes de gerar o PDF."
-                );
+               mostrarAviso("Adicione pelo menos um item da base antes de gerar o PDF.");
                 return;
             }
 
@@ -7739,10 +7775,7 @@ ${novoCronograma}`;
                 error
             );
 
-            window.alert(
-                error?.message ||
-                "Não foi possível gerar o PDF do orçamento."
-            );
+            mostrarAviso(error?.message || "Não foi possível gerar o PDF do orçamento.");
 
         }
 
@@ -7759,7 +7792,7 @@ ${novoCronograma}`;
     } = {}) => {
 
         if (!orcamento.nome.trim()) {
-            window.alert("Informe o nome do orçamento.");
+            mostrarAviso("Informe o nome do orçamento.");
             return;
         }
 
@@ -7768,7 +7801,7 @@ ${novoCronograma}`;
         );
 
         if (!allItems.length) {
-            window.alert("Adicione pelo menos um item ao orçamento.");
+            mostrarAviso("Adicione pelo menos um item ao orçamento.");
             return;
         }
 
@@ -7777,9 +7810,7 @@ ${novoCronograma}`;
         );
 
         if (itemSemBase) {
-            window.alert(
-                "Todos os itens precisam ter um item da base selecionado."
-            );
+            mostrarAviso("Todos os itens precisam ter um item da base selecionado.");
             return;
         }
 
@@ -7788,9 +7819,7 @@ ${novoCronograma}`;
         );
 
         if (itemSemMdf) {
-            window.alert(
-                "Todos os itens precisam ter um MDF selecionado."
-            );
+           mostrarAviso("Todos os itens precisam ter um MDF selecionado.");
             return;
         }
 
@@ -8489,7 +8518,8 @@ const deveCriarNovaVersao =
                 ? `Nova versão V${versaoNumero} criada com sucesso.`
                 : `Versão V${versaoNumero} atualizada com sucesso.`;
 
-            window.alert(mensagem);
+                    mostrarAviso(mensagem, "sucesso");
+
 
         } catch (error) {
 
@@ -8500,10 +8530,7 @@ const deveCriarNovaVersao =
                 "Não foi possível salvar o orçamento."
             );
 
-            window.alert(
-                error.message ||
-                "Não foi possível salvar o orçamento."
-            );
+            mostrarAviso(error.message || "Não foi possível salvar o orçamento.");
 
         } finally {
             setSalvando(false);
@@ -8522,9 +8549,7 @@ const deveCriarNovaVersao =
         if (!orcamentoId || !versaoId) return;
 
         if (versoesOrcamento.length <= 1) {
-            window.alert(
-                "Este orçamento possui apenas uma versão. Para removê-la, exclua o orçamento inteiro pela lista."
-            );
+            mostrarAviso("Este orçamento possui apenas uma versão. Para removê-la, exclua o orçamento inteiro pela lista.");
             return;
         }
 
@@ -8651,9 +8676,7 @@ const deveCriarNovaVersao =
                 versao: versaoDestino.id
             });
 
-            window.alert(
-                `Versão V${versaoSelecionada.versao} excluída com sucesso.`
-            );
+            mostrarAviso(`Versão V${versaoSelecionada.versao} excluída com sucesso.`, "sucesso");
 
         } catch (error) {
 
@@ -8664,10 +8687,7 @@ const deveCriarNovaVersao =
                 "Não foi possível excluir a versão."
             );
 
-            window.alert(
-                error.message ||
-                "Não foi possível excluir a versão."
-            );
+            mostrarAviso(error.message || "Não foi possível excluir a versão.");
 
         } finally {
             setSalvando(false);
@@ -8711,6 +8731,64 @@ const deveCriarNovaVersao =
 
         return (
             <div className="tabela-orcamento-page tabela-orcamento-lista-page">
+
+                {avisoPersonalizado && (
+    <div
+        className={`orcamento-toast orcamento-toast-${avisoPersonalizado.tipo}`}
+        role="alert"
+    >
+        <span>{avisoPersonalizado.mensagem}</span>
+
+        <button
+            type="button"
+            aria-label="Fechar aviso"
+            onClick={() => setAvisoPersonalizado(null)}
+        >
+            <FiX />
+        </button>
+    </div>
+)}
+
+{confirmacaoPersonalizada && (
+    <div className="orcamento-modal-overlay">
+        <div
+            className="orcamento-modal"
+            role="dialog"
+            aria-modal="true"
+        >
+            <h3>Confirmar ação</h3>
+
+            <p>{confirmacaoPersonalizada.mensagem}</p>
+
+            <div className="orcamento-modal-acoes">
+                <button
+                    type="button"
+                    className="orcamento-modal-cancelar"
+                    onClick={() => setConfirmacaoPersonalizada(null)}
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    className="orcamento-modal-confirmar"
+                    onClick={async () => {
+                        const confirmar =
+                            confirmacaoPersonalizada.onConfirmar;
+
+                        setConfirmacaoPersonalizada(null);
+
+                        if (confirmar) {
+                            await confirmar();
+                        }
+                    }}
+                >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+)}
 
                 <div className="tabela-orcamento-lista-topo">
                     <div>
@@ -8955,6 +9033,63 @@ const deveCriarNovaVersao =
     return (
 
         <div className="tabela-orcamento-page">
+            {avisoPersonalizado && (
+    <div
+        className={`orcamento-toast orcamento-toast-${avisoPersonalizado.tipo}`}
+        role="alert"
+    >
+        <span>{avisoPersonalizado.mensagem}</span>
+
+        <button
+            type="button"
+            aria-label="Fechar aviso"
+            onClick={() => setAvisoPersonalizado(null)}
+        >
+            <FiX />
+        </button>
+    </div>
+)}
+
+{confirmacaoPersonalizada && (
+    <div className="orcamento-modal-overlay">
+        <div
+            className="orcamento-modal"
+            role="dialog"
+            aria-modal="true"
+        >
+            <h3>Confirmar ação</h3>
+
+            <p>{confirmacaoPersonalizada.mensagem}</p>
+
+            <div className="orcamento-modal-acoes">
+                <button
+                    type="button"
+                    className="orcamento-modal-cancelar"
+                    onClick={() => setConfirmacaoPersonalizada(null)}
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="button"
+                    className="orcamento-modal-confirmar"
+                    onClick={async () => {
+                        const confirmar =
+                            confirmacaoPersonalizada.onConfirmar;
+
+                        setConfirmacaoPersonalizada(null);
+
+                        if (confirmar) {
+                            await confirmar();
+                        }
+                    }}
+                >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+)}
 
 
             {/* =================================================
@@ -12099,18 +12234,14 @@ const deveCriarNovaVersao =
                             if (
                                 valor <= 0
                             ) {
-                                window.alert(
-                                    "Informe o valor final desejado."
-                                );
+                                mostrarAviso("Informe o valor final desejado.");
                                 return;
                             }
 
                             if (
                                 minimo <= 0
                             ) {
-                                window.alert(
-                                    "O valor mínimo da proposta ALME precisa ser maior que zero."
-                                );
+                                mostrarAviso("O valor mínimo da proposta ALME precisa ser maior que zero.");
                                 return;
                             }
 
@@ -12123,9 +12254,7 @@ const deveCriarNovaVersao =
                                 valor <
                                 valorComRtAtual
                             ) {
-                                window.alert(
-                                    "O valor final desejado não pode ser menor que a soma dos valores com RT atuais."
-                                );
+                                mostrarAviso("O valor final desejado não pode ser menor que a soma dos valores com RT atuais.")
                                 return;
                             }
 
@@ -12134,9 +12263,7 @@ const deveCriarNovaVersao =
                                     valor % 10
                                 ) > 0.001
                             ) {
-                                window.alert(
-                                    "Para fechar exatamente a soma dos itens, o valor final desejado deve ser múltiplo de R$ 10,00."
-                                );
+                                mostrarAviso("Para fechar exatamente a soma dos itens, o valor final desejado deve ser múltiplo de R$ 10,00.");
                                 return;
                             }
 
