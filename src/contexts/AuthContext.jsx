@@ -240,37 +240,41 @@ export function AuthProvider({ children }) {
         iniciar();
 
 
-        /*
+           /*
         =================================================
-        LISTENER DO SUPABASE
+        LISTENER DO SUPABASE (VERSÃO LIMPA SEM LOOP DE LOADING)
         =================================================
         */
+        const { data: listener } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if (!ativo) return;
 
-        const {
-            data: listener
-        } =
-            supabase.auth.onAuthStateChange(
-                async (_event, session) => {
+                const usuarioAtual = session?.user || null;
 
-                    if (!ativo) {
-                        return;
-                    }
-
-
-                    setLoading(true);
-
-
-                    await carregarUsuario(
-                        session?.user || null
-                    );
-
-
-                    if (ativo) {
-
-                        setLoading(false);
-                    }
+                // Se não há usuário logado, limpa os estados e encerra de imediato
+                if (!usuarioAtual) {
+                    setUser(null);
+                    setRole(null);
+                    usuarioIdRef.current = null;
+                    return;
                 }
-            );
+
+                // 💡 PULOO DO GATO: Se o usuário no Alt+Tab for o exato mesmo, ignore.
+                // Não mude o estado de Loading e não faça requisições no banco.
+                if (usuarioIdRef.current === usuarioAtual.id && event !== 'SIGNED_IN') {
+                    return; 
+                }
+
+                // Só atualiza os dados em background se for uma mudança real de autenticação
+                try {
+                    // 💡 IMPORTANTE: Removemos o 'setLoading(true)' daqui! 
+                    // Isso impede a tela de piscar ou voltar para o topo.
+                    await carregarUsuario(usuarioAtual);
+                } catch (err) {
+                    console.error("Erro no listener de auth:", err);
+                }
+            }
+        );
 
 
         /*
