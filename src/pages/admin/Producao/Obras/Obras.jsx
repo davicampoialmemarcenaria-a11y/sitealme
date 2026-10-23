@@ -154,6 +154,11 @@ const [
     setOrcamentoSelecionadoId
 ] = useState("");
 
+const [
+    buscaOrcamento,
+    setBuscaOrcamento
+] = useState("");
+
     /*
     =================================================
     USUÁRIO ATUAL
@@ -517,6 +522,7 @@ async function carregarOrcamentosAprovados() {
                 .select(`
                     id,
                     nome,
+                    codigo,
                     cliente,
                     arquiteto_empresa,
                     status
@@ -538,9 +544,12 @@ async function carregarOrcamentosAprovados() {
         }
 
 
-        setOrcamentosAprovados(
-            data || []
-        );
+        const orcamentosPrincipais = (data || []).filter((orcamento) => {
+            const identificacao = `${orcamento.nome || ""} ${orcamento.codigo || ""}`;
+            return !/\b(ADTO|ADITIVO|ADIT)\b/i.test(identificacao);
+        });
+
+        setOrcamentosAprovados(orcamentosPrincipais);
 
     }
 
@@ -750,14 +759,12 @@ async function carregarOrcamentosAprovados() {
             }
 
 
-            if (
-                dados?.editando
-            ) {
+            if (dados?.editando) {
+                setEditando(dados.editando);
+            }
 
-                setEditando(
-                    dados.editando
-                );
-
+            if (dados?.orcamentoSelecionadoId) {
+                setOrcamentoSelecionadoId(String(dados.orcamentoSelecionadoId));
             }
 
 
@@ -810,6 +817,8 @@ async function carregarOrcamentosAprovados() {
 
                     editando,
 
+                    orcamentoSelecionadoId,
+
                     modal: true
 
                 })
@@ -830,6 +839,7 @@ async function carregarOrcamentosAprovados() {
     }, [
         form,
         editando,
+        orcamentoSelecionadoId,
         modal
     ]);
 
@@ -1326,6 +1336,34 @@ async function carregarOrcamentosAprovados() {
 
 /*
 =====================================================
+FILTRAR ORÇAMENTOS APROVADOS
+=====================================================
+*/
+
+const orcamentosAprovadosFiltrados = useMemo(() => {
+    const termo = buscaOrcamento.trim().toLowerCase();
+
+    if (!termo) {
+        return orcamentosAprovados;
+    }
+
+    return orcamentosAprovados.filter((orcamento) => {
+        const campos = [
+            orcamento.nome,
+            orcamento.cliente,
+            orcamento.arquiteto_empresa,
+            orcamento.codigo
+        ];
+
+        return campos.some((campo) =>
+            String(campo ?? "").toLowerCase().includes(termo)
+        );
+    });
+}, [orcamentosAprovados, buscaOrcamento]);
+
+
+/*
+=====================================================
 SELECIONAR ORÇAMENTO APROVADO
 =====================================================
 */
@@ -1414,6 +1452,7 @@ function selecionarOrcamentoAprovado(
     setEditando(null);
 
     setOrcamentoSelecionadoId("");
+    setBuscaOrcamento("");
 
     setForm({
         ...FORM_INICIAL
@@ -1444,6 +1483,12 @@ function selecionarOrcamentoAprovado(
             obra
         );
 
+        setOrcamentoSelecionadoId(
+            String(obra.orcamento_id || obra.orcamento_aprovado_id || "")
+        );
+        setBuscaOrcamento("");
+
+        carregarOrcamentosAprovados();
 
         setForm({
 
@@ -1813,6 +1858,7 @@ function selecionarOrcamentoAprovado(
         setEditando(null);
 
         setOrcamentoSelecionadoId("");
+        setBuscaOrcamento("");
 
         setForm({
             ...FORM_INICIAL
@@ -1863,319 +1909,146 @@ function selecionarOrcamentoAprovado(
     =================================================
     */
 
-    async function salvarObra(
-        e
-    ) {
-
+    async function salvarObra(e) {
         e.preventDefault();
-
         setErro("");
 
-
-        if (
-            !form.nome.trim()
-        ) {
-
-            setErro(
-                "Informe o nome da obra."
-            );
-
+        if (!String(form.nome ?? "").trim()) {
+            setErro("Informe o nome da obra.");
             return;
-
         }
 
-
-        if (
-
-            form.valor &&
-
-            Number(
-                form.valor
-            ) < 0
-
-        ) {
-
-            setErro(
-                "O valor não pode ser negativo."
+        if (!editando && !String(orcamentoSelecionadoId ?? "").trim()) {
+            console.error(
+                "Nenhum orçamento aprovado foi selecionado.",
+                { orcamentoSelecionadoId }
             );
-
+            setErro("Selecione um orçamento aprovado antes de criar a obra.");
             return;
-
         }
 
-
-        if (
-
-            form.dias_finalizacao_esperado &&
-
-            Number(
-                form.dias_finalizacao_esperado
-            ) < 0
-
-        ) {
-
-            setErro(
-                "O número de dias não pode ser negativo."
-            );
-
+        if (form.valor !== "" && Number(form.valor) < 0) {
+            setErro("O valor não pode ser negativo.");
             return;
-
         }
 
+        if (
+            form.dias_finalizacao_esperado !== "" &&
+            Number(form.dias_finalizacao_esperado) < 0
+        ) {
+            setErro("O número de dias não pode ser negativo.");
+            return;
+        }
 
         if (
-
             form.rdo_nome &&
-
-            !usuariosRdo.some(
-
-                usuario =>
-
-                    usuario.username ===
-                    form.rdo_nome
-
-            )
-
+            !usuariosRdo.some((usuario) => usuario.username === form.rdo_nome)
         ) {
-
-            setErro(
-                "O RDO selecionado não está disponível."
-            );
-
+            setErro("O RDO selecionado não está disponível.");
             return;
-
         }
 
-
         if (
-
             form.marceneiro_nome &&
-
-            !usuariosMarceneiros.some(
-
-                usuario =>
-
-                    usuario.username ===
-                    form.marceneiro_nome
-
-            )
-
+            !usuariosMarceneiros.some((usuario) => usuario.username === form.marceneiro_nome)
         ) {
-
-            setErro(
-                "O marceneiro selecionado não está disponível."
-            );
-
+            setErro("O marceneiro selecionado não está disponível.");
             return;
-
         }
-
 
         if (
-
             form.projetista_nome &&
-
-            !usuariosProjetistas.some(
-
-                usuario =>
-
-                    usuario.username ===
-                    form.projetista_nome
-
-            )
-
+            !usuariosProjetistas.some((usuario) => usuario.username === form.projetista_nome)
         ) {
-
-            setErro(
-                "O projetista selecionado não está disponível."
-            );
-
+            setErro("O projetista selecionado não está disponível.");
             return;
-
         }
-
 
         setSalvando(true);
 
-
         try {
+            // Na edição, mantém o vínculo atual quando não houver outro orçamento selecionado.
+            const orcamentoId = String(
+                orcamentoSelecionadoId ||
+                editando?.orcamento_id ||
+                editando?.orcamento_aprovado_id ||
+                ""
+            ).trim() || null;
 
             const payload = {
-
-                action:
-
-                    editando
-
-                        ? "update"
-
-                        : "create",
-
-
-                ...(
-
-                    editando
-
-                        ? {
-
-                            id:
-                                editando.id
-
-                        }
-
-                        : {}
-
-                ),
-
-
-                nome:
-                    form.nome.trim(),
-
-
-                endereco:
-                    form.endereco.trim(),
-
-
-                cliente_nome:
-                    form.cliente_nome.trim(),
-
-
-                arquiteto_empresa:
-                    form.arquiteto_empresa.trim(),
-
-
-                data_inicio_esperada:
-
-                    form.data_inicio_esperada ||
-
-                    null,
-
-
-                valor:
-
-                    form.valor
-
-                        ? Number(
-                            form.valor
-                        )
-
-                        : null,
-
-
-                rdo_nome:
-
-                    form.rdo_nome ||
-
-                    null,
-
-
-                marceneiro_nome:
-
-                    form.marceneiro_nome ||
-
-                    null,
-
-
-                projetista_nome:
-
-                    form.projetista_nome ||
-
-                    null,
-
-
+                action: editando ? "update" : "create",
+                orcamento_id: orcamentoId,
+                // Mantido para compatibilidade com versões da Edge Function que leem este nome.
+                orcamento_aprovado_id: orcamentoId,
+                ...(editando ? { id: editando.id } : {}),
+                nome: String(form.nome ?? "").trim(),
+                endereco: String(form.endereco ?? "").trim(),
+                cliente_nome: String(form.cliente_nome ?? "").trim(),
+                arquiteto_empresa: String(form.arquiteto_empresa ?? "").trim(),
+                data_inicio_esperada: form.data_inicio_esperada || null,
+                valor: form.valor !== "" ? Number(form.valor) : null,
+                rdo_nome: form.rdo_nome || null,
+                marceneiro_nome: form.marceneiro_nome || null,
+                projetista_nome: form.projetista_nome || null,
                 dias_finalizacao_esperado:
-
-                    form.dias_finalizacao_esperado
-
-                        ? Number(
-                            form.dias_finalizacao_esperado
-                        )
-
+                    form.dias_finalizacao_esperado !== ""
+                        ? Number(form.dias_finalizacao_esperado)
                         : null,
-
-
-                fase:
-
-                    form.fase.trim() ||
-
-                    null
-
+                fase: String(form.fase ?? "").trim() || null
             };
 
+            console.group("SALVANDO OBRA — DIAGNÓSTICO");
+            console.log("ID DO ORÇAMENTO SELECIONADO:", orcamentoSelecionadoId);
+            console.log("ID DO ORÇAMENTO ENVIADO:", orcamentoId);
+            console.log(
+                "PAYLOAD COMPLETO ENVIADO PARA ADMIN-OBRAS:\n" +
+                JSON.stringify(payload, null, 2)
+            );
+            console.groupEnd();
 
-            const {
-                data,
-                error
-            } =
-                await supabase
-                    .functions
-                    .invoke(
-                        "admin-obras",
-                        {
-                            body:
-                                payload
-                        }
-                    );
+            const { data, error } = await supabase.functions.invoke("admin-obras", {
+                body: payload
+            });
 
+            console.group("RESPOSTA ADMIN-OBRAS — DIAGNÓSTICO");
+            console.log(
+                "RESPOSTA COMPLETA (JSON):\n" +
+                JSON.stringify(data, null, 2)
+            );
+            console.log("OBJETO DE ERRO DA CHAMADA:", error);
+            if (error) {
+                console.error("MENSAGEM DO ERRO:", error.message || String(error));
+                console.error("CONTEXTO DO ERRO:", error.context || null);
+            }
+            console.groupEnd();
 
             if (error) {
                 throw error;
             }
 
-
             if (data?.error) {
-
-                throw new Error(
-                    data.error
-                );
-
+                throw new Error(data.error);
             }
 
-
             limparRascunho();
-
             setModal(false);
-
             setEditando(null);
-
             setOrcamentoSelecionadoId("");
-
-            setForm({
-                ...FORM_INICIAL
-            });
-
+            setBuscaOrcamento("");
+            setForm({ ...FORM_INICIAL });
             setErro("");
 
-
             await carregarDados();
-
             await carregarObrasConcluidas();
-
-        }
-
-        catch (err) {
-
-            console.error(
-                "Erro ao salvar obra:",
-                err
-            );
-
-
+        } catch (err) {
+            console.error("Erro ao salvar obra:", err);
             setErro(
-
                 err?.message ||
-
-                "Não foi possível salvar a obra."
-
+                "Não foi possível salvar a obra. Consulte o console para ver os detalhes."
             );
-
-        }
-
-        finally {
-
+        } finally {
             setSalvando(false);
-
         }
-
     }
 
 
@@ -3709,128 +3582,72 @@ function selecionarOrcamentoAprovado(
                                 <div className="obras-form-grid">
 
 
-                                   <div className="obras-form-group full">
+                                    <div className="obras-form-group full">
+                                        {editando ? (
+                                            <>
+                                                <label>
+                                                    Nome da obra <span>*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="nome"
+                                                    value={form.nome}
+                                                    onChange={alterarCampo}
+                                                    placeholder="Nome da obra"
+                                                    autoComplete="off"
+                                                    required
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <label>
+                                                    Pesquisar orçamento aprovado <span>*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={buscaOrcamento}
+                                                    onChange={(e) => setBuscaOrcamento(e.target.value)}
+                                                    placeholder="Digite o nome do orçamento, cliente, arquiteto ou código..."
+                                                    autoComplete="off"
+                                                    disabled={loadingOrcamentosAprovados}
+                                                />
+                                                <small>
+                                                    {loadingOrcamentosAprovados
+                                                        ? "Carregando orçamentos..."
+                                                        : `${orcamentosAprovadosFiltrados.length} orçamento(s) encontrado(s)`}
+                                                </small>
 
-    <label>
-
-        Nome da obra
-
-        <span>
-            *
-        </span>
-
-    </label>
-
-
-    {
-
-        editando
-
-            ? (
-
-                <input
-
-                    type="text"
-
-                    name="nome"
-
-                    value={
-                        form.nome
-                    }
-
-                    onChange={
-                        alterarCampo
-                    }
-
-                    placeholder="Nome da obra"
-
-                    autoComplete="off"
-
-                    required
-
-                />
-
-            )
-
-            : (
-
-                <select
-
-                    name="orcamento_aprovado_id"
-
-                    value={
-                        orcamentoSelecionadoId
-                    }
-
-                    onChange={
-                        selecionarOrcamentoAprovado
-                    }
-
-                    required
-
-                    disabled={
-                        loadingOrcamentosAprovados
-                    }
-
-                >
-
-                    <option value="">
-
-                        {
-
-                            loadingOrcamentosAprovados
-
-                                ? "Carregando orçamentos aprovados..."
-
-                                : orcamentosAprovados.length === 0
-
-                                    ? "Nenhum orçamento aprovado disponível"
-
-                                    : "Selecione um orçamento aprovado"
-
-                        }
-
-                    </option>
-
-
-                    {
-
-                        orcamentosAprovados.map(
-
-                            orcamento => (
-
-                                <option
-
-                                    key={
-                                        orcamento.id
-                                    }
-
-                                    value={
-                                        orcamento.id
-                                    }
-
-                                >
-
-                                    {
-                                        orcamento.nome
-                                    }
-
-                                </option>
-
-                            )
-
-                        )
-
-                    }
-
-                </select>
-
-            )
-
-    }
-
-</div>
-
+                                                <label>
+                                                    Selecione o orçamento
+                                                </label>
+                                                <select
+                                                    name="orcamento_aprovado_id"
+                                                    value={orcamentoSelecionadoId}
+                                                    onChange={selecionarOrcamentoAprovado}
+                                                    required
+                                                    disabled={
+                                                        loadingOrcamentosAprovados ||
+                                                        orcamentosAprovadosFiltrados.length === 0
+                                                    }
+                                                >
+                                                    <option value="">
+                                                        {loadingOrcamentosAprovados
+                                                            ? "Carregando orçamentos..."
+                                                            : orcamentosAprovadosFiltrados.length === 0
+                                                                ? "Nenhum orçamento encontrado"
+                                                                : "Selecione um orçamento"}
+                                                    </option>
+                                                    {orcamentosAprovadosFiltrados.map((orcamento) => (
+                                                        <option key={orcamento.id} value={orcamento.id}>
+                                                            {orcamento.nome || "Orçamento sem nome"}
+                                                            {orcamento.codigo ? ` — ${orcamento.codigo}` : ""}
+                                                            {orcamento.cliente ? ` — ${orcamento.cliente}` : ""}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </>
+                                        )}
+                                    </div>
 
                                     <div className="obras-form-group full">
 

@@ -659,38 +659,46 @@ function normalizarObra(
     */
 
     const concluida =
+        normalizarBoolean(body?.concluida);
 
-        normalizarBoolean(
-            body?.concluida
-        );
+    // Aceita aliases e ignora strings vazias para não perder o ID
+    // quando orcamento_id vier como "" e o alias estiver preenchido.
+    const candidatosOrcamento = [
+        body?.orcamento_id,
+        body?.orcamento_aprovado_id,
+        body?.orcamento?.id,
+        body?.orcamento_aprovado?.id,
+    ];
 
+    const orcamentoSelecionado = candidatosOrcamento.find(
+        (valor) => valor !== null && valor !== undefined && String(valor).trim() !== ""
+    );
+
+    const orcamento_id = orcamentoSelecionado !== undefined
+        ? String(orcamentoSelecionado).trim()
+        : null;
+
+    console.log("ADMIN-OBRAS - ORÇAMENTO RECEBIDO:", {
+        orcamento_id_recebido: body?.orcamento_id ?? null,
+        orcamento_aprovado_id_recebido: body?.orcamento_aprovado_id ?? null,
+        orcamento_objeto_id: body?.orcamento?.id ?? null,
+        orcamento_id_normalizado: orcamento_id,
+    });
 
     return {
-
         nome,
-
         endereco,
-
         cliente_nome,
-
         arquiteto_empresa,
-
         data_inicio_esperada,
-
         valor,
-
         rdo_nome,
-
         marceneiro_nome,
-
         projetista_nome,
-
         dias_finalizacao_esperado,
-
         fase,
-
-        concluida
-
+        concluida,
+        orcamento_id,
     };
 
 }
@@ -769,6 +777,40 @@ function validarObra(
 
 /*
 =====================================================
+VALIDAR ORÇAMENTO APROVADO
+=====================================================
+*/
+
+async function validarOrcamentoAprovado(orcamentoId: string | null) {
+    if (!orcamentoId) {
+        throw new Error("Selecione um orçamento aprovado para vincular à obra.");
+    }
+
+    const { data: orcamento, error } = await supabaseAdmin
+        .from("orcamentos")
+        .select("id, status")
+        .eq("id", orcamentoId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Erro ao validar orçamento da obra:", error);
+        throw new Error(`Não foi possível validar o orçamento selecionado: ${error.message}`);
+    }
+
+    if (!orcamento) {
+        throw new Error("O orçamento selecionado não foi encontrado.");
+    }
+
+    if (normalizarTexto(orcamento.status) !== "aprovado") {
+        throw new Error("Só é permitido vincular a obra a um orçamento com status aprovado.");
+    }
+
+    return orcamento;
+}
+
+
+/*
+=====================================================
 LISTAR TODAS AS OBRAS
 =====================================================
 */
@@ -791,6 +833,7 @@ async function listarTodasAsObras() {
                 endereco,
                 cliente_nome,
                 arquiteto_empresa,
+                orcamento_id,
                 data_inicio_esperada,
                 valor,
                 rdo_nome,
@@ -856,6 +899,7 @@ async function listarObrasConcluidas() {
                 endereco,
                 cliente_nome,
                 arquiteto_empresa,
+                orcamento_id,
                 data_inicio_esperada,
                 valor,
                 rdo_nome,
@@ -1100,6 +1144,7 @@ async function buscarObraPorId(
                 endereco,
                 cliente_nome,
                 arquiteto_empresa,
+                orcamento_id,
                 data_inicio_esperada,
                 valor,
                 rdo_nome,
@@ -1361,9 +1406,13 @@ async function criarObra(
         );
 
 
-    validarObra(
-        obra
-    );
+    validarObra(obra);
+    await validarOrcamentoAprovado(obra.orcamento_id);
+
+    console.log("ADMIN-OBRAS - CRIANDO OBRA:", {
+        nome: obra.nome,
+        orcamento_id: obra.orcamento_id,
+    });
 
 
     const {
@@ -1392,6 +1441,9 @@ async function criarObra(
                 arquiteto_empresa:
                     obra.arquiteto_empresa ||
                     null,
+
+                orcamento_id:
+                    obra.orcamento_id,
 
                 data_inicio_esperada:
                     obra.data_inicio_esperada,
@@ -1444,6 +1496,16 @@ async function criarObra(
     }
 
 
+    console.log("ADMIN-OBRAS - OBRA CRIADA:", {
+        id: data?.id,
+        orcamento_id: data?.orcamento_id,
+    });
+
+    if (!data?.orcamento_id) {
+        console.error("OBRA CRIADA SEM orcamento_id. Confira coluna, payload e triggers do banco:", data);
+        throw new Error("A obra foi criada, mas o Supabase retornou orcamento_id vazio. Confira a coluna e os triggers da tabela obras.");
+    }
+
     return data;
 
 }
@@ -1475,23 +1537,23 @@ async function editarObra(
     }
 
 
-    const obra =
+    const obraAtual = await buscarObraPorId(id);
 
-        normalizarObra(
-            body
-        );
+    const obra = normalizarObra(body);
 
+    // Se a requisição não enviar um orçamento, preservar o vínculo já existente.
+    if (!obra.orcamento_id) {
+        obra.orcamento_id = obraAtual.orcamento_id ?? null;
+    }
 
-    validarObra(
-        obra
-    );
+    validarObra(obra);
+    await validarOrcamentoAprovado(obra.orcamento_id);
 
-
-    const obraAtual =
-
-        await buscarObraPorId(
-            id
-        );
+    console.log("ADMIN-OBRAS - EDITANDO OBRA:", {
+        id,
+        orcamento_id_atual: obraAtual.orcamento_id ?? null,
+        orcamento_id_novo: obra.orcamento_id,
+    });
 
 
     const agora =
@@ -1525,6 +1587,9 @@ async function editarObra(
                 arquiteto_empresa:
                     obra.arquiteto_empresa ||
                     null,
+
+                orcamento_id:
+                    obra.orcamento_id,
 
                 data_inicio_esperada:
                     obra.data_inicio_esperada,
@@ -1583,6 +1648,11 @@ async function editarObra(
 
     }
 
+
+    console.log("ADMIN-OBRAS - OBRA ATUALIZADA:", {
+        id: data?.id,
+        orcamento_id: data?.orcamento_id,
+    });
 
     return data;
 
@@ -2138,6 +2208,12 @@ Deno.serve(
                 "BODY:",
                 JSON.stringify(body)
             );
+
+            console.log("ORCAMENTO_ID RECEBIDO NO HANDLER:", {
+                orcamento_id: body?.orcamento_id ?? null,
+                orcamento_aprovado_id: body?.orcamento_aprovado_id ?? null,
+                orcamento: body?.orcamento ?? null,
+            });
 
             console.log(
                 "===================================="

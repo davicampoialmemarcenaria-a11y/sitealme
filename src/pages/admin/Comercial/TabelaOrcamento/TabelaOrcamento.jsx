@@ -1824,6 +1824,26 @@ SCROLL HORIZONTAL DA TABELA
         []
     );
    
+    useEffect(() => {
+    if (!isEditor) return;
+
+    const avisarAntesDeSair = event => {
+        event.preventDefault();
+        event.returnValue = "";
+    };
+
+    window.addEventListener(
+        "beforeunload",
+        avisarAntesDeSair
+    );
+
+    return () => {
+        window.removeEventListener(
+            "beforeunload",
+            avisarAntesDeSair
+        );
+    };
+}, [isEditor]);
 /*
 =====================================================
 CARREGAR ARQUITETOS / PARCEIROS

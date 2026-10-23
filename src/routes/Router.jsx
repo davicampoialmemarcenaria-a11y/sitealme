@@ -88,6 +88,9 @@ import TabelaCores
 import TabelaOrcamento
     from "../pages/admin/Comercial/TabelaOrcamento/TabelaOrcamento";
 
+   import Fluxo
+    from "../pages/admin/Producao/Fluxo/Fluxo";
+
 
 /*
 =====================================================
@@ -620,7 +623,26 @@ export default function Router() {
                             </ProtectedRoute>
                         }
                     />
+{/* =================================================
+    FLUXO DE PRODUÇÃO
 
+    URL:
+    /admin/producao/fluxo
+================================================= */}
+
+<Route
+    path="producao/fluxo"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "producao"
+            ]}
+        >
+            <Fluxo />
+        </ProtectedRoute>
+    }
+/>
 
                     {/* =================================================
                         CRONOGRAMAS

@@ -4,7 +4,8 @@ import {
     FiCalendar,
     FiDollarSign,
     FiFolder,
-    FiFileText
+    FiFileText,
+    FiGitBranch
 } from "react-icons/fi";
 
 import {
@@ -328,7 +329,40 @@ export default function Producao() {
 
                 </button>
 
+{/* =================================================
+    CARD FLUXO
+================================================= */}
 
+<button
+    type="button"
+    className="producao-card"
+    onClick={() => {
+        navigate("/admin/producao/fluxo");
+    }}
+>
+    <div className="producao-card-icon">
+        <FiGitBranch />
+    </div>
+
+    <div className="producao-card-content">
+        <span>
+            PRODUÇÃO
+        </span>
+
+        <h2>
+            Fluxo Fisico e Financeiro
+        </h2>
+
+        <p>
+            Consulte e acompanhe o fluxo das obras
+            de produção da ALME.
+        </p>
+    </div>
+
+    <div className="producao-card-arrow">
+        <FiArrowRight />
+    </div>
+</button>
             </section>
 
         </section>
