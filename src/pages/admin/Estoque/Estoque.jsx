@@ -1101,10 +1101,41 @@ export default function Estoque() {
       };
 
       if (entradaEditando) {
+        // Primeiro atualiza os demais campos pelo service existente.
         await editarEntrada({
           id: entradaEditando.id,
           ...dadosEntrada,
         });
+
+        // Garante que obra_id seja persistido no registro da entrada.
+        // O PDF usa os dados do formulário, por isso podia mostrar a nova
+        // obra mesmo quando o service não gravava o vínculo no banco.
+        const { data: entradaAtualizada, error: erroAtualizarObraEntrada } =
+          await supabase
+            .from("estoque_entradas")
+            .update({ obra_id: dadosEntrada.obraId })
+            .eq("id", entradaEditando.id)
+            .select("id, obra_id")
+            .single();
+
+        if (erroAtualizarObraEntrada) {
+          throw new Error(
+            `A entrada foi editada, mas a obra não foi salva: ${erroAtualizarObraEntrada.message}`
+          );
+        }
+
+        const obraEsperadaEntrada =
+          dadosEntrada.obraId == null ? null : String(dadosEntrada.obraId);
+        const obraGravadaEntrada =
+          entradaAtualizada?.obra_id == null
+            ? null
+            : String(entradaAtualizada.obra_id);
+
+        if (obraGravadaEntrada !== obraEsperadaEntrada) {
+          throw new Error(
+            `A obra da entrada não foi confirmada no banco. Esperada: ${obraEsperadaEntrada ?? "ALME ESTOQUE"}; gravada: ${obraGravadaEntrada ?? "ALME ESTOQUE"}.`
+          );
+        }
       } else {
         await criarEntrada(dadosEntrada);
       }
@@ -1406,16 +1437,44 @@ export default function Estoque() {
       // =================================================
 
       else {
+        const obraIdSaida = formSaida.obraId
+          ? Number(formSaida.obraId)
+          : null;
+
         await editarSaidaItem({
-          itemId:
-            saidaEditando.itemId,
+          itemId: saidaEditando.itemId,
           quantidade,
-          // Mantém a obra referente da saída.
-          // O service deve persistir obraId no registro pai.
-          obraId: formSaida.obraId
-            ? Number(formSaida.obraId)
-            : null,
+          obraId: obraIdSaida,
         });
+
+        // A obra pertence ao registro pai estoque_saidas, não ao item.
+        // Atualizamos explicitamente o pai para que a alteração persista.
+        const { data: saidaAtualizada, error: erroAtualizarObraSaida } =
+          await supabase
+            .from("estoque_saidas")
+            .update({ obra_id: obraIdSaida })
+            .eq("id", saidaEditando.id)
+            .select("id, obra_id")
+            .single();
+
+        if (erroAtualizarObraSaida) {
+          throw new Error(
+            `A saída foi editada, mas a obra não foi salva: ${erroAtualizarObraSaida.message}`
+          );
+        }
+
+        const obraEsperadaSaida =
+          obraIdSaida == null ? null : String(obraIdSaida);
+        const obraGravadaSaida =
+          saidaAtualizada?.obra_id == null
+            ? null
+            : String(saidaAtualizada.obra_id);
+
+        if (obraGravadaSaida !== obraEsperadaSaida) {
+          throw new Error(
+            `A obra da saída não foi confirmada no banco. Esperada: ${obraEsperadaSaida ?? "ALME ESTOQUE"}; gravada: ${obraGravadaSaida ?? "ALME ESTOQUE"}.`
+          );
+        }
 
         // =================================================
         // PDF DA SAÍDA EDITADA
