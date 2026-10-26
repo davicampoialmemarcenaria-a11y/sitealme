@@ -307,6 +307,128 @@
     }
   }
 
+  /* =====================================================
+     BARRA DE PROGRESSO FÍSICO-FINANCEIRO
+     ===================================================== */
+
+  .fluxo-progress-card {
+    margin: -8px 0 30px;
+    padding: 21px 22px 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #fbf8f2 100%);
+    border: 1px solid var(--fluxo-borda);
+    border-radius: 10px;
+    box-shadow: 0 5px 16px rgb(67 28 1 / 5%);
+  }
+
+  .fluxo-progress-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 22px;
+    margin-bottom: 18px;
+  }
+
+  .fluxo-progress-heading {
+    min-width: 0;
+
+    h3 {
+      margin: 5px 0 5px;
+      color: var(--fluxo-marrom);
+      font-size: clamp(1rem, 1.35vw, 1.18rem);
+      font-weight: 750;
+      letter-spacing: -0.025em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--fluxo-texto-suave);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+  }
+
+  .fluxo-progress-eyebrow {
+    color: var(--fluxo-dourado);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+  }
+
+  .fluxo-progress-percentage {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    text-align: right;
+
+    strong {
+      color: var(--fluxo-marrom);
+      font-size: clamp(1.55rem, 2.7vw, 2.25rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.055em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    span {
+      color: var(--fluxo-texto-suave);
+      font-size: 0.74rem;
+    }
+  }
+
+  .fluxo-progress-track {
+    width: 100%;
+    height: 14px;
+    overflow: hidden;
+    background: #eee8df;
+    border: 1px solid #e5dccf;
+    border-radius: 999px;
+    box-shadow: inset 0 1px 2px rgb(67 28 1 / 7%);
+  }
+
+  .fluxo-progress-fill {
+    position: relative;
+    height: 100%;
+    min-width: 0;
+    background: linear-gradient(100deg, #d48821 0%, #e5b45e 48%, #582300 100%);
+    border-radius: inherit;
+    box-shadow: 0 1px 7px rgb(137 73 10 / 22%);
+    transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+
+    &::after {
+      position: absolute;
+      inset: 1px 2px auto;
+      height: 35%;
+      background: rgb(255 255 255 / 28%);
+      border-radius: inherit;
+      content: "";
+    }
+  }
+
+  .fluxo-progress-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    color: var(--fluxo-texto-suave);
+    font-size: 0.7rem;
+    font-weight: 650;
+
+    span:nth-child(2) {
+      flex: 1;
+      text-align: center;
+      font-weight: 500;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fluxo-progress-fill {
+      transition: none;
+    }
+  }
+
   .fluxo-items-heading {
     margin-top: 8px;
   }
@@ -550,6 +672,41 @@
 
   @media (max-width: 680px) {
     padding: 12px;
+
+    .fluxo-progress-card {
+      padding: 17px 15px 13px;
+      margin-bottom: 25px;
+    }
+
+    .fluxo-progress-top {
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .fluxo-progress-percentage {
+      max-width: 45%;
+
+      strong {
+        font-size: clamp(1.35rem, 6vw, 1.8rem);
+      }
+
+      span {
+        max-width: 120px;
+        font-size: 0.68rem;
+      }
+    }
+
+    .fluxo-progress-heading p {
+      font-size: 0.77rem;
+    }
+
+    .fluxo-progress-track {
+      height: 12px;
+    }
+
+    .fluxo-progress-footer {
+      font-size: 0.65rem;
+    }
 
     .fluxo-header,
     .fluxo-section-heading {

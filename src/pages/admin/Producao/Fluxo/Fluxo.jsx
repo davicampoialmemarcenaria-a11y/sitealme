@@ -434,6 +434,10 @@ export default function Fluxo() {
     2
   );
 
+  // Limita apenas a largura visual da barra ao intervalo de 0% a 100%.
+  // O indicador numérico continua mostrando o percentual calculado.
+  const percentualBarra = Math.min(100, Math.max(0, percentualAndamento));
+
   const metaNumerica = arredondarCentavos(metaCustos);
   const custoDiretoNumerico = arredondarCentavos(custoDireto);
 
@@ -1112,6 +1116,49 @@ export default function Fluxo() {
             <div className="fluxo-metric">
               <span>Valor total do projeto</span>
               <strong>{formatarMoeda(totalProjeto)}</strong>
+            </div>
+          </section>
+
+          {/* =================================================
+              BARRA DE PROGRESSO FÍSICO-FINANCEIRO
+          ================================================= */}
+          <section className="fluxo-progress-card" aria-label="Progresso da obra">
+            <div className="fluxo-progress-top">
+              <div className="fluxo-progress-heading">
+                <span className="fluxo-progress-eyebrow">ACOMPANHAMENTO DA OBRA</span>
+                <h3>Progresso físico-financeiro</h3>
+                <p>Avanço calculado com base nas etapas realizadas em cada item.</p>
+              </div>
+
+              <div className="fluxo-progress-percentage">
+                <strong>{formatarPercentual(percentualAndamento)}</strong>
+                <span>do projeto concluído</span>
+              </div>
+            </div>
+
+            <div
+              className="fluxo-progress-track"
+              role="progressbar"
+              aria-label="Percentual de andamento da obra"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={percentualBarra}
+              aria-valuetext={formatarPercentual(percentualAndamento)}
+            >
+              <div
+                className="fluxo-progress-fill"
+                style={{ width: `${percentualBarra}%` }}
+              />
+            </div>
+
+            <div className="fluxo-progress-footer">
+              <span>0%</span>
+              <span>
+                {percentualBarra >= 100
+                  ? "Todas as etapas concluídas"
+                  : "Andamento das etapas da obra"}
+              </span>
+              <span>100%</span>
             </div>
           </section>
 
