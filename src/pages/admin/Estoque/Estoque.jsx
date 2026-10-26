@@ -203,6 +203,7 @@ export default function Estoque() {
   // Devoluções cadastradas no estoque
   const [devolucoes, setDevolucoes] = useState([]);
   const [modalDevolucao, setModalDevolucao] = useState(false);
+  const [devolucaoEditando, setDevolucaoEditando] = useState(null);
   const [salvandoDevolucao, setSalvandoDevolucao] = useState(false);
   const [erroDevolucao, setErroDevolucao] = useState("");
 
@@ -618,8 +619,21 @@ export default function Estoque() {
           item?.quantidade || 0
         );
 
-        const quantidadeJaDevolvida = Number(
+        const totalJaDevolvido = Number(
           devolucoesPorItem[String(item?.id)] || 0
+        );
+
+        // Ao editar uma devolução, não devemos contar a própria quantidade
+        // como se fosse outra devolução: ela continua disponível para edição.
+        const quantidadeDaDevolucaoEditada =
+          devolucaoEditando &&
+          String(devolucaoEditando.saida_item_id) === String(item?.id)
+            ? Number(devolucaoEditando.quantidade_devolvida || 0)
+            : 0;
+
+        const quantidadeJaDevolvida = Math.max(
+          0,
+          totalJaDevolvido - quantidadeDaDevolucaoEditada
         );
 
         const quantidadeDisponivel = Math.max(
@@ -667,10 +681,14 @@ export default function Estoque() {
     });
 
     return itens
-      .filter(
-        (item) =>
-          Number(item.quantidadeDisponivel || 0) > 0
-      )
+      .filter((item) => {
+        const possuiDisponivel = Number(item.quantidadeDisponivel || 0) > 0;
+        const ehItemDaDevolucaoEditada =
+          devolucaoEditando &&
+          String(item.saidaItemId) === String(devolucaoEditando.saida_item_id);
+
+        return possuiDisponivel || Boolean(ehItemDaDevolucaoEditada);
+      })
       .sort((a, b) => {
         const dataA =
           new Date(a.dataSaida || 0).getTime() || 0;
@@ -683,7 +701,7 @@ export default function Estoque() {
 
         return Number(b.saidaId || 0) - Number(a.saidaId || 0);
       });
-  }, [saidas, produtos, devolucoesPorItem]);
+  }, [saidas, produtos, devolucoesPorItem, devolucaoEditando]);
 
   const saidasDevolucaoFiltradas = useMemo(() => {
     const obraSelecionada = formDevolucao.obraId;
@@ -697,9 +715,18 @@ export default function Estoque() {
         ? String(item.obraId)
         : "";
 
-      return chaveItem === chaveObra;
+      const ehItemOriginalDaEdicao =
+        devolucaoEditando &&
+        String(item.saidaItemId) === String(formDevolucao.saidaItemId);
+
+      return chaveItem === chaveObra || Boolean(ehItemOriginalDaEdicao);
     });
-  }, [itensSaidasDevolucao, formDevolucao.obraId]);
+  }, [
+    itensSaidasDevolucao,
+    formDevolucao.obraId,
+    formDevolucao.saidaItemId,
+    devolucaoEditando,
+  ]);
 
   const saidaItemSelecionadoDevolucao = useMemo(() => {
     if (!formDevolucao.saidaItemId) return null;
@@ -1543,6 +1570,71 @@ export default function Estoque() {
   }
 
   function abrirNovaDevolucao() {
+    setDevolucaoEditando(null);
+    setErroDevolucao("");
+    setModalDevolucao(true);
+  }
+
+  function abrirEditarDevolucao(devolucao) {
+    limparRascunhoEstoque(ESTOQUE_DRAFT_KEYS.devolucao);
+
+    const saidaPai = (saidas || []).find(
+      (saida) => String(saida.id) === String(devolucao?.saida_id)
+    );
+
+    const itemSaida = (saidaPai?.estoque_saida_itens || []).find(
+      (item) => String(item.id) === String(devolucao?.saida_item_id)
+    );
+
+    const produto = produtos.find(
+      (item) => String(item.id) === String(devolucao?.produto_id ?? itemSaida?.produto_id)
+    );
+
+    const quantidadeRetirada = Number(
+      devolucao?.quantidade_retirada ?? itemSaida?.quantidade ?? 0
+    );
+
+    const devolvidoPorOutras = (devolucoes || [])
+      .filter(
+        (item) =>
+          String(item.saida_item_id) === String(devolucao?.saida_item_id) &&
+          String(item.id) !== String(devolucao?.id)
+      )
+      .reduce(
+        (total, item) => total + Number(item.quantidade_devolvida || 0),
+        0
+      );
+
+    const quantidadeDisponivel = Math.max(
+      0,
+      quantidadeRetirada - devolvidoPorOutras
+    );
+
+    const valorRetirada = Number(
+      devolucao?.valor_retirada ??
+      itemSaida?.valor_total ??
+      quantidadeRetirada * Number(itemSaida?.preco_unitario ?? itemSaida?.preco ?? produto?.preco ?? 0)
+    );
+
+    setDevolucaoEditando(devolucao);
+    setFormDevolucao({
+      ...formDevolucaoInicial,
+      obraId: devolucao?.obra_id == null ? "" : String(devolucao.obra_id),
+      saidaItemId: String(devolucao?.saida_item_id ?? ""),
+      saidaId: String(devolucao?.saida_id ?? ""),
+      produtoId: String(devolucao?.produto_id ?? itemSaida?.produto_id ?? ""),
+      itemNome: devolucao?.item_nome || produto?.nome || itemSaida?.nome || "Produto não informado",
+      sku: devolucao?.sku || produto?.sku || itemSaida?.sku || "-",
+      quantidadeRetirada,
+      quantidadeJaDevolvida: devolvidoPorOutras,
+      quantidadeDisponivel,
+      solicitante: devolucao?.solicitante || saidaPai?.solicitante || "-",
+      valorRetirada,
+      precoUnitario: quantidadeRetirada > 0 ? valorRetirada / quantidadeRetirada : 0,
+      quantidadeDevolvida: String(devolucao?.quantidade_devolvida ?? ""),
+      valorDevolvido: String(devolucao?.valor_devolvido ?? ""),
+    });
+
     setErroDevolucao("");
     setModalDevolucao(true);
   }
@@ -1551,6 +1643,7 @@ export default function Estoque() {
     if (salvandoDevolucao) return;
 
     setModalDevolucao(false);
+    setDevolucaoEditando(null);
     setErroDevolucao("");
     limparFormDevolucao();
   }
@@ -1577,10 +1670,19 @@ export default function Estoque() {
   }
 
   function selecionarObraDevolucao(valor) {
-    setFormDevolucao({
-      ...formDevolucaoInicial,
-      obraId: valor,
-    });
+    // Ao editar, a obra da devolução é independente da obra original
+    // da saída; preserve o item, a quantidade e os valores existentes.
+    if (devolucaoEditando) {
+      setFormDevolucao((prev) => ({
+        ...prev,
+        obraId: valor,
+      }));
+    } else {
+      setFormDevolucao({
+        ...formDevolucaoInicial,
+        obraId: valor,
+      });
+    }
 
     setErroDevolucao("");
   }
@@ -1648,100 +1750,166 @@ export default function Estoque() {
       setErroDevolucao("");
 
       if (!formDevolucao.saidaItemId) {
-        throw new Error(
-          "Selecione a saída referente."
-        );
+        throw new Error("Selecione a saída referente.");
       }
 
-      const registro = itensSaidasDevolucao.find(
-        (item) =>
-          String(item.saidaItemId) ===
-          String(formDevolucao.saidaItemId)
+      const registroSelecionado = itensSaidasDevolucao.find(
+        (item) => String(item.saidaItemId) === String(formDevolucao.saidaItemId)
       );
+
+      const devolucaoOriginal = devolucaoEditando;
+      const saidaPai = devolucaoOriginal
+        ? (saidas || []).find(
+            (saida) => String(saida.id) === String(devolucaoOriginal.saida_id)
+          )
+        : null;
+      const itemPai = devolucaoOriginal
+        ? (saidaPai?.estoque_saida_itens || []).find(
+            (item) => String(item.id) === String(devolucaoOriginal.saida_item_id)
+          )
+        : null;
+
+      const registro = registroSelecionado || (devolucaoOriginal ? {
+        saidaId: devolucaoOriginal.saida_id,
+        saidaItemId: devolucaoOriginal.saida_item_id,
+        obraId: devolucaoOriginal.obra_id ?? null,
+        dataSaida: saidaPai?.data_saida,
+        produtoId: devolucaoOriginal.produto_id,
+        itemNome: devolucaoOriginal.item_nome || itemPai?.nome || "Produto não informado",
+        sku: devolucaoOriginal.sku || itemPai?.sku || "-",
+        quantidadeRetirada: Number(devolucaoOriginal.quantidade_retirada || 0),
+        quantidadeJaDevolvida: Number(formDevolucao.quantidadeJaDevolvida || 0),
+        quantidadeDisponivel: Number(formDevolucao.quantidadeDisponivel || 0),
+        solicitante: devolucaoOriginal.solicitante || saidaPai?.solicitante || "-",
+        valorRetirada: Number(devolucaoOriginal.valor_retirada || 0),
+        precoUnitario: Number(formDevolucao.precoUnitario || 0),
+      } : null);
 
       if (!registro) {
-        throw new Error(
-          "A saída selecionada não está mais disponível para devolução."
-        );
+        throw new Error("A saída selecionada não está mais disponível.");
       }
 
-      const quantidadeDevolvida = Number(
-        formDevolucao.quantidadeDevolvida || 0
+      const quantidadeDevolvida = Number(formDevolucao.quantidadeDevolvida || 0);
+      const quantidadeMaxima = Number(
+        formDevolucao.quantidadeDisponivel ?? registro.quantidadeDisponivel ?? 0
       );
 
-      if (
-        !Number.isFinite(quantidadeDevolvida) ||
-        quantidadeDevolvida <= 0
-      ) {
+      if (!Number.isFinite(quantidadeDevolvida) || quantidadeDevolvida <= 0) {
+        throw new Error("Informe uma quantidade devolvida maior que zero.");
+      }
+
+      if (quantidadeDevolvida > quantidadeMaxima) {
         throw new Error(
-          "Informe uma quantidade devolvida maior que zero."
+          `A quantidade máxima disponível para esta devolução é ${quantidadeMaxima.toLocaleString("pt-BR")}.`
         );
       }
 
-      if (
-        quantidadeDevolvida >
-        Number(registro.quantidadeDisponivel || 0)
-      ) {
-        throw new Error(
-          `A quantidade máxima disponível para devolução é ${Number(
-            registro.quantidadeDisponivel || 0
-          ).toLocaleString("pt-BR")}.`
-        );
+      const valorDevolvido = calcularValorDevolucao({
+        quantidadeRetirada: formDevolucao.quantidadeRetirada || registro.quantidadeRetirada,
+        valorRetirada: formDevolucao.valorRetirada || registro.valorRetirada,
+        quantidadeDevolvida,
+      });
+
+      if (!Number.isFinite(valorDevolvido) || valorDevolvido < 0) {
+        throw new Error("Não foi possível calcular o valor da devolução.");
       }
 
-      const valorDevolvido =
-        valorDevolvidoCalculado;
+      const obraIdSelecionada = formDevolucao.obraId
+        ? Number(formDevolucao.obraId)
+        : null;
 
-      if (
-        !Number.isFinite(valorDevolvido) ||
-        valorDevolvido < 0
-      ) {
-        throw new Error(
-          "Não foi possível calcular o valor da devolução."
-        );
+      let dataSalva;
+
+      if (devolucaoEditando) {
+        // Atualiza o registro existente; a obra da devolução pode mudar
+        // sem alterar a obra vinculada à saída original.
+        // Não usar .single() no UPDATE: se a política RLS ocultar a linha
+        // atualizada, o PostgREST retorna zero linhas e gera PGRST116.
+        const { error: erroAtualizacao } = await supabase
+          .from("estoque_devolucoes")
+          .update({
+            obra_id: obraIdSelecionada,
+            quantidade_devolvida: quantidadeDevolvida,
+            valor_devolvido: valorDevolvido,
+          })
+          .eq("id", devolucaoEditando.id);
+
+        if (erroAtualizacao) {
+          throw new Error(
+            `Não foi possível atualizar a devolução: ${erroAtualizacao.message}`
+          );
+        }
+
+        // Consulta o registro separadamente para confirmar o que ficou salvo.
+        const {
+          data: devolucaoConfirmada,
+          error: erroConfirmacao,
+        } = await supabase
+          .from("estoque_devolucoes")
+          .select("*")
+          .eq("id", devolucaoEditando.id)
+          .maybeSingle();
+
+        if (erroConfirmacao) {
+          throw new Error(
+            `A atualização foi enviada, mas não foi possível confirmar a devolução no banco: ${erroConfirmacao.message}. Verifique as permissões de leitura da tabela estoque_devolucoes.`
+          );
+        }
+
+        if (!devolucaoConfirmada) {
+          throw new Error(
+            `Nenhuma devolução com ID ${devolucaoEditando.id} foi retornada após a atualização. Isso pode ocorrer se o registro não existir ou se as políticas RLS impedirem a leitura/atualização da linha.`
+          );
+        }
+
+        dataSalva = devolucaoConfirmada;
+      } else {
+        const { data, error } = await supabase
+          .from("estoque_devolucoes")
+          .insert({
+            obra_id: obraIdSelecionada,
+            saida_id: Number(registro.saidaId),
+            saida_item_id: Number(registro.saidaItemId),
+            produto_id: Number(registro.produtoId),
+            item_nome: registro.itemNome || null,
+            sku: registro.sku || null,
+            quantidade_retirada: Number(registro.quantidadeRetirada || 0),
+            solicitante: registro.solicitante || null,
+            valor_retirada: Number(registro.valorRetirada || 0),
+            quantidade_devolvida: quantidadeDevolvida,
+            valor_devolvido: valorDevolvido,
+          })
+          .select("*")
+          .single();
+
+        if (error) throw error;
+        dataSalva = data;
       }
 
-      const { data, error } = await supabase
-        .from("estoque_devolucoes")
-        .insert({
-          obra_id: registro.obraId
-            ? Number(registro.obraId)
-            : null,
-          saida_id: Number(registro.saidaId),
-          saida_item_id: Number(registro.saidaItemId),
-          produto_id: Number(registro.produtoId),
-          item_nome: registro.itemNome || null,
-          sku: registro.sku || null,
-          quantidade_retirada:
-            Number(registro.quantidadeRetirada || 0),
-          solicitante: registro.solicitante || null,
-          valor_retirada:
-            Number(registro.valorRetirada || 0),
-          quantidade_devolvida: quantidadeDevolvida,
-          valor_devolvido: valorDevolvido,
-        })
-        .select("*")
-        .single();
+      // Confirma que a obra escolhida foi efetivamente persistida.
+      const obraEsperada = obraIdSelecionada == null ? null : String(obraIdSelecionada);
+      const obraGravada = dataSalva?.obra_id == null ? null : String(dataSalva.obra_id);
 
-      if (error) {
-        throw error;
+      if (obraGravada !== obraEsperada) {
+        throw new Error(
+          `A obra da devolução não foi confirmada no banco. Esperada: ${obraEsperada ?? "ALME ESTOQUE"}; gravada: ${obraGravada ?? "ALME ESTOQUE"}.`
+        );
       }
 
       gerarPdfDevolucao({
-        devolucaoId: data?.id,
+        devolucaoId: dataSalva?.id,
         dataDevolucao:
-          data?.data_devolucao ||
+          dataSalva?.data_devolucao ||
+          devolucaoEditando?.data_devolucao ||
           new Date().toISOString().slice(0, 10),
-        obra: nomeObraPorId(registro.obraId),
+        obra: nomeObraPorId(obraIdSelecionada),
         saidaId: registro.saidaId,
         dataSaida: registro.dataSaida,
         itemNome: registro.itemNome,
         sku: registro.sku,
         solicitante: registro.solicitante,
-        quantidadeRetirada:
-          registro.quantidadeRetirada,
-        valorRetirada:
-          registro.valorRetirada,
+        quantidadeRetirada: registro.quantidadeRetirada,
+        valorRetirada: registro.valorRetirada,
         quantidadeDevolvida,
         valorDevolvido,
       });
@@ -1749,14 +1917,9 @@ export default function Estoque() {
       await carregarDados();
       fecharModalDevolucao();
     } catch (error) {
-      console.error(
-        "Erro ao salvar devolução:",
-        error
-      );
-
+      console.error("Erro ao salvar devolução:", error);
       setErroDevolucao(
-        error?.message ||
-          "Não foi possível registrar a devolução."
+        error?.message || "Não foi possível registrar/atualizar a devolução."
       );
     } finally {
       setSalvandoDevolucao(false);
@@ -4402,6 +4565,14 @@ async function removerDevolucao(devolucao) {
 
                                 <button
                                   type="button"
+                                  title="Editar devolução e obra referente"
+                                  onClick={() => abrirEditarDevolucao(devolucao)}
+                                >
+                                  Editar
+                                </button>
+
+                                <button
+                                  type="button"
                                   onClick={() =>
                                     gerarPdfDevolucaoDaLinha(
                                       devolucao
@@ -5437,11 +5608,13 @@ async function removerDevolucao(devolucao) {
                 </span>
 
                 <h2>
-                  Nova devolução
+                  {devolucaoEditando ? "Editar devolução" : "Nova devolução"}
                 </h2>
 
                 <p>
-                  Selecione a obra e a saída para carregar automaticamente os dados do material retirado.
+                  {devolucaoEditando
+                    ? "Altere a obra referente a esta devolução. A saída original permanece vinculada."
+                    : "Selecione a obra e a saída para carregar automaticamente os dados do material retirado."}
                 </p>
 
               </div>
@@ -5501,7 +5674,9 @@ async function removerDevolucao(devolucao) {
                 <small className="estoque-campo-ajuda">
                   {loadingObras
                     ? "Carregando obras da Produção..."
-                    : "As saídas abaixo serão filtradas pela obra selecionada."}
+                    : devolucaoEditando
+                      ? "Você pode alterar a obra referente desta devolução sem modificar a obra da saída original."
+                      : "As saídas abaixo serão filtradas pela obra selecionada."}
                 </small>
 
               </div>
@@ -5522,9 +5697,10 @@ async function removerDevolucao(devolucao) {
                   }
                   disabled={
                     salvandoDevolucao ||
-                    !formDevolucao.obraId &&
+                    Boolean(devolucaoEditando) ||
+                    (!formDevolucao.obraId &&
                       !saidasDevolucaoFiltradas.length &&
-                      false
+                      false)
                   }
                 >
 
@@ -5759,12 +5935,14 @@ async function removerDevolucao(devolucao) {
                   className="estoque-modal-save"
                   disabled={
                     salvandoDevolucao ||
-                    !saidaItemSelecionadoDevolucao
+                    (!saidaItemSelecionadoDevolucao && !devolucaoEditando)
                   }
                 >
                   {salvandoDevolucao
                     ? "Salvando..."
-                    : "Registrar devolução"}
+                    : devolucaoEditando
+                      ? "Salvar alterações"
+                      : "Registrar devolução"}
                 </button>
 
               </div>
