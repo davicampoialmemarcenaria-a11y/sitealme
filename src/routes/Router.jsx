@@ -79,6 +79,12 @@ import Obras
 import Comercial
     from "../pages/admin/Comercial/Comercial";
 
+    import Financeiro
+    from "../pages/admin/Financeiro/Financeiro";
+
+import ExtratosUni
+    from "../pages/admin/Financeiro/ExtratosUni/ExtratosUni";
+
 import TabelaPreco
     from "../pages/admin/Comercial/TabelaPreco/TabelaPreco";
 
@@ -101,25 +107,6 @@ INFORMAÇÕES FINANCEIRAS DA PRODUÇÃO
 import InforFi
     from "../pages/admin/Producao/InforFi/InforFi";
 
-
-/*
-=====================================================
-DOCUMENTOS DO CLIENTE
-=====================================================
-*/
-
-import DocumentosCliente
-    from "../pages/admin/Producao/DocumentosCliente/DocumentosCliente";
-
-
-/*
-=====================================================
-DOC ALME
-=====================================================
-*/
-
-import Docalme
-    from "../pages/admin/Producao/Docalme/Docalme";
 
 
 /*
@@ -581,48 +568,7 @@ export default function Router() {
                     />
 
 
-                    {/* =================================================
-                        DOCUMENTOS DO CLIENTE
-
-                        URL:
-                        /admin/producao/documentos-cliente
-                    ================================================= */}
-
-                    <Route
-                        path="producao/documentos-cliente"
-                        element={
-                            <ProtectedRoute
-                                allowedRoles={[
-                                    "Administrativo Geral",
-                                    "producao"
-                                ]}
-                            >
-                                <DocumentosCliente />
-                            </ProtectedRoute>
-                        }
-                    />
-
-
-                    {/* =================================================
-                        DOC ALME
-
-                        URL:
-                        /admin/producao/docalme
-                    ================================================= */}
-
-                    <Route
-                        path="producao/docalme"
-                        element={
-                            <ProtectedRoute
-                                allowedRoles={[
-                                    "Administrativo Geral",
-                                    "producao"
-                                ]}
-                            >
-                                <Docalme />
-                            </ProtectedRoute>
-                        }
-                    />
+                  
 {/* =================================================
     FLUXO DE PRODUÇÃO
 
@@ -682,28 +628,43 @@ export default function Router() {
                     />
 
 
-                    {/* =================================================
-                        FINANCEIRO
-                    ================================================= */}
+                 {/* =================================================
+    FINANCEIRO
+    URL: /admin/financeiro
+================================================= */}
 
-                    <Route
-                        path="financeiro"
-                        element={
-                            <ProtectedRoute
-                                allowedRoles={[
-                                    "Administrativo Geral",
-                                    "financeiro"
-                                ]}
-                            >
-                                <div>
-                                    <h1>
-                                        Financeiro
-                                    </h1>
-                                </div>
-                            </ProtectedRoute>
-                        }
-                    />
+<Route
+    path="financeiro"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "financeiro"
+            ]}
+        >
+            <Financeiro />
+        </ProtectedRoute>
+    }
+/>
 
+{/* =================================================
+    EXTRATOS UNIFICADOS
+    URL: /admin/financeiro/extratos-uni
+================================================= */}
+
+<Route
+    path="financeiro/extratos-uni"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "financeiro"
+            ]}
+        >
+            <ExtratosUni />
+        </ProtectedRoute>
+    }
+/>
 
                     {/* =================================================
                         ESTOQUE

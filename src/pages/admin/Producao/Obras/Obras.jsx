@@ -56,9 +56,32 @@ const FORM_INICIAL = {
 
     dias_finalizacao_esperado: "",
 
-    fase: ""
+    fase: "",
+
+    // Dados financeiros preenchidos somente pela tela Obras.
+    teto_custo: "",
+    meta_custo: "",
+    valor_contrato: "",
+    comissao_bonificacao_taxa: "",
+    valor_destinado_producao: "",
+    expectativa_ganho_marceneiro: "",
+    outros: ""
 
 };
+
+const CAMPOS_FINANCEIROS_OBRA = [
+    "teto_custo",
+    "meta_custo",
+    "valor_contrato",
+    "comissao_bonificacao_taxa",
+    "valor_destinado_producao",
+    "expectativa_ganho_marceneiro",
+    "outros"
+];
+
+function valorFinanceiroParaFormulario(valor) {
+    return valor === null || valor === undefined ? "" : String(valor);
+}
 
 
 /*
@@ -158,6 +181,12 @@ const [
     buscaOrcamento,
     setBuscaOrcamento
 ] = useState("");
+
+/* Registros financeiros vinculados a cada obra pelo ID da obra. */
+const [
+    informacoesFinanceirasPorObra,
+    setInformacoesFinanceirasPorObra
+] = useState({});
 
     /*
     =================================================
@@ -400,6 +429,39 @@ const [
                 );
 
             }
+
+            // Carrega os valores que já existem para preencher o formulário
+            // quando a obra for editada nesta mesma tela.
+            const {
+                data: dadosFinanceiros,
+                error: erroFinanceiro
+            } = await supabase.functions.invoke(
+                "admin-inforfi",
+                { body: { action: "list" } }
+            );
+
+            if (erroFinanceiro) {
+                throw new Error(
+                    `Não foi possível carregar as informações financeiras: ${erroFinanceiro.message}`
+                );
+            }
+
+            if (dadosFinanceiros?.error) {
+                throw new Error(dadosFinanceiros.error);
+            }
+
+            const obrasComInformacoesFinanceiras = [
+                ...(Array.isArray(dadosFinanceiros?.obrasAtivas) ? dadosFinanceiros.obrasAtivas : []),
+                ...(Array.isArray(dadosFinanceiros?.obrasConcluidas) ? dadosFinanceiros.obrasConcluidas : [])
+            ];
+
+            const mapaFinanceiro = {};
+            obrasComInformacoesFinanceiras.forEach((obraFinanceira) => {
+                if (obraFinanceira?.id != null && obraFinanceira?.informacaoFinanceira) {
+                    mapaFinanceiro[String(obraFinanceira.id)] = obraFinanceira.informacaoFinanceira;
+                }
+            });
+            setInformacoesFinanceirasPorObra(mapaFinanceiro);
 
 
             /*
@@ -1541,7 +1603,29 @@ function selecionarOrcamentoAprovado(
                     : "",
 
             fase:
-                obra.fase || ""
+                obra.fase || "",
+
+            teto_custo: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.teto_custo
+            ),
+            meta_custo: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.meta_custo
+            ),
+            valor_contrato: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.valor_contrato
+            ),
+            comissao_bonificacao_taxa: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.comissao_bonificacao_taxa
+            ),
+            valor_destinado_producao: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.valor_destinado_producao
+            ),
+            expectativa_ganho_marceneiro: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.expectativa_ganho_marceneiro
+            ),
+            outros: valorFinanceiroParaFormulario(
+                informacoesFinanceirasPorObra[String(obra.id)]?.outros
+            )
 
         });
 
@@ -1964,6 +2048,14 @@ function selecionarOrcamentoAprovado(
             return;
         }
 
+        for (const campo of CAMPOS_FINANCEIROS_OBRA) {
+            const valorFinanceiro = form[campo];
+            if (valorFinanceiro !== "" && (!Number.isFinite(Number(valorFinanceiro)) || Number(valorFinanceiro) < 0)) {
+                setErro("Os valores financeiros devem ser números válidos e não podem ser negativos.");
+                return;
+            }
+        }
+
         setSalvando(true);
 
         try {
@@ -2028,6 +2120,64 @@ function selecionarOrcamentoAprovado(
 
             if (data?.error) {
                 throw new Error(data.error);
+            }
+
+            // A tela Obras é o único formulário para esses dados.
+            // Salva/atualiza a ficha financeira vinculada à obra recém-salva.
+            const obraSalva = data?.obra || (editando ? editando : null);
+            const obraIdSalva = obraSalva?.id ?? editando?.id;
+
+            if (obraIdSalva == null) {
+                throw new Error("A obra foi salva, mas não foi possível identificar seu ID para registrar os dados financeiros.");
+            }
+
+            // Se a gravação financeira falhar, o próximo clique fará UPDATE
+            // da obra recém-criada, em vez de criar uma segunda obra.
+            if (!editando) {
+                setEditando({ ...obraSalva, id: obraIdSalva });
+            }
+
+            const informacaoFinanceiraAtual =
+                informacoesFinanceirasPorObra[String(obraIdSalva)] || null;
+
+            const temValoresFinanceiros = CAMPOS_FINANCEIROS_OBRA.some(
+                (campo) => String(form[campo] ?? "").trim() !== ""
+            );
+
+            // Não cria ficha vazia para obras sem valores financeiros.
+            // Se já houver uma ficha, os campos podem ser limpos por aqui.
+            if (informacaoFinanceiraAtual?.id || temValoresFinanceiros) {
+                const payloadFinanceiro = {
+                    action: informacaoFinanceiraAtual?.id ? "update" : "create",
+                    ...(informacaoFinanceiraAtual?.id
+                        ? { id: informacaoFinanceiraAtual.id }
+                        : { obra_id: obraIdSalva }),
+                    ...Object.fromEntries(
+                        CAMPOS_FINANCEIROS_OBRA.map((campo) => [
+                            campo,
+                            String(form[campo] ?? "").trim() === ""
+                                ? null
+                                : Number(form[campo])
+                        ])
+                    )
+                };
+
+                const { data: respostaFinanceira, error: erroSalvarFinanceiro } =
+                    await supabase.functions.invoke("admin-inforfi", {
+                        body: payloadFinanceiro
+                    });
+
+                if (erroSalvarFinanceiro) {
+                    throw new Error(
+                        `A obra foi salva, mas os dados financeiros não foram salvos: ${erroSalvarFinanceiro.message}. Clique em Salvar alterações para tentar novamente.`
+                    );
+                }
+
+                if (respostaFinanceira?.error) {
+                    throw new Error(
+                        `A obra foi salva, mas os dados financeiros não foram salvos: ${respostaFinanceira.error}`
+                    );
+                }
             }
 
             limparRascunho();
@@ -2997,10 +3147,16 @@ function selecionarOrcamentoAprovado(
 
                         : (
 
-                            <div className="obras-table-wrapper">
+                            <div
+    className="obras-table-wrapper"
+    style={{ overflowX: "auto", width: "100%" }}
+>
 
 
-                                <table className="obras-table">
+                               <table
+    className="obras-table"
+    style={{ minWidth: "1800px" }}
+>
 
 
                                     <thead>
@@ -3034,7 +3190,13 @@ function selecionarOrcamentoAprovado(
                                             <th>
                                                 Valor
                                             </th>
-
+<th>Teto de custo</th>
+<th>Meta de custo</th>
+<th>Valor do contrato</th>
+<th>Comissão / bonificação / taxa</th>
+<th>Destinado à produção</th>
+<th>Ganho do marceneiro</th>
+<th>Outros</th>
                                             <th>
                                                 RDO
                                             </th>
@@ -3091,7 +3253,7 @@ function selecionarOrcamentoAprovado(
 
                                                         <td
 
-                                                            colSpan="12"
+                                                            colSpan="19"
 
                                                             className="obras-empty"
 
@@ -3254,7 +3416,47 @@ function selecionarOrcamentoAprovado(
 
                                                                 </td>
 
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.teto_custo
+    )}
+</td>
 
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.meta_custo
+    )}
+</td>
+
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.valor_contrato
+    )}
+</td>
+
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.comissao_bonificacao_taxa
+    )}
+</td>
+
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.valor_destinado_producao
+    )}
+</td>
+
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.expectativa_ganho_marceneiro
+    )}
+</td>
+
+<td>
+    {formatarMoeda(
+        informacoesFinanceirasPorObra[String(obra.id)]?.outros
+    )}
+</td>
                                                                 <td>
 
                                                                     {
@@ -4100,6 +4302,33 @@ function selecionarOrcamentoAprovado(
 
                                     </div>
 
+                                    <div className="obras-form-group full">
+                                        <strong>INFORMAÇÕES FINANCEIRAS</strong>
+                                        <p>Preencha estes valores somente nesta tela. Eles também aparecerão em Informações financeiras para consulta.</p>
+                                    </div>
+
+                                    {[
+                                        ["teto_custo", "Teto de custo"],
+                                        ["meta_custo", "Meta de custo"],
+                                        ["valor_contrato", "Valor de contrato"],
+                                        ["comissao_bonificacao_taxa", "Comissão / Bonificação / Taxa"],
+                                        ["valor_destinado_producao", "Valor destinado à produção"],
+                                        ["expectativa_ganho_marceneiro", "Expectativa de ganho do marceneiro"],
+                                        ["outros", "Outros"]
+                                    ].map(([campo, rotulo]) => (
+                                        <div className="obras-form-group" key={campo}>
+                                            <label>{rotulo}</label>
+                                            <input
+                                                type="number"
+                                                name={campo}
+                                                value={form[campo]}
+                                                onChange={alterarCampo}
+                                                min="0"
+                                                step="0.01"
+                                                placeholder="Valor em R$"
+                                            />
+                                        </div>
+                                    ))}
 
                                 </div>
 

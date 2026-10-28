@@ -1,0 +1,744 @@
+/* =====================================================
+   EXTRATOS UNIFICADOS — ALME
+   ===================================================== */
+
+.extratos-uni-page {
+    width: 100%;
+    min-height: 100%;
+    color: #4b2108;
+}
+
+.extratos-uni-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 34px;
+}
+
+.extratos-uni-header-title {
+    min-width: 0;
+
+    h1 {
+        margin: 0;
+        color: #4b2108;
+        font-size: 42px;
+        font-weight: 500;
+        line-height: 1.2;
+    }
+
+    p {
+        margin: 12px 0 0;
+        color: #777;
+        font-size: 15px;
+        line-height: 1.7;
+    }
+}
+
+.extratos-uni-eyebrow,
+.extratos-uni-section-eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: #d38a17;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+.extratos-uni-header-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 10px;
+}
+
+.extratos-uni-button {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 10px 15px;
+    border: 1px solid #e4ddd5;
+    border-radius: 9px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(211, 138, 23, 0.4);
+        outline-offset: 2px;
+    }
+}
+
+.extratos-uni-button-primary {
+    border-color: #4b2108;
+    background: #4b2108;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        border-color: #66350e;
+        background: #66350e;
+    }
+}
+
+.extratos-uni-button-secondary {
+    background: #fff;
+    color: #4b2108;
+
+    &:hover:not(:disabled) {
+        border-color: #d38a17;
+        background: #fcfaf7;
+    }
+}
+
+.extratos-uni-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin: 0 0 18px;
+    padding: 13px 16px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.extratos-uni-alert-error {
+    border-color: #efc5c5;
+    background: #fff6f6;
+    color: #922b2b;
+}
+
+.extratos-uni-alert-warning {
+    border-color: #ead5ad;
+    background: #fffaf0;
+    color: #78500b;
+}
+
+.extratos-uni-alert-success {
+    border-color: #c9e5d0;
+    background: #f5fbf6;
+    color: #28643a;
+}
+
+.extratos-uni-panel {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #e4ddd5;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 22px rgba(75, 33, 8, 0.035);
+}
+
+.extratos-uni-panel-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 26px 26px 22px;
+    border-bottom: 1px solid #eee8e2;
+
+    h2 {
+        margin: 0;
+        color: #4b2108;
+        font-size: 25px;
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    p {
+        margin: 7px 0 0;
+        color: #777;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .extratos-uni-section-eyebrow {
+        margin-bottom: 6px;
+        font-size: 10px;
+        letter-spacing: 1.8px;
+    }
+}
+
+.extratos-uni-count {
+    display: flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    gap: 7px;
+    padding: 10px 13px;
+    border-radius: 10px;
+    background: #f8f1e7;
+    color: #4b2108;
+
+    strong {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    span {
+        color: #78695f;
+        font-size: 12px;
+    }
+}
+
+.extratos-uni-toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 26px;
+    border-bottom: 1px solid #eee8e2;
+    background: #fdfcfb;
+}
+
+.extratos-uni-search {
+    display: flex;
+    width: min(100%, 480px);
+    min-height: 42px;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    border: 1px solid #e4ddd5;
+    border-radius: 9px;
+    background: #fff;
+    color: #9a8777;
+
+    &:focus-within {
+        border-color: #d38a17;
+        box-shadow: 0 0 0 3px rgba(211, 138, 23, 0.1);
+    }
+
+    > svg {
+        flex-shrink: 0;
+        width: 17px;
+        height: 17px;
+    }
+
+    input {
+        width: 100%;
+        min-width: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: #4b2108;
+        font: inherit;
+        font-size: 13px;
+
+        &::placeholder {
+            color: #a3988f;
+        }
+    }
+
+    button {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        border: 0;
+        background: transparent;
+        color: #8a7869;
+        cursor: pointer;
+    }
+}
+
+.extratos-uni-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+.extratos-uni-table {
+    width: 100%;
+    min-width: 1680px;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #55473d;
+    font-size: 12px;
+
+    th,
+    td {
+        padding: 15px 14px;
+        border-bottom: 1px solid #eee8e2;
+        text-align: left;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #f8f5f1;
+        color: #61432c;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.045em;
+        line-height: 1.5;
+        text-transform: uppercase;
+        white-space: normal;
+    }
+
+    tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    tbody tr:hover td {
+        background: #fdfbf8;
+    }
+
+    tbody tr.is-editing td {
+        background: #fffcf6;
+    }
+}
+
+.extratos-uni-obra-name {
+    display: flex;
+    min-width: 165px;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+        max-width: 220px;
+        overflow: hidden;
+        color: #4b2108;
+        font-size: 13px;
+        font-weight: 600;
+        text-overflow: ellipsis;
+    }
+
+    small {
+        color: #9a8879;
+        font-size: 10px;
+    }
+}
+
+.extratos-uni-money {
+    display: inline-block;
+    color: #4b2108;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.extratos-uni-possible {
+    font-weight: 700;
+    color: #326246;
+
+    &.is-negative {
+        color: #b52f2f;
+    }
+}
+
+.extratos-uni-th-tag {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: #f3e5d2;
+    color: #76501e;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.extratos-uni-input-label {
+    display: block;
+    min-width: 118px;
+
+    input {
+        width: 100%;
+        min-height: 36px;
+        padding: 7px 8px;
+        border: 1px solid #d8c6ad;
+        border-radius: 7px;
+        outline: none;
+        background: #fff;
+        color: #4b2108;
+        font: inherit;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+
+        &:focus {
+            border-color: #d38a17;
+            box-shadow: 0 0 0 3px rgba(211, 138, 23, 0.12);
+        }
+    }
+}
+
+.extratos-uni-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.extratos-uni-icon-button {
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e4ddd5;
+    border-radius: 8px;
+    background: #fff;
+    color: #67472e;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+
+    svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    &:hover:not(:disabled) {
+        border-color: #d38a17;
+        background: #fbf4e9;
+        color: #4b2108;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(211, 138, 23, 0.38);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+}
+
+.extratos-uni-save {
+    border-color: #4b2108;
+    background: #4b2108;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        border-color: #66350e;
+        background: #66350e;
+        color: #fff;
+    }
+}
+
+.extratos-uni-table-state {
+    height: 150px;
+    color: #817368;
+    text-align: center !important;
+    font-size: 13px;
+
+    svg {
+        width: 17px;
+        height: 17px;
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+}
+
+.extratos-uni-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 26px;
+    border-top: 1px solid #eee8e2;
+    background: #fdfcfb;
+    color: #817368;
+    font-size: 11px;
+    line-height: 1.5;
+
+    span:last-child {
+        display: inline-flex;
+        flex-shrink: 0;
+        align-items: center;
+        gap: 6px;
+        color: #54745b;
+    }
+}
+
+.extratos-uni-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.is-spinning {
+    animation: extratos-uni-spin 1s linear infinite;
+}
+
+@keyframes extratos-uni-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+    .extratos-uni-header {
+        flex-direction: column;
+        margin-bottom: 28px;
+    }
+
+    .extratos-uni-header-actions {
+        width: 100%;
+    }
+
+    .extratos-uni-panel-header {
+        padding: 22px 20px 18px;
+    }
+
+    .extratos-uni-toolbar {
+        padding: 15px 20px;
+    }
+
+    .extratos-uni-panel-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    .extratos-uni-header-title h1 {
+        font-size: 32px;
+    }
+
+    .extratos-uni-header-title p {
+        font-size: 14px;
+    }
+
+    .extratos-uni-header-actions {
+        flex-wrap: wrap;
+    }
+
+    .extratos-uni-panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .extratos-uni-panel-header h2 {
+        font-size: 22px;
+    }
+
+    .extratos-uni-count {
+        padding: 8px 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .extratos-uni-button,
+    .extratos-uni-icon-button,
+    .is-spinning {
+        animation: none;
+        transition: none;
+    }
+}
+/* =====================================================
+   ABAS — OBRAS EM ANDAMENTO / OCULTAS
+===================================================== */
+
+.extratos-uni-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 20px;
+    border-bottom: 1px solid #e5ddd6;
+}
+
+.extratos-uni-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 17px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    background: transparent;
+    color: #74675d;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        color 180ms ease,
+        border-color 180ms ease,
+        background 180ms ease;
+}
+
+.extratos-uni-tab svg {
+    width: 17px;
+    height: 17px;
+}
+
+.extratos-uni-tab > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    border-radius: 20px;
+    background: #f0e9e2;
+    color: #5b2000;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.extratos-uni-tab:hover {
+    color: #431c01;
+    background: #faf7f3;
+}
+
+.extratos-uni-tab.is-active {
+    color: #431c01;
+    border-bottom-color: #d48821;
+}
+
+.extratos-uni-tab.is-active > span {
+    background: #f3e5d2;
+}
+
+.extratos-uni-tab:focus-visible {
+    outline: 2px solid #d48821;
+    outline-offset: -2px;
+}
+
+/* =====================================================
+   AÇÕES DA TABELA
+===================================================== */
+
+.extratos-uni-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 82px;
+}
+
+.extratos-uni-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #e5ddd6;
+    border-radius: 9px;
+    background: #fff;
+    color: #5b2000;
+    cursor: pointer;
+    transition:
+        color 180ms ease,
+        background 180ms ease,
+        border-color 180ms ease,
+        transform 180ms ease;
+}
+
+.extratos-uni-icon-button svg {
+    width: 17px;
+    height: 17px;
+}
+
+.extratos-uni-icon-button:hover:not(:disabled) {
+    border-color: #d48821;
+    background: #faf4eb;
+    transform: translateY(-1px);
+}
+
+.extratos-uni-icon-button:focus-visible {
+    outline: 2px solid #d48821;
+    outline-offset: 2px;
+}
+
+.extratos-uni-icon-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.extratos-uni-icon-button.extratos-uni-save {
+    border-color: #431c01;
+    background: #431c01;
+    color: #fff;
+}
+
+.extratos-uni-icon-button.extratos-uni-save:hover:not(:disabled) {
+    border-color: #5b2000;
+    background: #5b2000;
+}
+
+.extratos-uni-icon-button.extratos-uni-hide {
+    color: #8a5a28;
+}
+
+.extratos-uni-icon-button.extratos-uni-restore {
+    color: #416b4b;
+}
+
+.extratos-uni-icon-button.extratos-uni-restore:hover:not(:disabled) {
+    border-color: #8bb995;
+    background: #eef7ef;
+}
+
+/* =====================================================
+   INDICADOR DE CARREGAMENTO
+===================================================== */
+
+.extratos-uni-page .is-spinning {
+    animation: extratos-uni-spin 1s linear infinite;
+}
+
+@keyframes extratos-uni-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 640px) {
+    .extratos-uni-tabs {
+        gap: 2px;
+    }
+
+    .extratos-uni-tab {
+        flex: 1 1 auto;
+        gap: 6px;
+        padding: 11px 9px;
+        font-size: 12px;
+    }
+
+    .extratos-uni-row-actions {
+        gap: 5px;
+    }
+
+    .extratos-uni-icon-button {
+        flex-basis: 34px;
+        width: 34px;
+        height: 34px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .extratos-uni-tab,
+    .extratos-uni-icon-button,
+    .extratos-uni-page .is-spinning {
+        animation: none;
+        transition: none;
+    }
+
+    .extratos-uni-icon-button:hover:not(:disabled) {
+        transform: none;
+    }
+}

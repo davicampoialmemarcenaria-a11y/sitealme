@@ -8,6 +8,11 @@ const formatarMoeda = (valor) =>
     currency: "BRL",
   });
 
+const formatarQuantidade = (valor) =>
+  Number(valor ?? 0).toLocaleString("pt-BR", {
+    maximumFractionDigits: 3,
+  });
+
 const formatarPercentual = (valor) =>
   `${Number(valor || 0).toLocaleString("pt-BR", {
     minimumFractionDigits: 2,
@@ -60,6 +65,139 @@ const ehAditivo = (nome) =>
 const nomeDoItem = (item) =>
   String(item.nome_item || "").trim() || "Item sem nome";
 
+
+/*
+=====================================================
+CARREGAR A VERSÃO MAIS RECENTE DO ORÇAMENTO
+=====================================================
+
+A tabela do Fluxo não deve ser tratada como cópia definitiva dos itens do
+orçamento. Ao editar um fluxo existente, os itens e quantidades são recarregados
+da versão mais recente do orçamento. As marcações de progresso são preservadas
+quando o mesmo item continua no mesmo ambiente.
+*/
+async function carregarItensOrcamentoAtual(idOrcamento) {
+  const id = String(idOrcamento ?? "").trim();
+
+  if (!id) {
+    throw new Error("O fluxo não possui um orçamento vinculado.");
+  }
+
+  const { data: versoes, error: erroVersoes } = await supabase
+    .from("orcamento_versoes")
+    .select("id,orcamento_id,versao,updated_at,created_at")
+    .eq("orcamento_id", id)
+    .order("updated_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (erroVersoes) throw erroVersoes;
+
+  const versao = versoes?.[0];
+  if (!versao) {
+    throw new Error("Não foi encontrada uma versão atual para este orçamento.");
+  }
+
+  const [resultadoAmbientes, resultadoItens] = await Promise.all([
+    supabase
+      .from("orcamento_versao_ambientes")
+      .select("id,nome,ordem")
+      .eq("versao_id", versao.id)
+      .order("ordem", { ascending: true }),
+    supabase
+      .from("orcamento_itens")
+      .select(
+        "id,versao_id,ambiente_id,ordem,quantidade,nome_item,valor_memorial_descritivo"
+      )
+      .eq("versao_id", versao.id)
+      .order("ordem", { ascending: true }),
+  ]);
+
+  if (resultadoAmbientes.error) throw resultadoAmbientes.error;
+  if (resultadoItens.error) throw resultadoItens.error;
+
+  const ambientes = resultadoAmbientes.data || [];
+  const itensOrcamento = resultadoItens.data || [];
+
+  if (!itensOrcamento.length) {
+    throw new Error("A versão mais recente do orçamento não possui itens.");
+  }
+
+  return {
+    versao,
+    itens: itensOrcamento.map((item) => {
+      const ambiente = ambientes.find(
+        (a) => String(a.id) === String(item.ambiente_id)
+      );
+
+      return {
+        item_orcamento_id: item.id,
+        ambiente_orcamento_id: item.ambiente_id,
+        ambiente_nome: ambiente?.nome || "Ambiente sem nome",
+        item_nome: nomeDoItem(item),
+        quantidade: Number(item.quantidade ?? 0),
+        valor_memorial_descritivo: Number(
+          item.valor_memorial_descritivo ?? 0
+        ),
+        compra_material: false,
+        compra_material_parcial: false,
+        instalacao: false,
+        finalizado: false,
+        ordem_ambiente: Number(ambiente?.ordem ?? 0),
+        ordem_item: Number(item.ordem ?? 0),
+      };
+    }),
+  };
+}
+
+/*
+=====================================================
+PRESERVAR AS MARCAÇÕES DE PROGRESSO
+=====================================================
+*/
+function mesclarProgressoDosItens(itensAtuaisDoOrcamento, itensSalvosDoFluxo) {
+  const salvos = (itensSalvosDoFluxo || []).map((item, indice) => ({
+    ...item,
+    __indiceOriginal: indice,
+  }));
+  const usados = new Set();
+
+  return itensAtuaisDoOrcamento.map((itemAtual) => {
+    const ambienteAtual = normalizar(itemAtual.ambiente_nome);
+    const nomeAtual = normalizar(itemAtual.item_nome);
+
+    // O orçamento pode recriar os IDs internos ao salvar uma nova versão.
+    // Por isso, o vínculo para preservar as marcações usa ambiente + nome do item,
+    // e não item_orcamento_id, que pode ter mudado.
+    const candidatos = salvos.filter((salvo) =>
+      !usados.has(salvo.__indiceOriginal) &&
+      normalizar(salvo.ambiente_nome) === ambienteAtual &&
+      normalizar(salvo.item_nome) === nomeAtual
+    );
+
+    candidatos.sort((a, b) =>
+      Math.abs(Number(a.ordem_item ?? 0) - Number(itemAtual.ordem_item ?? 0)) -
+      Math.abs(Number(b.ordem_item ?? 0) - Number(itemAtual.ordem_item ?? 0))
+    );
+
+    const salvo = candidatos[0] || null;
+    if (salvo) usados.add(salvo.__indiceOriginal);
+
+    const compraMaterialParcial = Boolean(salvo?.compra_material_parcial);
+    const compraMaterialTotal = Boolean(salvo?.compra_material) &&
+      !compraMaterialParcial;
+
+    return {
+      ...itemAtual,
+      compra_material: compraMaterialTotal,
+      compra_material_parcial: compraMaterialParcial,
+      instalacao: Boolean(salvo?.instalacao),
+      finalizado: Boolean(salvo?.finalizado),
+    };
+  });
+}
+
+
 /*
 =====================================================
 CÁLCULO DOS ITENS
@@ -73,7 +211,11 @@ const calcularItem = (item, totalProjeto) => {
   );
 
   const percentualEntrega =
-    (item.compra_material ? 70 : 0) +
+    (item.compra_material_parcial
+      ? 35
+      : item.compra_material
+        ? 70
+        : 0) +
     (item.instalacao ? 20 : 0) +
     (item.finalizado ? 10 : 0);
 
@@ -107,6 +249,11 @@ export default function Fluxo() {
   const [obras, setObras] = useState([]);
   const [orcamentos, setOrcamentos] = useState([]);
 
+  // Valores de origem por obra: meta cadastrada em Obras e custo realizado
+  // salvo em Extratos unificados. Não são valores editáveis neste fluxo.
+  const [metasCustosPorObra, setMetasCustosPorObra] = useState({});
+  const [custosRealizadosPorObra, setCustosRealizadosPorObra] = useState({});
+
   const [itens, setItens] = useState([]);
   const [fluxoSelecionado, setFluxoSelecionado] = useState(null);
 
@@ -136,39 +283,99 @@ export default function Fluxo() {
     setErro("");
 
     try {
-      const [resultadoFluxos, resultadoObras, resultadoOrcamentos] =
-        await Promise.all([
-          supabase
-            .from("fluxos_fisico_financeiros")
-            .select("*")
-            .order("updated_at", { ascending: false }),
+      const [
+        resultadoFluxos,
+        resultadoObras,
+        resultadoOrcamentos,
+        resultadoExtratos,
+        resultadoDadosFinanceiros,
+      ] = await Promise.all([
+        supabase
+          .from("fluxos_fisico_financeiros")
+          .select("*")
+          .order("updated_at", { ascending: false }),
 
-          supabase
-            .from("obras")
-            .select(`
-              id,
-              nome,
-              cliente_nome,
-              endereco,
-              concluida,
-              orcamento_id
-            `)
-            .order("nome", { ascending: true }),
+        supabase
+          .from("obras")
+          .select(`
+            id,
+            nome,
+            cliente_nome,
+            endereco,
+            concluida,
+            orcamento_id
+          `)
+          .order("nome", { ascending: true }),
 
-          supabase
-            .from("orcamentos")
-            .select("id,nome,codigo,status,versao_atual,created_at")
-            .order("nome", { ascending: true }),
-        ]);
+        supabase
+          .from("orcamentos")
+          .select("id,nome,codigo,status,versao_atual,created_at")
+          .order("nome", { ascending: true }),
+
+        // Custo direto: valor efetivamente salvo em Extratos unificados.
+        supabase
+          .from("extratos_unificados")
+          .select("obra_id,custo_realizado,updated_at")
+          .order("updated_at", { ascending: false, nullsFirst: false }),
+
+        // Meta de custos: informação financeira cadastrada na tela Obras.
+        supabase.functions.invoke("admin-inforfi", {
+          body: { action: "list" },
+        }),
+      ]);
 
       if (resultadoFluxos.error) throw resultadoFluxos.error;
       if (resultadoOrcamentos.error) throw resultadoOrcamentos.error;
+      if (resultadoExtratos.error) {
+        throw new Error(
+          `Não foi possível consultar Custo realizado em Extratos unificados: ${resultadoExtratos.error.message}`
+        );
+      }
+      if (resultadoDadosFinanceiros.error || resultadoDadosFinanceiros.data?.error) {
+        throw new Error(
+          `Não foi possível consultar a Meta de custo cadastrada em Obras: ${
+            resultadoDadosFinanceiros.data?.error ||
+            resultadoDadosFinanceiros.error?.message ||
+            "erro não identificado"
+          }`
+        );
+      }
 
       const fluxosBrutos = resultadoFluxos.data || [];
       let listaObras = resultadoObras.error
         ? []
         : (resultadoObras.data || []);
       const todosOrcamentos = resultadoOrcamentos.data || [];
+
+      // Monta o mapa de metas usando o ID da obra, sem depender do nome.
+      const dadosFinanceiros = resultadoDadosFinanceiros.data || {};
+      const obrasComFinanceiro = [
+        ...(Array.isArray(dadosFinanceiros.obrasAtivas)
+          ? dadosFinanceiros.obrasAtivas
+          : []),
+        ...(Array.isArray(dadosFinanceiros.obrasConcluidas)
+          ? dadosFinanceiros.obrasConcluidas
+          : []),
+      ];
+      const mapaMetas = {};
+      obrasComFinanceiro.forEach((obraFinanceira) => {
+        if (obraFinanceira?.id === null || obraFinanceira?.id === undefined) return;
+        const chave = String(obraFinanceira.id);
+        const meta = obraFinanceira?.informacaoFinanceira?.meta_custo;
+        mapaMetas[chave] = Number(meta ?? 0);
+      });
+      setMetasCustosPorObra(mapaMetas);
+
+      // Uma linha atual por obra no Extratos unificados. Se houver registros
+      // repetidos, conserva o mais recente pela ordenação de updated_at.
+      const mapaCustos = {};
+      (resultadoExtratos.data || []).forEach((registro) => {
+        if (registro?.obra_id === null || registro?.obra_id === undefined) return;
+        const chave = String(registro.obra_id);
+        if (Object.prototype.hasOwnProperty.call(mapaCustos, chave)) return;
+        mapaCustos[chave] = Number(registro.custo_realizado ?? 0);
+      });
+      setCustosRealizadosPorObra(mapaCustos);
 
       // IDs de obras que já estão usados por fluxos salvos.
       const idsObrasNecessarias = [
@@ -248,12 +455,30 @@ export default function Fluxo() {
           (orcamento) => String(orcamento.id) === String(fluxo.orcamento_id)
         ) || null;
 
+        const idObraRelacionada =
+          obraRelacionada?.id ?? fluxo.obra_id ?? null;
+        const chaveObraRelacionada = String(idObraRelacionada ?? "");
+
         return {
           ...fluxo,
           // Prefere o ID que de fato corresponde à obra recuperada.
           obra_id: obraPorId
             ? fluxo.obra_id
             : (obraRelacionada?.id ?? fluxo.obra_id ?? null),
+          // Exibe sempre a informação atual das telas de origem, não o snapshot
+          // antigo que eventualmente ficou gravado no fluxo.
+          meta_custos: Object.prototype.hasOwnProperty.call(
+            mapaMetas,
+            chaveObraRelacionada
+          )
+            ? mapaMetas[chaveObraRelacionada]
+            : 0,
+          custo_direto: Object.prototype.hasOwnProperty.call(
+            mapaCustos,
+            chaveObraRelacionada
+          )
+            ? mapaCustos[chaveObraRelacionada]
+            : 0,
           obra: obraRelacionada,
           orcamento: orcamentoRelacionado,
         };
@@ -459,6 +684,12 @@ export default function Fluxo() {
     2
   );
 
+  const sincronizarValoresFinanceirosDaObra = (id) => {
+    const chave = String(id ?? "");
+    setMetaCustos(String(metasCustosPorObra[chave] ?? 0));
+    setCustoDireto(String(custosRealizadosPorObra[chave] ?? 0));
+  };
+
   const abrirNovo = () => {
     setFluxoSelecionado(null);
     setObraId("");
@@ -480,14 +711,38 @@ export default function Fluxo() {
     setCarregando(true);
 
     try {
-      const { data, error } = await supabase
+      const { data: itensSalvosDoFluxo, error: erroItensSalvos } = await supabase
         .from("fluxos_fisico_financeiros_itens")
         .select("*")
         .eq("fluxo_id", fluxo.id)
         .order("ordem_ambiente", { ascending: true })
         .order("ordem_item", { ascending: true });
 
-      if (error) throw error;
+      if (erroItensSalvos) throw erroItensSalvos;
+
+      // Sempre busca os itens da versão atual do orçamento. Assim, se a
+      // quantidade ou o valor mudou depois que o fluxo foi criado, não usamos
+      // a cópia antiga guardada em fluxos_fisico_financeiros_itens.
+      let versaoOrcamentoAtual = null;
+      let itensParaEditar = (itensSalvosDoFluxo || []).map((item) => ({
+        ...item,
+        quantidade: Number(item.quantidade ?? 1),
+        compra_material: Boolean(item.compra_material),
+        compra_material_parcial: Boolean(item.compra_material_parcial),
+        instalacao: Boolean(item.instalacao),
+        finalizado: Boolean(item.finalizado),
+      }));
+
+      if (fluxo.orcamento_id ?? fluxo.orcamento?.id) {
+        const dadosOrcamentoAtual = await carregarItensOrcamentoAtual(
+          fluxo.orcamento_id ?? fluxo.orcamento?.id
+        );
+        versaoOrcamentoAtual = dadosOrcamentoAtual.versao;
+        itensParaEditar = mesclarProgressoDosItens(
+          dadosOrcamentoAtual.itens,
+          itensSalvosDoFluxo || []
+        );
+      }
 
       // Recupera a obra associada, mesmo que ela não esteja na lista local.
       let obraDaEdicao =
@@ -519,22 +774,32 @@ export default function Fluxo() {
       }
 
       const idObraSalvo = obraDaEdicao?.id ?? fluxo.obra_id ?? "";
+      const versaoIdAtual = versaoOrcamentoAtual?.id ?? fluxo.versao_orcamento_id ?? "";
 
       setFluxoSelecionado({
         ...fluxo,
+        versao_orcamento_id: versaoIdAtual,
         obra: obraDaEdicao || fluxo.obra || null,
       });
       setObraId(idObraSalvo !== "" ? String(idObraSalvo) : "");
-      setOrcamentoId(String(fluxo.orcamento_id ?? ""));
-      setVersaoOrcamentoId(String(fluxo.versao_orcamento_id ?? ""));
-      setMetaCustos(String(fluxo.meta_custos ?? 0));
-      setCustoDireto(String(fluxo.custo_direto ?? 0));
-      setBuscaOrcamento(fluxo.orcamento?.nome || "");
+      setOrcamentoId(String(fluxo.orcamento_id ?? fluxo.orcamento?.id ?? ""));
+      setVersaoOrcamentoId(String(versaoIdAtual));
+      sincronizarValoresFinanceirosDaObra(idObraSalvo);
+      setBuscaOrcamento(
+        fluxo.orcamento?.nome ||
+        orcamentos.find(
+          (orcamento) => String(orcamento.id) === String(fluxo.orcamento_id)
+        )?.nome ||
+        ""
+      );
       setOrcamentoAberto(false);
-      setItens(data || []);
+      setItens(itensParaEditar);
       setMostrarFormulario(true);
     } catch (e) {
-      setErro(`Não foi possível abrir o fluxo: ${e.message}`);
+      console.error("ERRO AO ABRIR FLUXO:", e);
+      setErro(
+        `Não foi possível abrir o fluxo com a versão atual do orçamento: ${e.message}`
+      );
     } finally {
       setCarregando(false);
     }
@@ -574,6 +839,7 @@ export default function Fluxo() {
       });
 
       setObraId(String(obraVinculada.id));
+      sincronizarValoresFinanceirosDaObra(obraVinculada.id);
       setObras((obrasAtuais) => {
         const semDuplicada = obrasAtuais.filter(
           (obra) => String(obra.id) !== String(obraVinculada.id)
@@ -581,75 +847,17 @@ export default function Fluxo() {
         return [...semDuplicada, obraVinculada];
       });
 
-      const { data: versoes, error: erroVersoes } = await supabase
-        .from("orcamento_versoes")
-        .select("id,orcamento_id,versao,updated_at,created_at")
-        .eq("orcamento_id", orcamento.id)
-        .order("updated_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false })
-        .limit(1);
-
-      if (erroVersoes) throw erroVersoes;
-
-      const versao = versoes?.[0];
-      if (!versao) {
-        throw new Error("Esse orçamento não possui versões cadastradas.");
-      }
-
-      setVersaoOrcamentoId(String(versao.id));
-
-      const { data: ambientes, error: erroAmbientes } = await supabase
-        .from("orcamento_versao_ambientes")
-        .select("id,nome,ordem")
-        .eq("versao_id", versao.id)
-        .order("ordem", { ascending: true });
-
-      if (erroAmbientes) throw erroAmbientes;
-
-      const { data: itensOrcamento, error: erroItens } = await supabase
-        .from("orcamento_itens")
-        .select(
-          "id,versao_id,ambiente_id,ordem,nome_item,valor_memorial_descritivo"
-        )
-        .eq("versao_id", versao.id)
-        .order("ordem", { ascending: true });
-
-      if (erroItens) throw erroItens;
-
-      const itensImportados = (itensOrcamento || []).map((item) => {
-        const ambiente = (ambientes || []).find(
-          (a) => String(a.id) === String(item.ambiente_id)
-        );
-
-        return {
-          item_orcamento_id: item.id,
-          ambiente_orcamento_id: item.ambiente_id,
-          ambiente_nome: ambiente?.nome || "Ambiente sem nome",
-          item_nome: nomeDoItem(item),
-          valor_memorial_descritivo: Number(
-            item.valor_memorial_descritivo || 0
-          ),
-          compra_material: false,
-          instalacao: false,
-          finalizado: false,
-          ordem_ambiente: ambiente?.ordem || 0,
-          ordem_item: item.ordem || 0,
-        };
-      });
-
-      if (!itensImportados.length) {
-        throw new Error(
-          "A versão selecionada não possui itens para importar."
-        );
-      }
-
-      setItens(itensImportados);
+      const dadosOrcamentoAtual = await carregarItensOrcamentoAtual(orcamento.id);
+      setVersaoOrcamentoId(String(dadosOrcamentoAtual.versao.id));
+      setItens(dadosOrcamentoAtual.itens);
     } catch (e) {
       console.error("ERRO AO SELECIONAR ORÇAMENTO:", e);
       setErro(`Não foi possível importar o orçamento: ${e.message}`);
       setObraId("");
       setOrcamentoId("");
       setVersaoOrcamentoId("");
+      setMetaCustos("0");
+      setCustoDireto("0");
       setItens([]);
     } finally {
       setCarregandoOrcamento(false);
@@ -661,6 +869,31 @@ export default function Fluxo() {
       anteriores.map((item, i) =>
         i === indice ? { ...item, [campo]: valor } : item
       )
+    );
+  };
+
+  // Compra parcial (35%) e compra total (70%) são opções exclusivas.
+  const atualizarCompraMaterial = (indice, campo, marcado) => {
+    setItens((anteriores) =>
+      anteriores.map((item, i) => {
+        if (i !== indice) return item;
+
+        if (campo === "compra_material_parcial") {
+          return {
+            ...item,
+            compra_material_parcial: marcado,
+            compra_material: marcado ? false : item.compra_material,
+          };
+        }
+
+        return {
+          ...item,
+          compra_material: marcado,
+          compra_material_parcial: marcado
+            ? false
+            : item.compra_material_parcial,
+        };
+      })
     );
   };
 
@@ -707,8 +940,13 @@ export default function Fluxo() {
       return;
     }
 
-    const metaInformada = Number(metaCustos);
-    const custoDiretoInformado = Number(custoDireto);
+    const chaveObraFinanceira = String(obraId);
+    const metaInformada = Number(
+      metasCustosPorObra[chaveObraFinanceira] ?? 0
+    );
+    const custoDiretoInformado = Number(
+      custosRealizadosPorObra[chaveObraFinanceira] ?? 0
+    );
 
     if (!Number.isFinite(metaInformada) || metaInformada < 0) {
       setErro("Informe uma meta válida, igual ou maior que zero.");
@@ -784,10 +1022,13 @@ export default function Fluxo() {
         ambiente_orcamento_id: item.ambiente_orcamento_id || null,
         ambiente_nome: item.ambiente_nome || "Ambiente",
         item_nome: item.item_nome || "Item sem nome",
+        quantidade: Number(item.quantidade ?? 0),
         valor_memorial_descritivo: arredondarCentavosParaCima(
           item.valor_memorial_descritivo
         ),
-        compra_material: Boolean(item.compra_material),
+        compra_material: Boolean(item.compra_material) &&
+          !Boolean(item.compra_material_parcial),
+        compra_material_parcial: Boolean(item.compra_material_parcial),
         instalacao: Boolean(item.instalacao),
         finalizado: Boolean(item.finalizado),
         ordem_ambiente: Number(item.ordem_ambiente || 0),
@@ -957,6 +1198,8 @@ export default function Fluxo() {
                     setOrcamentoId("");
                     setVersaoOrcamentoId("");
                     setObraId("");
+                    setMetaCustos("0");
+                    setCustoDireto("0");
                     setItens([]);
                   }
                 }}
@@ -1069,8 +1312,9 @@ export default function Fluxo() {
                 min="0"
                 step="0.01"
                 value={metaCustos}
-                onChange={(e) => setMetaCustos(e.target.value)}
+                readOnly
                 required
+                title="Valor carregado automaticamente de Obras → Meta de custo."
               />
             </label>
 
@@ -1081,8 +1325,9 @@ export default function Fluxo() {
                 min="0"
                 step="0.01"
                 value={custoDireto}
-                onChange={(e) => setCustoDireto(e.target.value)}
+                readOnly
                 required
+                title="Valor carregado automaticamente de Extratos unificados → Custo realizado."
               />
             </label>
           </div>
@@ -1167,8 +1412,8 @@ export default function Fluxo() {
               <h2>Itens por ambiente</h2>
               <p>
                 O percentual total por item considera sua participação no valor total
-                do projeto e as etapas concluídas (material 70%, instalação 20% e
-                finalização 10%).
+                do projeto e as etapas concluídas (compra parcial de material 35% ou
+                compra total de material 70%, instalação 20% e finalização 10%).
               </p>
             </div>
             <span className="fluxo-item-count">
@@ -1194,9 +1439,11 @@ export default function Fluxo() {
                       <thead>
                         <tr>
                           <th>Item</th>
+                          <th>Quantidade</th>
                           <th>Valor memorial</th>
                           <th>% valor do item</th>
-                          <th>Compra material (70%)</th>
+                          <th>Compra parcial de material (35%)</th>
+                          <th>Compra total de material (70%)</th>
                           <th>Instalação (20%)</th>
                           <th>Finalizado (10%)</th>
                           <th>% entrega</th>
@@ -1217,6 +1464,8 @@ export default function Fluxo() {
                               <strong>{item.item_nome}</strong>
                             </td>
 
+                            <td>{formatarQuantidade(item.quantidade)}</td>
+
                             <td>
                               <input
                                 className="fluxo-money-input"
@@ -1234,9 +1483,26 @@ export default function Fluxo() {
                               <label className="fluxo-check">
                                 <input
                                   type="checkbox"
+                                  checked={Boolean(item.compra_material_parcial)}
+                                  onChange={(e) =>
+                                    atualizarCompraMaterial(
+                                      item.indice,
+                                      "compra_material_parcial",
+                                      e.target.checked
+                                    )
+                                  }
+                                />
+                                <span>35%</span>
+                              </label>
+                            </td>
+
+                            <td>
+                              <label className="fluxo-check">
+                                <input
+                                  type="checkbox"
                                   checked={Boolean(item.compra_material)}
                                   onChange={(e) =>
-                                    atualizarItem(
+                                    atualizarCompraMaterial(
                                       item.indice,
                                       "compra_material",
                                       e.target.checked

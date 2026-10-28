@@ -147,6 +147,58 @@ function limparRascunhoEstoque(chave) {
   }
 }
 
+function normalizarTextoBusca(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
+
+function dataDentroDoPeriodo(data, dataInicio, dataFim) {
+  if (!dataInicio && !dataFim) return true;
+  if (!data) return false;
+
+  const dataISO = String(data).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dataISO)) return false;
+
+  return (!dataInicio || dataISO >= dataInicio) &&
+    (!dataFim || dataISO <= dataFim);
+}
+
+// Extrai o ID tanto quando o service retorna o registro inteiro quanto
+// quando retorna apenas o próprio ID. Isso permite confirmar obra_id
+// depois da criação sem depender do formato específico do retorno.
+function extrairIdRegistroCriado(resultado) {
+  if (typeof resultado === "string" || typeof resultado === "number") {
+    return resultado !== "" ? resultado : null;
+  }
+
+  if (Array.isArray(resultado)) {
+    return extrairIdRegistroCriado(resultado[0]);
+  }
+
+  const dadosRetornados = resultado?.data;
+  if (Array.isArray(dadosRetornados)) {
+    const idDaLista = extrairIdRegistroCriado(dadosRetornados[0]);
+    if (idDaLista != null) return idDaLista;
+  }
+
+  return (
+    resultado?.id ??
+    resultado?.entradaId ??
+    resultado?.saidaId ??
+    resultado?.entrada_id ??
+    resultado?.saida_id ??
+    resultado?.data?.id ??
+    resultado?.entrada?.id ??
+    resultado?.saida?.id ??
+    resultado?.data?.entrada?.id ??
+    resultado?.data?.saida?.id ??
+    null
+  );
+}
+
 function calcularValorDevolucao({
   quantidadeRetirada,
   valorRetirada,
@@ -186,6 +238,12 @@ export default function Estoque() {
   // =====================================================
 
   const [filtroProduto, setFiltroProduto] = useState("");
+  const [filtroBusca, setFiltroBusca] = useState("");
+  const [filtroObra, setFiltroObra] = useState("");
+  const [filtroSolicitante, setFiltroSolicitante] = useState("");
+  const [filtroNumero, setFiltroNumero] = useState("");
+  const [filtroDataInicio, setFiltroDataInicio] = useState("");
+  const [filtroDataFim, setFiltroDataFim] = useState("");
 
   // =====================================================
   // DADOS
@@ -501,81 +559,322 @@ export default function Estoque() {
   }, []);
 
   // =====================================================
-  // PRODUTO SELECIONADO
+  // FILTROS COMPARTILHADOS POR TODAS AS ABAS
   // =====================================================
+
+  const buscaNormalizada = normalizarTextoBusca(filtroBusca);
+  const obraNormalizada = normalizarTextoBusca(filtroObra);
+  const solicitanteNormalizado = normalizarTextoBusca(filtroSolicitante);
+  const numeroNormalizado = normalizarTextoBusca(filtroNumero);
+
+  const filtrosDeMovimentacaoAtivos = Boolean(
+    obraNormalizada ||
+    solicitanteNormalizado ||
+    numeroNormalizado ||
+    filtroDataInicio ||
+    filtroDataFim
+  );
 
   const produtoSelecionado = useMemo(() => {
     if (!filtroProduto) return null;
 
     return (
       produtos.find(
-        (produto) =>
-          String(produto.id) ===
-          String(filtroProduto)
+        (produto) => String(produto.id) === String(filtroProduto)
       ) || null
     );
   }, [filtroProduto, produtos]);
 
-  // =====================================================
-  // FILTRO DE PRODUTOS
-  // =====================================================
+  function produtoPassaFiltro({ produtoId, nome, sku, codigoAlme }) {
+    if (
+      filtroProduto &&
+      String(produtoId ?? "") !== String(filtroProduto)
+    ) {
+      return false;
+    }
 
-  const produtosFiltrados = useMemo(() => {
-    if (!filtroProduto) return produtos;
+    if (!buscaNormalizada) return true;
 
-    return produtos.filter(
-      (produto) =>
-        String(produto.id) ===
-        String(filtroProduto)
+    const textoProduto = normalizarTextoBusca(
+      [nome, sku, codigoAlme].filter(Boolean).join(" ")
     );
-  }, [produtos, filtroProduto]);
+
+    return textoProduto.includes(buscaNormalizada);
+  }
+
+  function movimentoPassaFiltros({
+    obraId,
+    solicitante,
+    data,
+    identificadores = [],
+  }) {
+    if (obraNormalizada) {
+      const nomeObra = normalizarTextoBusca(nomeObraPorId(obraId));
+      if (!nomeObra.includes(obraNormalizada)) return false;
+    }
+
+    if (solicitanteNormalizado) {
+      const nomeSolicitante = normalizarTextoBusca(solicitante);
+      if (!nomeSolicitante.includes(solicitanteNormalizado)) return false;
+    }
+
+    if (!dataDentroDoPeriodo(data, filtroDataInicio, filtroDataFim)) {
+      return false;
+    }
+
+    if (numeroNormalizado) {
+      const identificadorEncontrado = identificadores.some((valor) =>
+        normalizarTextoBusca(valor).includes(numeroNormalizado)
+      );
+      if (!identificadorEncontrado) return false;
+    }
+
+    return true;
+  }
 
   // =====================================================
   // FILTRO DE ENTRADAS
   // =====================================================
 
   const entradasFiltradas = useMemo(() => {
-    if (!filtroProduto) return entradas;
+    return (entradas || []).filter((entrada) => {
+      const produto = produtos.find(
+        (item) => String(item.id) === String(entrada.produto_id)
+      );
 
-    return entradas.filter(
-      (entrada) =>
-        String(entrada.produto_id) ===
-        String(filtroProduto)
-    );
-  }, [entradas, filtroProduto]);
+      const produtoCorresponde = produtoPassaFiltro({
+        produtoId: entrada.produto_id,
+        nome: entrada.nome_item || produto?.nome || entrada.nome,
+        sku: entrada.sku || produto?.sku,
+        codigoAlme: entrada.codigo_alme || produto?.codigo_alme,
+      });
+
+      const movimentoCorresponde = movimentoPassaFiltros({
+        obraId: entrada.obra_id,
+        solicitante: entrada.solicitante || "",
+        data: entrada.data_entrada || entrada.created_at,
+        identificadores: [entrada.id, entrada.nf_entrada],
+      });
+
+      return produtoCorresponde && movimentoCorresponde;
+    });
+  }, [
+    entradas,
+    produtos,
+    filtroProduto,
+    buscaNormalizada,
+    obraNormalizada,
+    solicitanteNormalizado,
+    numeroNormalizado,
+    filtroDataInicio,
+    filtroDataFim,
+    obras,
+  ]);
 
   // =====================================================
   // FILTRO DE SAÍDAS
   // =====================================================
 
   const saidasFiltradas = useMemo(() => {
-    if (!filtroProduto) return saidas;
+    return (saidas || []).filter((saida) => {
+      const movimentoCorresponde = movimentoPassaFiltros({
+        obraId: saida.obra_id,
+        solicitante: saida.solicitante || "",
+        data: saida.data_saida || saida.created_at,
+        identificadores: [saida.id],
+      });
 
-    return saidas.filter((saida) => {
-      const itens =
-        saida?.estoque_saida_itens || [];
+      if (!movimentoCorresponde) return false;
 
-      return itens.some(
-        (item) =>
-          String(item.produto_id) ===
-          String(filtroProduto)
-      );
+      const itens = saida?.estoque_saida_itens || [];
+      return itens.some((item) => {
+        const produto = produtos.find(
+          (p) => String(p.id) === String(item.produto_id)
+        );
+
+        return produtoPassaFiltro({
+          produtoId: item.produto_id,
+          nome: produto?.nome || item.nome || item.item_nome,
+          sku: produto?.sku || item.sku,
+          codigoAlme: produto?.codigo_alme || item.codigo_alme,
+        });
+      });
     });
-  }, [saidas, filtroProduto]);
+  }, [
+    saidas,
+    produtos,
+    filtroProduto,
+    buscaNormalizada,
+    obraNormalizada,
+    solicitanteNormalizado,
+    numeroNormalizado,
+    filtroDataInicio,
+    filtroDataFim,
+    obras,
+  ]);
 
   // =====================================================
-  // FILTRO DE ÚLTIMAS SAÍDAS
+  // FILTRO DE ÚLTIMAS SAÍDAS (RESUMO)
   // =====================================================
 
   const ultimasSaidasFiltradas = useMemo(() => {
-    if (!filtroProduto) return ultimasSaidas;
+    return (ultimasSaidas || []).filter((registro) => {
+      const produto = produtos.find(
+        (item) => String(item.id) === String(registro.produto_id)
+      );
+      const identificadorSaida =
+        registro.saida_id ?? registro.id_saida ?? registro.saidaId ?? registro.id;
 
-    return ultimasSaidas.filter(
-      (saida) =>
-        String(saida.produto_id) ===
-        String(filtroProduto)
-    );
-  }, [ultimasSaidas, filtroProduto]);
+      const saidaRelacionada = (saidas || []).find((item) =>
+        String(item.id) === String(identificadorSaida)
+      ) || (saidas || []).find((item) => {
+        const dataRegistro = String(registro.data_saida || registro.created_at || "").slice(0, 10);
+        const dataSaida = String(item.data_saida || item.created_at || "").slice(0, 10);
+        const itensSaida = item.estoque_saida_itens || [];
+        const mesmoProduto = itensSaida.some((itemSaida) =>
+          String(itemSaida.produto_id) === String(registro.produto_id) &&
+          (registro.quantidade == null || Number(itemSaida.quantidade || 0) === Number(registro.quantidade || 0))
+        );
+        return Boolean(dataRegistro && dataRegistro === dataSaida && mesmoProduto);
+      });
+
+      const produtoCorresponde = produtoPassaFiltro({
+        produtoId: registro.produto_id,
+        nome: registro.nome || produto?.nome,
+        sku: registro.sku || produto?.sku,
+        codigoAlme: registro.codigo_alme || produto?.codigo_alme,
+      });
+
+      const movimentoCorresponde = movimentoPassaFiltros({
+        obraId: registro.obra_id ?? saidaRelacionada?.obra_id,
+        solicitante: registro.solicitante ?? saidaRelacionada?.solicitante ?? "",
+        data: registro.data_saida || registro.created_at || saidaRelacionada?.data_saida,
+        identificadores: [
+          registro.id,
+          registro.saida_id,
+          registro.id_saida,
+          saidaRelacionada?.id,
+        ],
+      });
+
+      return produtoCorresponde && movimentoCorresponde;
+    });
+  }, [
+    ultimasSaidas,
+    saidas,
+    produtos,
+    filtroProduto,
+    buscaNormalizada,
+    obraNormalizada,
+    solicitanteNormalizado,
+    numeroNormalizado,
+    filtroDataInicio,
+    filtroDataFim,
+    obras,
+  ]);
+
+  // =====================================================
+  // FILTRO DE DEVOLUÇÕES
+  // =====================================================
+
+  const devolucoesFiltradas = useMemo(() => {
+    return (devolucoes || []).filter((devolucao) => {
+      const produto = produtos.find(
+        (item) => String(item.id) === String(devolucao.produto_id)
+      );
+      const saidaRelacionada = (saidas || []).find(
+        (saida) => String(saida.id) === String(devolucao.saida_id)
+      );
+
+      const produtoCorresponde = produtoPassaFiltro({
+        produtoId: devolucao.produto_id,
+        nome: devolucao.item_nome || produto?.nome,
+        sku: devolucao.sku || produto?.sku,
+        codigoAlme: produto?.codigo_alme,
+      });
+
+      const movimentoCorresponde = movimentoPassaFiltros({
+        obraId: devolucao.obra_id,
+        solicitante: devolucao.solicitante || saidaRelacionada?.solicitante || "",
+        data: devolucao.data_devolucao || devolucao.created_at,
+        identificadores: [devolucao.id, devolucao.saida_id],
+      });
+
+      return produtoCorresponde && movimentoCorresponde;
+    });
+  }, [
+    devolucoes,
+    saidas,
+    produtos,
+    filtroProduto,
+    buscaNormalizada,
+    obraNormalizada,
+    solicitanteNormalizado,
+    numeroNormalizado,
+    filtroDataInicio,
+    filtroDataFim,
+    obras,
+  ]);
+
+  // =====================================================
+  // FILTRO DE PRODUTOS / INVENTÁRIO
+  // Quando obra, solicitante, número ou período são informados,
+  // lista os produtos envolvidos nas movimentações correspondentes.
+  // =====================================================
+
+  const produtosFiltrados = useMemo(() => {
+    const idsDeProdutosRelacionados = new Set();
+
+    (entradasFiltradas || []).forEach((entrada) => {
+      if (entrada.produto_id != null) {
+        idsDeProdutosRelacionados.add(String(entrada.produto_id));
+      }
+    });
+
+    (saidasFiltradas || []).forEach((saida) => {
+      (saida.estoque_saida_itens || []).forEach((item) => {
+        const produto = produtos.find(
+          (p) => String(p.id) === String(item.produto_id)
+        );
+        if (produtoPassaFiltro({
+          produtoId: item.produto_id,
+          nome: produto?.nome || item.nome || item.item_nome,
+          sku: produto?.sku || item.sku,
+          codigoAlme: produto?.codigo_alme || item.codigo_alme,
+        }) && item.produto_id != null) {
+          idsDeProdutosRelacionados.add(String(item.produto_id));
+        }
+      });
+    });
+
+    (devolucoesFiltradas || []).forEach((devolucao) => {
+      if (devolucao.produto_id != null) {
+        idsDeProdutosRelacionados.add(String(devolucao.produto_id));
+      }
+    });
+
+    return (produtos || []).filter((produto) => {
+      const produtoCorresponde = produtoPassaFiltro({
+        produtoId: produto.id,
+        nome: produto.nome,
+        sku: produto.sku,
+        codigoAlme: produto.codigo_alme,
+      });
+
+      if (!produtoCorresponde) return false;
+
+      if (!filtrosDeMovimentacaoAtivos) return true;
+      return idsDeProdutosRelacionados.has(String(produto.id));
+    });
+  }, [
+    produtos,
+    entradasFiltradas,
+    saidasFiltradas,
+    devolucoesFiltradas,
+    filtroProduto,
+    buscaNormalizada,
+    filtrosDeMovimentacaoAtivos,
+  ]);
 
   // =====================================================
   // DEVOLUÇÕES — QUANTIDADE JÁ DEVOLVIDA POR ITEM
@@ -1164,7 +1463,71 @@ export default function Estoque() {
           );
         }
       } else {
-        await criarEntrada(dadosEntrada);
+        // Cria a entrada pelo service existente.
+        // Depois, atualiza e confirma explicitamente a obra no registro criado.
+        // Isso cobre o caso em que o service salva os campos da entrada, mas
+        // não converte obraId (camelCase) para obra_id (nome da coluna no banco).
+        const inicioCriacaoEntrada = new Date().toISOString();
+        const resultadoCriacaoEntrada = await criarEntrada(dadosEntrada);
+        let idEntradaCriada = extrairIdRegistroCriado(resultadoCriacaoEntrada);
+
+        // Alguns services não devolvem o ID. Nesse caso, tenta localizar apenas
+        // uma entrada criada a partir deste momento com os mesmos dados-chave.
+        if (idEntradaCriada == null) {
+          const { data: entradaLocalizada, error: erroLocalizarEntrada } =
+            await supabase
+              .from("estoque_entradas")
+              .select("id, obra_id")
+              .eq("produto_id", dadosEntrada.produtoId)
+              .eq("nf_entrada", dadosEntrada.nfEntrada)
+              .eq("quantidade", dadosEntrada.quantidade)
+              .eq("valor_total", dadosEntrada.valorTotal)
+              .gte("created_at", inicioCriacaoEntrada)
+              .order("id", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+          if (erroLocalizarEntrada) {
+            throw new Error(
+              `A entrada foi criada, mas não foi possível confirmar a obra: ${erroLocalizarEntrada.message}`
+            );
+          }
+
+          idEntradaCriada = entradaLocalizada?.id ?? null;
+        }
+
+        if (idEntradaCriada == null) {
+          throw new Error(
+            "A entrada foi criada, mas o serviço não retornou o ID do registro e não foi possível localizar a entrada para confirmar a obra. Verifique a função criarEntrada em estoqueService."
+          );
+        }
+
+        const { data: entradaCriadaConfirmada, error: erroConfirmarObraEntrada } =
+          await supabase
+            .from("estoque_entradas")
+            .update({ obra_id: dadosEntrada.obraId })
+            .eq("id", idEntradaCriada)
+            .select("id, obra_id")
+            .single();
+
+        if (erroConfirmarObraEntrada) {
+          throw new Error(
+            `A entrada foi criada, mas a obra não foi salva: ${erroConfirmarObraEntrada.message}`
+          );
+        }
+
+        const obraEsperadaEntradaCriada =
+          dadosEntrada.obraId == null ? null : String(dadosEntrada.obraId);
+        const obraGravadaEntradaCriada =
+          entradaCriadaConfirmada?.obra_id == null
+            ? null
+            : String(entradaCriadaConfirmada.obra_id);
+
+        if (obraGravadaEntradaCriada !== obraEsperadaEntradaCriada) {
+          throw new Error(
+            `A obra da entrada não foi confirmada no banco. Esperada: ${obraEsperadaEntradaCriada ?? "ALME ESTOQUE"}; gravada: ${obraGravadaEntradaCriada ?? "ALME ESTOQUE"}.`
+          );
+        }
       }
 
       // =================================================
@@ -1402,20 +1765,60 @@ export default function Estoque() {
         // CRIAR SAÍDA
         // =================================================
 
+        const obraIdSaidaCriada = formSaida.obraId
+          ? Number(formSaida.obraId)
+          : null;
+
         const saidaId =
           await criarSaida({
             produtoId: Number(
               formSaida.produtoId
             ),
             // Vazio = ALME ESTOQUE (obra_id NULL)
-            obraId: formSaida.obraId
-              ? Number(formSaida.obraId)
-              : null,
+            obraId: obraIdSaidaCriada,
             quantidade,
             solicitante,
             precoUnitario,
             valorTotal,
           });
+
+        // A obra precisa ficar no registro pai estoque_saidas.
+        // A edição já fazia esta atualização explicitamente; a criação agora
+        // também a confirma para impedir que o registro permaneça em ALME ESTOQUE.
+        const idSaidaCriada = extrairIdRegistroCriado(saidaId);
+
+        if (idSaidaCriada == null) {
+          throw new Error(
+            "A saída foi criada, mas não foi possível identificar seu ID para confirmar a obra. Verifique a função criarSaida em estoqueService."
+          );
+        }
+
+        const { data: saidaCriadaConfirmada, error: erroConfirmarObraSaida } =
+          await supabase
+            .from("estoque_saidas")
+            .update({ obra_id: obraIdSaidaCriada })
+            .eq("id", idSaidaCriada)
+            .select("id, obra_id")
+            .single();
+
+        if (erroConfirmarObraSaida) {
+          throw new Error(
+            `A saída foi criada, mas a obra não foi salva: ${erroConfirmarObraSaida.message}`
+          );
+        }
+
+        const obraEsperadaSaidaCriada =
+          obraIdSaidaCriada == null ? null : String(obraIdSaidaCriada);
+        const obraGravadaSaidaCriada =
+          saidaCriadaConfirmada?.obra_id == null
+            ? null
+            : String(saidaCriadaConfirmada.obra_id);
+
+        if (obraGravadaSaidaCriada !== obraEsperadaSaidaCriada) {
+          throw new Error(
+            `A obra da saída não foi confirmada no banco. Esperada: ${obraEsperadaSaidaCriada ?? "ALME ESTOQUE"}; gravada: ${obraGravadaSaidaCriada ?? "ALME ESTOQUE"}.`
+          );
+        }
 
         // =================================================
         // DATA
@@ -2256,7 +2659,7 @@ async function removerDevolucao(devolucao) {
   // =====================================================
 
   const quantidadeProdutos =
-    produtos.length;
+    produtosFiltrados.length;
 
   // =====================================================
   // PRODUTO SELECIONADO
@@ -3304,79 +3707,128 @@ async function removerDevolucao(devolucao) {
       </header>
 
       {/* =====================================================
-          FILTRO
+          FILTROS GERAIS — APLICADOS EM TODAS AS ABAS
       ===================================================== */}
 
       <section className="estoque-filtro">
-
         <div className="estoque-filtro-header">
-
           <div>
-
-            <span>FILTRO</span>
-
-            <strong>
-              Consultar estoque
-            </strong>
-
+            <span>FILTROS</span>
+            <strong>Pesquisar movimentações e produtos</strong>
+            <p className="estoque-filtro-descricao">
+              Os filtros acompanham todas as abas. Obra, solicitante, número e período filtram as movimentações relacionadas.
+            </p>
           </div>
 
-          {filtroProduto && (
+          {(filtroProduto || filtroBusca || filtroObra || filtroSolicitante || filtroNumero || filtroDataInicio || filtroDataFim) && (
             <button
               type="button"
               className="estoque-filtro-limpar"
-              onClick={() =>
-                setFiltroProduto("")
-              }
+              onClick={() => {
+                setFiltroProduto("");
+                setFiltroBusca("");
+                setFiltroObra("");
+                setFiltroSolicitante("");
+                setFiltroNumero("");
+                setFiltroDataInicio("");
+                setFiltroDataFim("");
+              }}
             >
-              Limpar filtro
+              Limpar todos os filtros
             </button>
           )}
-
         </div>
 
-        <select
-          value={filtroProduto}
-          onChange={(event) =>
-            setFiltroProduto(
-              event.target.value
-            )
-          }
-        >
+        <div className="estoque-filtro-grid">
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-busca">Produto, SKU ou código ALME</label>
+            <input
+              id="estoque-filtro-busca"
+              type="search"
+              value={filtroBusca}
+              onChange={(event) => setFiltroBusca(event.target.value)}
+              placeholder="Digite o nome, SKU ou código..."
+            />
+          </div>
 
-          <option value="">
-            Todos os produtos
-          </option>
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-obra">Nome da obra</label>
+            <input
+              id="estoque-filtro-obra"
+              type="search"
+              value={filtroObra}
+              onChange={(event) => setFiltroObra(event.target.value)}
+              placeholder="Pesquisar pela obra..."
+            />
+          </div>
 
-          {produtos.map(
-            (produto) => (
-              <option
-                key={produto.id}
-                value={produto.id}
-              >
-                {produto.nome}
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-solicitante">Solicitante</label>
+            <input
+              id="estoque-filtro-solicitante"
+              type="search"
+              value={filtroSolicitante}
+              onChange={(event) => setFiltroSolicitante(event.target.value)}
+              placeholder="Nome do solicitante..."
+            />
+          </div>
 
-                {produto.sku
-                  ? ` — ${produto.sku}`
-                  : ""}
-              </option>
-            )
-          )}
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-numero">Nº da movimentação ou NF</label>
+            <input
+              id="estoque-filtro-numero"
+              type="search"
+              value={filtroNumero}
+              onChange={(event) => setFiltroNumero(event.target.value)}
+              placeholder="Ex.: 123 ou NF..."
+            />
+          </div>
 
-        </select>
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-data-inicio">Data inicial</label>
+            <input
+              id="estoque-filtro-data-inicio"
+              type="date"
+              value={filtroDataInicio}
+              max={filtroDataFim || undefined}
+              onChange={(event) => setFiltroDataInicio(event.target.value)}
+            />
+          </div>
+
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-data-fim">Data final</label>
+            <input
+              id="estoque-filtro-data-fim"
+              type="date"
+              value={filtroDataFim}
+              min={filtroDataInicio || undefined}
+              onChange={(event) => setFiltroDataFim(event.target.value)}
+            />
+          </div>
+
+          <div className="estoque-filtro-campo">
+            <label htmlFor="estoque-filtro-produto">Filtrar por produto específico</label>
+            <select
+              id="estoque-filtro-produto"
+              value={filtroProduto}
+              onChange={(event) => setFiltroProduto(event.target.value)}
+            >
+              <option value="">Todos os produtos</option>
+              {produtos.map((produto) => (
+                <option key={produto.id} value={produto.id}>
+                  {produto.nome}{produto.sku ? ` — ${produto.sku}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {produtoSelecionado && (
           <div className="estoque-filtro-selecionado">
-
             Produto selecionado:
-
-            <strong>
-              {produtoSelecionado.nome}
-            </strong>
-
+            <strong>{produtoSelecionado.nome}</strong>
           </div>
         )}
-
       </section>
 
       {/* =====================================================
@@ -4233,18 +4685,18 @@ async function removerDevolucao(devolucao) {
                               saida?.estoque_saida_itens ||
                               [];
 
-                            const itensExibidos =
-                              filtroProduto
-                                ? itens.filter(
-                                    (item) =>
-                                      String(
-                                        item.produto_id
-                                      ) ===
-                                      String(
-                                        filtroProduto
-                                      )
-                                  )
-                                : itens;
+                            const itensExibidos = itens.filter((item) => {
+                              const produtoItem = produtos.find(
+                                (p) => String(p.id) === String(item.produto_id)
+                              );
+
+                              return produtoPassaFiltro({
+                                produtoId: item.produto_id,
+                                nome: produtoItem?.nome || item.nome || item.item_nome,
+                                sku: produtoItem?.sku || item.sku,
+                                codigoAlme: produtoItem?.codigo_alme || item.codigo_alme,
+                              });
+                            });
 
                             return itensExibidos.map(
                               (
@@ -4471,20 +4923,20 @@ async function removerDevolucao(devolucao) {
 
                     <tbody>
 
-                      {devolucoes.length === 0 ? (
+                      {devolucoesFiltradas.length === 0 ? (
 
                         <tr>
                           <td
                             colSpan="11"
                             className="table-empty"
                           >
-                            Nenhuma devolução registrada.
+                            Nenhuma devolução corresponde aos filtros selecionados.
                           </td>
                         </tr>
 
                       ) : (
 
-                        devolucoes.map((devolucao) => (
+                        devolucoesFiltradas.map((devolucao) => (
 
                           <tr key={devolucao.id}>
 
