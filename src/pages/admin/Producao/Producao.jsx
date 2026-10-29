@@ -5,7 +5,8 @@ import {
     FiDollarSign,
     FiFolder,
     FiFileText,
-    FiGitBranch
+    FiGitBranch,
+    FiBookOpen
 } from "react-icons/fi";
 
 import {
@@ -250,6 +251,42 @@ export default function Producao() {
         <p>
             Consulte e acompanhe o fluxo das obras
             de produção da ALME.
+        </p>
+    </div>
+
+    <div className="producao-card-arrow">
+        <FiArrowRight />
+    </div>
+</button>
+
+               
+{/* =================================================
+    CARD MEMORIAL DESCRITIVO
+================================================= */}
+
+<button
+    type="button"
+    className="producao-card"
+    onClick={() => {
+        navigate("/admin/producao/memorialprod");
+    }}
+>
+    <div className="producao-card-icon">
+        <FiBookOpen />
+    </div>
+
+    <div className="producao-card-content">
+        <span>
+            PRODUÇÃO
+        </span>
+
+        <h2>
+            Memorial Descritivo
+        </h2>
+
+        <p>
+            Consulte e acompanhe os memoriais descritivos das obras.
+            
         </p>
     </div>
 

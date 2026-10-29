@@ -1,6 +1,7 @@
 import {
     FiArrowRight,
-    FiFileText
+    FiFileText,
+    FiBookOpen
 } from "react-icons/fi";
 
 import {
@@ -14,6 +15,10 @@ export default function Financeiro() {
 
     function abrirExtratosUnificados() {
         navigate("/admin/financeiro/extratos-uni");
+    }
+
+    function abrirContratos() {
+        navigate("/admin/financeiro/contrato");
     }
 
     return (
@@ -53,6 +58,29 @@ export default function Financeiro() {
                             <h2>Extratos unificados</h2>
                             <p>
                                 Consulte e acompanhe valores financeiros em uma visão unificada.
+                            </p>
+                        </div>
+
+                        <div className="financeiro-card-arrow" aria-hidden="true">
+                            <FiArrowRight />
+                        </div>
+                    </button>
+
+                    <button
+                        type="button"
+                        className="financeiro-card"
+                        onClick={abrirContratos}
+                        aria-label="Abrir Contratos"
+                    >
+                        <div className="financeiro-card-icon" aria-hidden="true">
+                            <FiBookOpen />
+                        </div>
+
+                        <div className="financeiro-card-content">
+                            <span>FINANCEIRO</span>
+                            <h2>Contratos</h2>
+                            <p>
+                                Acesse a área para preparar e organizar os contratos da ALME.
                             </p>
                         </div>
 

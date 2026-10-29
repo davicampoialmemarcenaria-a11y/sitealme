@@ -99,6 +99,10 @@ import TabelaOrcamento
     import Memorial
     from "../pages/admin/Comercial/Memorial/Memorial";
 
+    import Memorialprod
+    from "../pages/admin/Producao/Memorialprod/Memorialprod";
+
+     import Contrato from "../pages/admin/Financeiro/Contrato/Contrato";
 
 /*
 =====================================================
@@ -668,6 +672,22 @@ export default function Router() {
     }
 />
 
+
+
+<Route
+    path="financeiro/contrato"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "financeiro"
+            ]}
+        >
+            <Contrato/>
+        </ProtectedRoute>
+    }
+/>
+
                     {/* =================================================
                         ESTOQUE
                     ================================================= */}
@@ -714,6 +734,21 @@ export default function Router() {
             ]}
         >
             <Memorial />
+        </ProtectedRoute>
+    }
+/>
+
+
+<Route
+    path="producao/memorialprod"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "producao"
+            ]}
+        >
+            <Memorialprod />
         </ProtectedRoute>
     }
 />

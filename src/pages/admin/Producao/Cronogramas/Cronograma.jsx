@@ -1627,15 +1627,17 @@ export default function Cronograma() {
                         <tr class="row-${escaparHtml(tipo)}">
 
                             <td class="item-cell">
-                                <div class="item-number">
-                                    ${index + 1}
-                                </div>
+                                <div class="item-cell-content">
+                                    <div class="item-number">
+                                        ${index + 1}
+                                    </div>
 
-                                <div class="item-text">
-                                    ${escaparHtml(
-                                        linha.item ||
-                                        "-"
-                                    )}
+                                    <div class="item-text">
+                                        ${escaparHtml(
+                                            linha.item ||
+                                            "-"
+                                        )}
+                                    </div>
                                 </div>
                             </td>
 
@@ -1824,10 +1826,34 @@ export default function Cronograma() {
                         display: grid;
 
                         grid-template-columns:
-                            1fr
-                            1fr;
+                            repeat(
+                                2,
+                                minmax(0, 1fr)
+                            );
 
                         gap: 10px;
+                    }
+
+                    .header-fields > div {
+                        min-width: 0;
+
+                        display: flex;
+
+                        flex-direction:
+                            column;
+                    }
+
+                    .header-fields .field-label {
+                        min-height:
+                            3.3em;
+
+                        display: flex;
+
+                        align-items:
+                            flex-end;
+
+                        line-height:
+                            1.1;
                     }
 
                     .field-label {
@@ -1843,6 +1869,9 @@ export default function Cronograma() {
                             0.08em;
 
                         color: #8c765e;
+
+                        overflow-wrap:
+                            anywhere;
                     }
 
                     .field-value {
@@ -1882,10 +1911,10 @@ export default function Cronograma() {
                         display: grid;
 
                         grid-template-columns:
-                            1.55fr
-                            1.45fr
-                            0.55fr
-                            0.95fr;
+                            minmax(0, 1.55fr)
+                            minmax(0, 1.45fr)
+                            minmax(0, 0.55fr)
+                            minmax(0, 0.95fr);
 
                         border:
                             1px solid #d8d0c6;
@@ -1896,6 +1925,8 @@ export default function Cronograma() {
                     }
 
                     .project-card {
+                        min-width: 0;
+
                         min-height: 58px;
 
                         padding: 8px 10px;
@@ -1940,6 +1971,9 @@ export default function Cronograma() {
 
                         word-break:
                             break-word;
+
+                        overflow-wrap:
+                            anywhere;
                     }
 
                     /*
@@ -1956,6 +1990,9 @@ export default function Cronograma() {
 
                         table-layout:
                             fixed;
+
+                        border-spacing:
+                            0;
                     }
 
                     .table th {
@@ -1988,8 +2025,6 @@ export default function Cronograma() {
                     }
 
                     .table td {
-                        min-height: 35px;
-
                         padding: 6px;
 
                         border:
@@ -2012,15 +2047,15 @@ export default function Cronograma() {
                     }
 
                     .col-item {
-                        width: 31%;
+                        width: 32%;
                     }
 
                     .col-date {
-                        width: 13%;
+                        width: 14%;
                     }
 
                     .col-observation {
-                        width: 29%;
+                        width: 40%;
                     }
 
                     .col-color {
@@ -2028,6 +2063,11 @@ export default function Cronograma() {
                     }
 
                     .item-cell {
+                        vertical-align:
+                            middle;
+                    }
+
+                    .item-cell-content {
                         display: flex;
 
                         align-items:
