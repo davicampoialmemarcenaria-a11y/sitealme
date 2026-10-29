@@ -3,7 +3,8 @@ import {
     FiArrowRight,
     FiUsers,
     FiDroplet,
-    FiFileText
+    FiFileText,
+    FiBookOpen 
 } from "react-icons/fi";
 
 import {
@@ -239,12 +240,42 @@ export default function Comercial() {
 
                 </button>
 
+  {/* =================================================
+                    CARD MEMORIAL DESCRITIVO
+                ================================================= */}
+
+                <button
+                    type="button"
+                    className="comercial-card"
+                    onClick={() =>
+                        navigate("/admin/comercial/memorial")
+                    }
+                >
+                    <div className="comercial-card-icon">
+                        <FiBookOpen />
+                    </div>
+
+                    <div className="comercial-card-content">
+                        <span>
+                            COMERCIAL
+                        </span>
+
+                        <h2>
+                            Memorial Descritivo
+                        </h2>
+
+                        <p>
+                            Crie, consulte e gerencie os memoriais
+                            descritivos dos projetos da ALME.
+                        </p>
+                    </div>
+
+                    <div className="comercial-card-arrow">
+                        <FiArrowRight />
+                    </div>
+                </button>
 
             </section>
-
         </section>
-
     );
-
 }
-

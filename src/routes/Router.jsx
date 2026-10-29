@@ -96,6 +96,8 @@ import TabelaOrcamento
 
    import Fluxo
     from "../pages/admin/Producao/Fluxo/Fluxo";
+    import Memorial
+    from "../pages/admin/Comercial/Memorial/Memorial";
 
 
 /*
@@ -702,7 +704,19 @@ export default function Router() {
                         }
                     />
 
-
+<Route
+    path="comercial/memorial"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "comercial"
+            ]}
+        >
+            <Memorial />
+        </ProtectedRoute>
+    }
+/>
                     {/* =================================================
                         PROJETOS
                     ================================================= */}
