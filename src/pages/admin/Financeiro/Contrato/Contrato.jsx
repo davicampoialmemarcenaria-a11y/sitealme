@@ -8,13 +8,26 @@ import "./Contrato.scss";
 const FASES = ["Em análise", "Concluído", "Assinado"];
 const AUTORIZACAO_PADRAO = "Autorizo, através desta, a empresa JK MADEIRAS E FERRAGENS LTDA, inscrita no CNPJ 45.915.623/0001-22, a debitar do meu cartão de crédito o valor de R$**{{phase319492352.field356059856}}**\n\nAutorizo ainda a utilização deste crédito por meio dos responsáveis pelas compras da empresa AURA COMERCIO E SERVIÇOS EM MARCENARIA LTDA., inscrita no CNPJ 37.769.397/0001-90.";
 const CLIENTE_VAZIO = { nome: "", endereco: "", bairro: "", cidade: "", uf: "", cep: "", cpf: "", telefone: "" };
-const TERMOS_VAZIOS = { prazo_entrega_dias: "", valor_contrato: "", valor_entrada: "", parcelas_cartao: 8 };
+const TERMOS_VAZIOS = { prazo_entrega_dias: "", valor_contrato: "", valor_entrada: "", parcelas_cartao: 8, codigo_projeto: "", espacamento_paragrafos: 10 };
 const errText = error => error?.message || "Não foi possível concluir a operação.";
 const nomeVersao = value => Number(value?.versao ?? value?.numero ?? 0);
 const maisRecente = (items, field = "versao") => [...(items || [])].sort((a, b) => Number(b[field] || 0) - Number(a[field] || 0))[0] || null;
 const dinheiro = value => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 const dataHora = value => value ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value)) : "—";
-const itemTitle = item => [item.nome_item || item.base_item_nome || item.nome || "Item", item.mdf_nome || item.cor_mdf ? `MDF ${item.mdf_nome || item.cor_mdf}` : "", item.altura_cm || item.largura_cm || item.profundidade_cm ? `A${item.altura_cm || 0}xL${item.largura_cm || 0}xP${item.profundidade_cm || 0} cm` : ""].filter(Boolean).join(" | ");
+const medidaEmMm = (item, eixo) => {
+  const metros = item[eixo];
+  if (metros !== "" && metros != null && Number.isFinite(Number(metros))) return String(Math.round(Number(metros) * 1000));
+  const milimetros = item[`${eixo}_mm`];
+  if (milimetros !== "" && milimetros != null && Number.isFinite(Number(milimetros))) return String(Math.round(Number(milimetros)));
+  const centimetros = item[`${eixo}_cm`];
+  if (centimetros !== "" && centimetros != null && Number.isFinite(Number(centimetros))) return String(Math.round(Number(centimetros) * 10));
+  return "";
+};
+const itemTitle = item => {
+  const mdf = String(item.mdf_nome || item.cor_mdf || "").trim().replace(/^MDF\s+/i, "").replace(/\s*[—-]\s*cor\s*\d+\s*$/i, "");
+  const medidas = [["A", medidaEmMm(item, "altura")], ["L", medidaEmMm(item, "largura")], ["P", medidaEmMm(item, "profundidade")]].filter(([, valor]) => valor).map(([eixo, valor]) => `${eixo}${valor}`).join("x");
+  return [item.nome_item || item.base_item_nome || item.nome || "Item", mdf ? `MDF ${mdf}` : "", medidas].filter(Boolean).join(" | ");
+};
 const valorItem = item => item.preco_final ?? item.valor_final ?? item.valor_total ?? item.calculadoValorComRtArredondado ?? item.valor_memorial_descritivo ?? item.valor_unitario ?? 0;
 
 function escreverGrupo(numero) {
@@ -98,6 +111,11 @@ function TextoAutorizacao({ texto }) {
   return <>{partes.map((parte, index) => parte.startsWith("**") && parte.endsWith("**")
     ? <strong key={index}>{parte.slice(2, -2)}</strong>
     : <span key={index}>{parte}</span>)}</>;
+}
+
+function TextoContrato({ texto }) {
+  const paragrafos = String(texto || "").split(/\r?\n\s*\r?\n+/).map(paragrafo => paragrafo.trim()).filter(Boolean);
+  return <div className="contrato-paper-copy">{paragrafos.map((paragrafo, index) => <p key={index}>{paragrafo}</p>)}</div>;
 }
 
 function Campo({ label, name, value, onChange, required = false }) {
@@ -437,6 +455,8 @@ export default function Contrato() {
           <CampoTermo label="Valor da entrada (R$)" name="valor_entrada" value={draft.termos?.valor_entrada} onChange={atualizarTermo} type="number" step="0.01" />
           <CampoTermo label="Parcelas no cartão" name="parcelas_cartao" value={draft.termos?.parcelas_cartao} onChange={atualizarTermo} type="number" step="1" />
           <CampoTermo label="Prazo de entrega (dias corridos)" name="prazo_entrega_dias" value={draft.termos?.prazo_entrega_dias} onChange={atualizarTermo} type="number" step="1" />
+          <CampoTermo label="Código manual do projeto (rodapés)" name="codigo_projeto" value={draft.termos?.codigo_projeto} onChange={atualizarTermo} />
+          <CampoTermo label="Espaçamento entre parágrafos (px)" name="espacamento_paragrafos" value={draft.termos?.espacamento_paragrafos} onChange={atualizarTermo} type="number" step="1" />
         </div>
         <label className="contrato-textarea-field"><span>Autorização de débito <small>Texto editável</small></span><textarea rows={5} value={draft.autorizacao_texto || ""} onChange={e => setDraft(current => ({ ...current, autorizacao_texto: e.target.value }))} /></label>
         <div className="contrato-form-actions"><button type="button" className="contrato-button contrato-button--light" onClick={voltarLista}>Cancelar</button><button className="contrato-button contrato-button--primary" type="submit" disabled={saving}>{saving ? "Criando…" : <><FiPlus /> Criar contrato</>}</button></div>
@@ -445,7 +465,7 @@ export default function Contrato() {
 
     {view === "document" && draft && selected && <>
       <div className="contrato-document-actions"><button className="contrato-back" type="button" onClick={voltarLista}><FiArrowLeft /> Voltar à lista</button>
-        <div className="contrato-action-group"><button className="contrato-button contrato-button--light" type="button" onClick={exportarPdf}><FiDownload /> Exportar PDF</button><label className="contrato-version-select"><span>Versão</span><select value={draft.id ? (version?.id || "draft") : "draft"} onChange={e => abrirContrato(selected, e.target.value)}>{versions.map(row => <option key={row.id} value={row.id}>v{row.numero} · {row.fase}</option>)}{!draft.id && <option value="draft">v{draft.numero} · Nova versão</option>}</select></label>
+        <div className="contrato-action-group"><button className="contrato-button contrato-button--light" type="button" onClick={exportarPdf} title="Na impressão, desative Cabeçalhos e rodapés para remover o endereço localhost do navegador"><FiDownload /> Exportar PDF</button><label className="contrato-version-select"><span>Versão</span><select value={draft.id ? (version?.id || "draft") : "draft"} onChange={e => abrirContrato(selected, e.target.value)}>{versions.map(row => <option key={row.id} value={row.id}>v{row.numero} · {row.fase}</option>)}{!draft.id && <option value="draft">v{draft.numero} · Nova versão</option>}</select></label>
           {!editing && <><button className="contrato-button contrato-button--light" type="button" onClick={criarNovaVersao} disabled={saving}><FiPlus /> Nova versão</button><button className="contrato-button contrato-button--light" type="button" onClick={() => setEditing(true)}><FiFileText /> Editar versão</button><button className="contrato-button contrato-button--danger" type="button" onClick={excluirContrato} disabled={saving}><FiTrash2 /></button></>}
         </div>
       </div>
@@ -464,6 +484,8 @@ export default function Contrato() {
           <CampoTermo label="Valor da entrada (R$)" name="valor_entrada" value={draft.termos?.valor_entrada} onChange={atualizarTermo} type="number" step="0.01" />
           <CampoTermo label="Parcelas no cartão" name="parcelas_cartao" value={draft.termos?.parcelas_cartao} onChange={atualizarTermo} type="number" step="1" />
           <CampoTermo label="Prazo de entrega (dias corridos)" name="prazo_entrega_dias" value={draft.termos?.prazo_entrega_dias} onChange={atualizarTermo} type="number" step="1" />
+          <CampoTermo label="Código manual do projeto (rodapés)" name="codigo_projeto" value={draft.termos?.codigo_projeto} onChange={atualizarTermo} />
+          <CampoTermo label="Espaçamento entre parágrafos (px)" name="espacamento_paragrafos" value={draft.termos?.espacamento_paragrafos} onChange={atualizarTermo} type="number" step="1" />
           <label className="contrato-field"><span>Fase do contrato</span><select value={draft.fase} onChange={e => setDraft(current => ({ ...current, fase: e.target.value }))}>{FASES.map(phase => <option key={phase}>{phase}</option>)}</select></label>
         </div>
         <label className="contrato-textarea-field"><span>Autorização de débito</span><textarea rows={5} value={draft.autorizacao_texto || ""} onChange={e => setDraft(current => ({ ...current, autorizacao_texto: e.target.value }))} /></label>
@@ -473,7 +495,7 @@ export default function Contrato() {
       <article className="contrato-document">
         <header className="contrato-paper-header"><div className="contrato-brand"><span>ALME</span><small>COMÉRCIO E SERVIÇOS EM MARCENARIA</small></div><div><span>DOCUMENTO</span><strong>CONTRATO DE PRESTAÇÃO DE SERVIÇOS</strong><small>Versão {draft.numero} · {draft.fase}</small></div></header>
         <section className="contrato-client-summary"><h2>Dados do contratante</h2><div><span><small>Nome</small><b>{draft.cliente.nome || "—"}</b></span><span><small>CPF</small><b>{draft.cliente.cpf || "—"}</b></span><span><small>Telefone</small><b>{draft.cliente.telefone || "—"}</b></span><span><small>Endereço</small><b>{[draft.cliente.endereco,draft.cliente.bairro,draft.cliente.cidade,draft.cliente.uf,draft.cliente.cep].filter(Boolean).join(" · ") || "—"}</b></span></div></section>
-        <section className="contrato-paper-body"><pre>{contratoRenderizado}</pre></section>
+        <section className="contrato-paper-body" style={{ "--ct-paragraph-gap": `${Number(draft.termos?.espacamento_paragrafos ?? 10)}px` }}><TextoContrato texto={contratoRenderizado} /></section>
         {draft.autorizacao_texto && <section className="contrato-authorization"><span className="contrato-eyebrow">AUTORIZAÇÃO DE PAGAMENTO</span><p><TextoAutorizacao texto={draft.autorizacao_texto} /></p></section>}
         <section className="contrato-annex">
           <header><span>ANEXO I</span><div><h2>Orçamento aprovado</h2><p>{cotacaoAtual.orcamento?.nome || "Orçamento"} · Código {cotacaoAtual.orcamento?.codigo || "—"} · Versão {cotacaoAtual.versao?.versao || "—"}</p></div></header>
@@ -488,8 +510,7 @@ export default function Contrato() {
             <div className="contrato-table-wrap"><table className="contrato-memorial-table"><thead><tr><th>Qtd.</th><th>Descrição do item</th><th>Descrição dos itens</th><th>Fotos</th></tr></thead><tbody>{(environment.itens || []).map((item, itemIndex) => <tr key={item.id || itemIndex}><td>{item.quantidade ?? 1}</td><td>{itemTitle(item)}</td><td className="contrato-memorial-description">{item.descricao_comercial || "—"}</td><td><FotosContrato fotos={[...(item.fotos_comercial || []), ...(item.fotos_coordenador || [])]} /></td></tr>)}</tbody></table></div>
           </div>)}
         </section>
-        <section className="contrato-signatures"><p>Atibaia/SP, ____ de __________________________ de ________.</p><div><div><span /><strong>{draft.cliente.nome || "CONTRATANTE"}</strong><small>CPF: {draft.cliente.cpf || "________________________"}</small></div><div><span /><strong>ALME MARCENARIA</strong><small>CONTRATADA</small></div></div></section>
-        <footer className="contrato-paper-footer"><span>ALME MARCENARIA</span><span>Contrato vinculado ao orçamento {cotacaoAtual.orcamento?.codigo || ""}</span><span>Fase: {draft.fase}</span></footer>
+        <footer className="contrato-paper-footer"><span>ALME MARCENARIA</span><span>Código do projeto: {draft.termos?.codigo_projeto?.trim() || "—"}</span><span>Contrato · {cotacaoAtual.orcamento?.codigo || ""} · {draft.fase}</span></footer>
       </article>
     </>}
   </main>;

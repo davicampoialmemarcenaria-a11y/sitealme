@@ -109,8 +109,10 @@
   b { overflow-wrap: anywhere; font-size: 11px; }
   span:last-child { grid-column: 1 / -1; }
 }
-.contrato-paper-body { padding: 24px 0 10px;
-  pre { margin: 0; color: #32281f; font-family: inherit; font-size: 12px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.contrato-paper-body { --ct-paragraph-gap: 10px; padding: 24px 0 10px;
+  .contrato-paper-copy { color: #32281f; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+  .contrato-paper-copy p { margin: 0 0 var(--ct-paragraph-gap); white-space: pre-wrap; }
+  .contrato-paper-copy p:last-child { margin-bottom: 0; }
 }
 .contrato-authorization { padding: 16px 18px; margin: 13px 0 24px; border: 1px solid #e7d2b8; border-radius: 9px; background: #fbf5eb;
   p { margin: 8px 0 0; color: #403227; font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -148,14 +150,6 @@
   strong { color: var(--ct-brown); font-size: 13px; }
 }
 .contrato-paper-footer { display: flex; justify-content: space-between; gap: 12px; padding-top: 14px; margin-top: 30px; border-top: 1px solid var(--ct-line); color: #887865; font-size: 9px; font-weight: 800; letter-spacing: .06em; }
-.contrato-signatures { padding-top: 22px; margin-top: 34px; color: #40352c; break-inside: avoid; page-break-inside: avoid;
-  > p { margin: 0 0 60px; text-align: right; font-size: 11px; }
-  > div { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  > div > div { display: grid; justify-items: center; gap: 5px; text-align: center; }
-  > div span { width: 100%; border-top: 1px solid #51463d; }
-  strong { font-size: 10px; }
-  small { color: var(--ct-muted); font-size: 9px; }
-}
 
 @media (max-width: 900px) {
   .contrato-toolbar--quotes { align-items: stretch; }
@@ -183,23 +177,24 @@
   .contrato-paper-header { align-items: flex-start; flex-direction: column; }
   .contrato-paper-header > div:last-child { justify-items: start; text-align: left; }
   .contrato-client-summary > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .contrato-paper-body pre { font-size: 11px; }
+  .contrato-paper-body .contrato-paper-copy { font-size: 11px; }
   .contrato-paper-footer { flex-direction: column; }
 }
 @media print {
-  @page { size: A4; margin: 14mm 13mm; }
+  @page { size: A4; margin: 14mm 13mm 22mm; }
   body.contrato-printing * { visibility: hidden !important; }
   body.contrato-printing .contrato-document,
   body.contrato-printing .contrato-document * { visibility: visible !important; }
   body.contrato-printing .contrato-document { position: absolute; inset: 0 auto auto 0; width: 100%; max-width: none; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
   .contrato-page { max-width: none; padding: 0; }
   .contrato-annex { padding-top: 0; margin-top: 0; border-top: 0; break-before: page; page-break-before: always; }
-  .contrato-annex-environment, .contrato-client-summary, .contrato-authorization, .contrato-signatures { break-inside: avoid; page-break-inside: avoid; }
+  .contrato-annex-environment, .contrato-client-summary, .contrato-authorization { break-inside: avoid; page-break-inside: avoid; }
   .contrato-table-wrap { overflow: visible; }
   .contrato-table-wrap table { width: 100%; font-size: 8px; }
   .contrato-table-wrap thead { display: table-header-group; }
   .contrato-table-wrap tr { break-inside: avoid; page-break-inside: avoid; }
   .contrato-memorial-photos img { width: 75px; height: 60px; }
-  .contrato-paper-body pre { font-size: 10px; line-height: 1.55; }
-  .contrato-paper-footer { font-size: 8px; }
+  .contrato-paper-body { padding-top: 18px; }
+  .contrato-paper-body .contrato-paper-copy { font-size: 10px; line-height: 1.5; }
+  .contrato-paper-footer { position: fixed; right: 0; bottom: -15mm; left: 0; display: flex; justify-content: space-between; padding-top: 4mm; margin: 0; border-top: 1px solid #d8cbbb; color: #705b49; background: #fff; font-size: 8px; letter-spacing: .02em; }
 }

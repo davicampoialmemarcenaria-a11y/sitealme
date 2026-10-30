@@ -13,7 +13,8 @@ import {
     FiSave,
     FiPrinter,
     FiRefreshCw,
-    FiCheck
+    FiCheck,
+    FiMenu
 } from "react-icons/fi";
 
 import {
@@ -211,6 +212,14 @@ const TIPOS_LINHA = [
     {
         valor: "laranja",
         nome: "Segunda etapa"
+    },
+    {
+        valor: "verde",
+        nome: "Terceira etapa"
+    },
+    {
+        valor: "roxo",
+        nome: "Aditivo"
     }
 ];
 
@@ -474,6 +483,8 @@ export default function Cronograma() {
         linhas,
         setLinhas
     ] = useState([]);
+
+    const [linhaArrastadaId, setLinhaArrastadaId] = useState(null);
 
     const [
         sharepointId,
@@ -1025,6 +1036,31 @@ export default function Cronograma() {
                 tipo
             )
         );
+    }
+
+    function iniciarArrasteLinha(event, id) {
+        setLinhaArrastadaId(id);
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", String(id));
+    }
+
+    function reordenarLinha(event, destinoId) {
+        event.preventDefault();
+        const origemId = linhaArrastadaId || event.dataTransfer.getData("text/plain");
+        if (!origemId || origemId === destinoId) return;
+
+        setLinhas(prev => {
+            const origem = prev.findIndex(linha => String(linha.id) === String(origemId));
+            const destino = prev.findIndex(linha => String(linha.id) === String(destinoId));
+            if (origem < 0 || destino < 0) return prev;
+            const atualizadas = [...prev];
+            const [linha] = atualizadas.splice(origem, 1);
+            atualizadas.splice(destino, 0, linha);
+            return atualizadas;
+        });
+        setPossuiAlteracoes(true);
+        setSucesso("");
+        setLinhaArrastadaId(null);
     }
 
     /*
@@ -3159,8 +3195,10 @@ export default function Cronograma() {
                                                         className={
                                                             `cronograma-row tipo-${normalizarTipoLinha(
                                                                 linha.tipo
-                                                            )}`
+                                                            )}${linhaArrastadaId === linha.id ? " is-dragging" : ""}`
                                                         }
+                                                        onDragOver={event => event.preventDefault()}
+                                                        onDrop={event => reordenarLinha(event, linha.id)}
                                                     >
 
                                                         <td
@@ -3174,6 +3212,18 @@ export default function Cronograma() {
                                                                     index + 1
                                                                 }
                                                             </div>
+
+                                                            <button
+                                                                type="button"
+                                                                className="cronograma-row-drag"
+                                                                draggable="true"
+                                                                onDragStart={event => iniciarArrasteLinha(event, linha.id)}
+                                                                onDragEnd={() => setLinhaArrastadaId(null)}
+                                                                title="Arraste para mudar a ordem da linha"
+                                                                aria-label={`Arrastar linha ${index + 1} para mudar a ordem`}
+                                                            >
+                                                                <FiMenu />
+                                                            </button>
 
                                                             <input
                                                                 type="text"
@@ -3363,6 +3413,26 @@ export default function Cronograma() {
 
                             <span>
                                 Segunda etapa
+                            </span>
+
+                        </div>
+
+                        <div>
+
+                            <span className="legend-color legend-green" />
+
+                            <span>
+                                Terceira etapa
+                            </span>
+
+                        </div>
+
+                        <div>
+
+                            <span className="legend-color legend-purple" />
+
+                            <span>
+                                Aditivo
                             </span>
 
                         </div>
