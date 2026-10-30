@@ -90,8 +90,8 @@
 .contrato-document-actions { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
 .contrato-action-group { display: flex; align-items: flex-end; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .contrato-version-select select { min-width: 155px; }
-.contrato-document { max-width: 1050px; padding: clamp(22px, 4vw, 48px); margin: 0 auto; border: 1px solid #e6ddd4; border-radius: 6px; background: #fff; box-shadow: 0 16px 50px #30180712; }
-.contrato-paper-header { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding-bottom: 21px; border-bottom: 2px solid var(--ct-brown);
+.contrato-document { max-width: 1050px; padding: clamp(22px, 4vw, 48px); margin: 0 auto; border: 1px solid #e6ddd4; border-bottom: 0; border-radius: 6px 6px 0 0; background: #fff; box-shadow: 0 16px 50px #30180712; }
+.contrato-paper-header { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding-bottom: 16px; border-bottom: 2px solid var(--ct-brown);
   > div:last-child { display: grid; gap: 4px; justify-items: end; text-align: right; }
   > div:last-child span { color: #947a5e; font-size: 9px; font-weight: 800; letter-spacing: .15em; }
   > div:last-child strong { color: var(--ct-brown); font-size: clamp(14px, 2vw, 20px); }
@@ -113,6 +113,8 @@
   .contrato-paper-copy { color: #32281f; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
   .contrato-paper-copy p { margin: 0 0 var(--ct-paragraph-gap); white-space: pre-wrap; }
   .contrato-paper-copy p:last-child { margin-bottom: 0; }
+  .contrato-paper-copy p.contrato-copy-title { margin-bottom: 13px; color: var(--ct-brown); font-size: 15px; font-weight: 800; letter-spacing: .025em; text-align: center; }
+  .contrato-paper-copy p.contrato-copy-heading { margin-top: 8px; margin-bottom: 5px; color: #52341f; font-size: 11px; font-weight: 800; letter-spacing: .035em; }
 }
 .contrato-authorization { padding: 16px 18px; margin: 13px 0 24px; border: 1px solid #e7d2b8; border-radius: 9px; background: #fbf5eb;
   p { margin: 8px 0 0; color: #403227; font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -149,7 +151,7 @@
 .contrato-quote-total { display: flex; justify-content: flex-end; gap: 20px; padding: 13px 15px; margin-top: 13px; border-radius: 8px; color: #67451f; background: #f5ead9; font-size: 11px;
   strong { color: var(--ct-brown); font-size: 13px; }
 }
-.contrato-paper-footer { display: flex; justify-content: space-between; gap: 12px; padding-top: 14px; margin-top: 30px; border-top: 1px solid var(--ct-line); color: #887865; font-size: 9px; font-weight: 800; letter-spacing: .06em; }
+.contrato-paper-footer { max-width: 1050px; display: flex; justify-content: space-between; gap: 12px; padding: 14px clamp(22px, 4vw, 48px); margin: 0 auto; border: 1px solid #e6ddd4; border-top: 1px solid var(--ct-line); border-radius: 0 0 6px 6px; color: #887865; background: #fff; box-shadow: 0 16px 50px #30180712; font-size: 9px; font-weight: 800; letter-spacing: .06em; }
 
 @media (max-width: 900px) {
   .contrato-toolbar--quotes { align-items: stretch; }
@@ -181,12 +183,24 @@
   .contrato-paper-footer { flex-direction: column; }
 }
 @media print {
-  @page { size: A4; margin: 14mm 13mm 22mm; }
+  @page { size: A4; margin: 14mm 13mm 26mm; }
   body.contrato-printing * { visibility: hidden !important; }
   body.contrato-printing .contrato-document,
-  body.contrato-printing .contrato-document * { visibility: visible !important; }
+  body.contrato-printing .contrato-document *,
+  body.contrato-printing .contrato-print-footer { visibility: visible !important; }
   body.contrato-printing .contrato-document { position: absolute; inset: 0 auto auto 0; width: 100%; max-width: none; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+  @page { size: A4; margin: 14mm 13mm; }
+  .contrato-header, .contrato-document-actions, .contrato-alert, .contrato-form, .contrato-edit-panel, .contrato-back { display: none !important; }
   .contrato-page { max-width: none; padding: 0; }
+  .contrato-paper-footer { position: fixed; z-index: 5; right: 0; bottom: -19mm; left: 0; width: 100%; max-width: none; display: flex; flex-direction: row; justify-content: space-between; padding: 4mm 0 0; margin: 0; border: 0; border-top: 1px solid #d8cbbb; border-radius: 0; color: #705b49; background: #fff; box-shadow: none; font-size: 8px; letter-spacing: .02em; }
+  .contrato-document { padding-bottom: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .contrato-document { max-width: none; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .contrato-paper-footer { position: static; max-width: none; padding: 4mm 0 0; margin: 8mm 0 0; border: 0; border-top: 1px solid #d8cbbb; border-radius: 0; box-shadow: none; }
+  .contrato-paper-header { gap: 12px; padding-bottom: 10px; }
+  .contrato-client-summary { padding: 9px 0; }
+  .contrato-paper-body { padding-top: 12px; }
+  .contrato-paper-body .contrato-paper-copy p.contrato-copy-title { font-size: 12px; margin-bottom: 8px; }
+  .contrato-paper-body .contrato-paper-copy p.contrato-copy-heading { margin-top: 5px; margin-bottom: 3px; font-size: 9px; }
   .contrato-annex { padding-top: 0; margin-top: 0; border-top: 0; break-before: page; page-break-before: always; }
   .contrato-annex-environment, .contrato-client-summary, .contrato-authorization { break-inside: avoid; page-break-inside: avoid; }
   .contrato-table-wrap { overflow: visible; }
@@ -196,5 +210,4 @@
   .contrato-memorial-photos img { width: 75px; height: 60px; }
   .contrato-paper-body { padding-top: 18px; }
   .contrato-paper-body .contrato-paper-copy { font-size: 10px; line-height: 1.5; }
-  .contrato-paper-footer { position: fixed; right: 0; bottom: -15mm; left: 0; display: flex; justify-content: space-between; padding-top: 4mm; margin: 0; border-top: 1px solid #d8cbbb; color: #705b49; background: #fff; font-size: 8px; letter-spacing: .02em; }
 }

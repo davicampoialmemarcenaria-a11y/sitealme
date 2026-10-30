@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FiArrowLeft, FiBookOpen, FiCheck, FiChevronRight, FiDownload, FiFileText, FiPlus, FiRefreshCw, FiSave, FiSearch, FiTrash2, FiX } from "react-icons/fi";
+import { jsPDF } from "jspdf";
 import { supabase } from "../../../../services/supabase";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { CONTRATO_TEMPLATE } from "./contratoTemplate";
@@ -85,6 +86,247 @@ function valorPorExtenso(valor) {
 const totalOrcamento = snapshot => Number(snapshot?.versao?.valor_final_desejado ?? snapshot?.versao?.preco_final_total ?? snapshot?.versao?.valor_memorial_total ?? 0);
 const formatarValorContrato = value => Number(value || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const PDF_CORES = { marrom: [74, 34, 12], tinta: [53, 37, 27], muted: [125, 108, 92], linha: [225, 213, 200], creme: [248, 242, 232], branco: [255, 255, 255] };
+const PDF_MARGEM = 13;
+const textoPdf = valor => String(valor ?? "—").replace(/[–—−]/g, "-");
+
+function obterParagrafosContrato(texto) {
+  return String(texto || "").split(/\r?\n\s*\r?\n+/).map(paragrafo => paragrafo.trim()).filter(Boolean);
+}
+
+async function imagemComoDataUrl(foto) {
+  let url = typeof foto === "string" ? foto : null;
+  if (!url && foto?.path) {
+    const { data } = await supabase.storage.from("memorial-fotos").createSignedUrl(foto.path, 3600);
+    url = data?.signedUrl || foto.url;
+  }
+  if (!url && foto?.url) url = foto.url;
+  if (!url) return null;
+  try {
+    if (url.startsWith("data:image/")) return url;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function criarPdfContrato({ draft, cotacao, memorial }) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const contentW = pageW - PDF_MARGEM * 2;
+  const footerLimit = pageH - 18;
+  const paragraphGap = Math.max(0, Math.min(24, Number(draft.termos?.espacamento_paragrafos ?? 10))) * 0.35;
+  let y = 0;
+
+  const desenharCabecalho = () => {
+    doc.setTextColor(...PDF_CORES.marrom);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ALME MARCENARIA", PDF_MARGEM, 16);
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_CORES.muted);
+    doc.text("CONTRATO DE PRESTAÇÃO DE SERVIÇOS", PDF_MARGEM, 21);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Versão ${draft.numero || 1}  ·  ${draft.fase || "Em análise"}`, pageW - PDF_MARGEM, 18, { align: "right" });
+    doc.setDrawColor(...PDF_CORES.linha);
+    doc.setLineWidth(0.45);
+    doc.line(PDF_MARGEM, 25, pageW - PDF_MARGEM, 25);
+    y = 31;
+  };
+
+  const adicionarPagina = () => {
+    doc.addPage();
+    desenharCabecalho();
+  };
+
+  const garantirEspaco = altura => {
+    if (y + altura > footerLimit) adicionarPagina();
+  };
+
+  const textoEmBloco = (texto, { bold = false, size = 9, gap = paragraphGap, color = PDF_CORES.tinta, align = "left" } = {}) => {
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(textoPdf(texto), contentW);
+    const lineH = size * 0.43;
+    garantirEspaco(lines.length * lineH + gap + 1);
+    const textX = align === "center" ? pageW / 2 : align === "right" ? pageW - PDF_MARGEM : PDF_MARGEM;
+    doc.text(lines, textX, y, { align, lineHeightFactor: 1.2 });
+    y += lines.length * lineH + gap;
+  };
+
+  const desenharTituloSecao = (titulo, subtitulo = "") => {
+    garantirEspaco(subtitulo ? 16 : 12);
+    doc.setFillColor(...PDF_CORES.creme);
+    doc.roundedRect(PDF_MARGEM, y, contentW, subtitulo ? 14 : 10, 2, 2, "F");
+    doc.setTextColor(...PDF_CORES.marrom);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(titulo, PDF_MARGEM + 4, y + 6.5);
+    if (subtitulo) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(...PDF_CORES.muted);
+      doc.text(subtitulo, PDF_MARGEM + 4, y + 11.2);
+    }
+    y += subtitulo ? 18 : 14;
+  };
+
+  const desenharTabela = async ({ colunas, larguras, linhas, ambiente, memorialMode = false }) => {
+    const alturaCabecalho = 8;
+    const desenharCabecalhoTabela = () => {
+      let x = PDF_MARGEM;
+      colunas.forEach((coluna, i) => {
+        doc.setFillColor(...PDF_CORES.marrom);
+        doc.setDrawColor(...PDF_CORES.marrom);
+        doc.rect(x, y, larguras[i], alturaCabecalho, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7.3);
+        doc.setTextColor(...PDF_CORES.branco);
+        doc.text(doc.splitTextToSize(coluna, larguras[i] - 3), x + 1.5, y + 5.2);
+        x += larguras[i];
+      });
+      y += alturaCabecalho;
+    };
+    if (ambiente) {
+      garantirEspaco(13);
+      doc.setFillColor(247, 239, 225);
+      doc.setDrawColor(...PDF_CORES.linha);
+      doc.roundedRect(PDF_MARGEM, y, contentW, 8, 1.5, 1.5, "FD");
+      doc.setTextColor(...PDF_CORES.marrom);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.text(ambiente, PDF_MARGEM + 3, y + 5.3);
+      y += 8;
+    }
+    desenharCabecalhoTabela();
+    for (let rowIndex = 0; rowIndex < linhas.length; rowIndex += 1) {
+      const row = linhas[rowIndex];
+      const imageRows = memorialMode ? Math.ceil((row.fotos?.length || 0) / 2) : 0;
+      const imageH = imageRows ? imageRows * 19 + 2 : 0;
+      const cellLines = row.valores.map((valor, i) => doc.splitTextToSize(textoPdf(valor || "—"), larguras[i] - 4));
+      const maxLines = Math.max(1, ...cellLines.map(lines => lines.length));
+      const rowH = Math.max(maxLines * 3.5 + 5, imageH + 5, 11);
+      if (y + rowH > footerLimit) {
+        adicionarPagina();
+        desenharCabecalhoTabela();
+      }
+      let x = PDF_MARGEM;
+      cellLines.forEach((lines, i) => {
+        doc.setFillColor(rowIndex % 2 ? 252 : 255, rowIndex % 2 ? 249 : 255, rowIndex % 2 ? 245 : 255);
+        doc.setDrawColor(...PDF_CORES.linha);
+        doc.rect(x, y, larguras[i], rowH, "FD");
+        doc.setTextColor(...PDF_CORES.tinta);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        const align = i === 0 ? "center" : "left";
+        doc.text(lines, align === "center" ? x + larguras[i] / 2 : x + 2, y + 4.5, { align, lineHeightFactor: 1.15 });
+        if (memorialMode && i === 3 && row.fotos?.length) {
+          const cellMaxW = larguras[i] - 4;
+          row.fotos.forEach((foto, photoIndex) => {
+            if (!foto) return;
+            try {
+              const col = photoIndex % 2;
+              const line = Math.floor(photoIndex / 2);
+              const w = Math.min((cellMaxW - 2) / 2, 18);
+              const h = 16;
+              const imageX = x + 2 + col * (w + 2);
+              const imageY = y + 3 + line * 19;
+              const type = foto.startsWith("data:image/png") ? "PNG" : foto.startsWith("data:image/webp") ? "WEBP" : "JPEG";
+              doc.addImage(foto, type, imageX, imageY, w, h, undefined, "FAST");
+            } catch { /* Ignora foto em formato incompatível e mantém o restante do PDF. */ }
+          });
+        }
+        x += larguras[i];
+      });
+      y += rowH;
+    }
+    y += 5;
+  };
+
+  desenharCabecalho();
+  const cliente = draft.cliente || {};
+  const dadosCliente = [
+    ["CLIENTE", cliente.nome || "—"], ["CPF", cliente.cpf || "—"], ["TELEFONE", cliente.telefone || "—"],
+    ["ENDEREÇO", [cliente.endereco, cliente.bairro, cliente.cidade, cliente.uf, cliente.cep].filter(Boolean).join(" · ") || "—"]
+  ];
+  const cardH = 24;
+  garantirEspaco(cardH + 3);
+  doc.setDrawColor(...PDF_CORES.linha);
+  doc.setFillColor(255, 253, 250);
+  doc.roundedRect(PDF_MARGEM, y, contentW, cardH, 2, 2, "FD");
+  dadosCliente.forEach(([label, value], index) => {
+    const x = PDF_MARGEM + 4 + (index % 3) * (contentW / 3);
+    const yy = y + 5 + Math.floor(index / 3) * 8;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(6.5); doc.setTextColor(...PDF_CORES.muted); doc.text(label, x, yy);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...PDF_CORES.tinta); doc.text(doc.splitTextToSize(value, contentW / 3 - 7), x, yy + 3.5);
+  });
+  y += cardH + 6;
+
+  obterParagrafosContrato(montarTextoContrato(draft.texto_contrato, cliente, draft.termos || {}, cotacao)).forEach((paragrafo, index) => {
+    const isTitle = index === 0 && /^INSTRUMENTO PARTICULAR/i.test(paragrafo);
+    const isHeading = /^[-–—]\s*(?:\d+\s*[–—-]\s*)?[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9\s,./()ºª-]*$/.test(paragrafo);
+    textoEmBloco(paragrafo, { bold: isTitle || isHeading, size: isTitle ? 11 : isHeading ? 8.5 : 8.2, gap: isTitle ? 4 : isHeading ? 2.5 : paragraphGap, color: isHeading || isTitle ? PDF_CORES.marrom : PDF_CORES.tinta, align: isTitle ? "center" : "left" });
+  });
+
+  if (draft.autorizacao_texto) {
+    const authLines = doc.splitTextToSize(draft.autorizacao_texto.replace(/\*\*/g, ""), contentW - 8);
+    const authH = authLines.length * 3.6 + 12;
+    garantirEspaco(authH + 4);
+    doc.setFillColor(...PDF_CORES.creme); doc.setDrawColor(...PDF_CORES.linha); doc.roundedRect(PDF_MARGEM, y, contentW, authH, 2, 2, "FD");
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(...PDF_CORES.marrom); doc.text("AUTORIZAÇÃO DE PAGAMENTO", PDF_MARGEM + 4, y + 5);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...PDF_CORES.tinta); doc.text(authLines, PDF_MARGEM + 4, y + 10, { lineHeightFactor: 1.2 });
+    y += authH + 6;
+  }
+
+  const ambientesOrcamento = cotacao.ambientes || [];
+  adicionarPagina();
+  desenharTituloSecao("ANEXO I · ORÇAMENTO APROVADO", `${cotacao.orcamento?.nome || "Orçamento"} · Código ${cotacao.orcamento?.codigo || "—"} · Versão ${cotacao.versao?.versao || "—"}`);
+  const budgetWidths = [12, 55, 75, 42];
+  for (const ambiente of ambientesOrcamento) {
+    const rows = (ambiente.itens || []).map(item => ({ valores: [item.quantidade ?? 1, item.nome_item || item.base_item_nome || "Item", [item.altura_cm || item.largura_cm || item.profundidade_cm ? `A${item.altura_cm || 0} × L${item.largura_cm || 0} × P${item.profundidade_cm || 0} mm` : "—", item.mdf_nome || item.cor_mdf || ""].filter(Boolean).join("\n"), dinheiro(valorItem(item))] }));
+    await desenharTabela({ colunas: ["QTD.", "DESCRIÇÃO DO ITEM", "MEDIDAS / MDF", "VALOR"], larguras: budgetWidths, linhas: rows, ambiente: ambiente.nome || "Ambiente" });
+  }
+  const totalQuote = cotacao.versao?.valor_final_desejado ?? cotacao.versao?.preco_final_total ?? cotacao.versao?.valor_memorial_total;
+  if (totalQuote != null) textoEmBloco(`TOTAL DO ORÇAMENTO: ${dinheiro(totalQuote)}`, { bold: true, size: 9, align: "right", gap: 6 });
+
+  adicionarPagina();
+  desenharTituloSecao("ANEXO II · MEMORIAL DESCRITIVO APROVADO", `${memorial.memorial?.nome_orcamento || "Memorial"} · Versão ${memorial.versao?.numero || "—"} · ${memorial.versao?.status || "—"}`);
+  const memorialWidths = [12, 55, 78, 39];
+  for (const ambiente of memorial.versao?.itens || []) {
+    const rows = await Promise.all((ambiente.itens || []).map(async item => {
+      const fotos = [...(item.fotos_comercial || []), ...(item.fotos_coordenador || [])];
+      return { valores: [item.quantidade ?? 1, itemTitle(item), item.descricao_comercial || "—", ""], fotos: (await Promise.all(fotos.map(imagemComoDataUrl))).filter(Boolean) };
+    }));
+    await desenharTabela({ colunas: ["QTD.", "DESCRIÇÃO DO ITEM", "DESCRIÇÃO DOS ITENS", "FOTOS"], larguras: memorialWidths, linhas: rows, ambiente: ambiente.nome || "Ambiente", memorialMode: true });
+  }
+
+  const codigoProjeto = draft.termos?.codigo_projeto?.trim() || "—";
+  const totalPaginas = doc.internal.getNumberOfPages();
+  for (let pagina = 1; pagina <= totalPaginas; pagina += 1) {
+    doc.setPage(pagina);
+    doc.setDrawColor(...PDF_CORES.linha);
+    doc.setLineWidth(0.35);
+    doc.line(PDF_MARGEM, pageH - 13, pageW - PDF_MARGEM, pageH - 13);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(...PDF_CORES.muted);
+    doc.text("ALME MARCENARIA", PDF_MARGEM, pageH - 8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Código do projeto: ${codigoProjeto}`, pageW / 2, pageH - 8, { align: "center" });
+    doc.text(`Página ${pagina} de ${totalPaginas}`, pageW - PDF_MARGEM, pageH - 8, { align: "right" });
+  }
+  const codigoArquivo = codigoProjeto === "—" ? cotacao.orcamento?.codigo || "ALME" : codigoProjeto;
+  doc.save(`Contrato-${codigoArquivo.replace(/[^a-zA-Z0-9-_]/g, "_")}.pdf`);
+}
+
 function montarTextoContrato(template, cliente, termos = {}, snapshot = null) {
   const total = Number(termos.valor_contrato ?? totalOrcamento(snapshot));
   const entradaInformada = termos.valor_entrada !== "" && termos.valor_entrada != null;
@@ -115,7 +357,11 @@ function TextoAutorizacao({ texto }) {
 
 function TextoContrato({ texto }) {
   const paragrafos = String(texto || "").split(/\r?\n\s*\r?\n+/).map(paragrafo => paragrafo.trim()).filter(Boolean);
-  return <div className="contrato-paper-copy">{paragrafos.map((paragrafo, index) => <p key={index}>{paragrafo}</p>)}</div>;
+  return <div className="contrato-paper-copy">{paragrafos.map((paragrafo, index) => {
+    const tituloCapa = index === 0 && /^INSTRUMENTO PARTICULAR/i.test(paragrafo);
+    const tituloClausula = /^[-–—]\s*(?:\d+\s*[–—-]\s*)?[A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9][A-ZÁÉÍÓÚÂÊÔÃÕÇ0-9\s,./()ºª-]*$/.test(paragrafo);
+    return <p className={tituloCapa ? "contrato-copy-title" : tituloClausula ? "contrato-copy-heading" : ""} key={index}>{paragrafo}</p>;
+  })}</div>;
 }
 
 function Campo({ label, name, value, onChange, required = false }) {
@@ -161,6 +407,7 @@ export default function Contrato() {
   const [assistantFilter, setAssistantFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pdfExportando, setPdfExportando] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -376,11 +623,16 @@ export default function Contrato() {
     const { name, value } = event.target;
     setDraft(current => ({ ...current, termos: { ...TERMOS_VAZIOS, ...(current.termos || {}), [name]: value } }));
   };
-  const exportarPdf = () => {
-    const cleanup = () => document.body.classList.remove("contrato-printing");
-    document.body.classList.add("contrato-printing");
-    window.addEventListener("afterprint", cleanup, { once: true });
-    window.print();
+  const exportarPdf = async () => {
+    setError("");
+    setPdfExportando(true);
+    try {
+      await criarPdfContrato({ draft, cotacao: cotacaoAtual, memorial: memorialAtual });
+    } catch (err) {
+      setError(err?.message || "Não foi possível gerar o PDF do contrato.");
+    } finally {
+      setPdfExportando(false);
+    }
   };
 
   return <main className="contrato-page">
@@ -465,7 +717,7 @@ export default function Contrato() {
 
     {view === "document" && draft && selected && <>
       <div className="contrato-document-actions"><button className="contrato-back" type="button" onClick={voltarLista}><FiArrowLeft /> Voltar à lista</button>
-        <div className="contrato-action-group"><button className="contrato-button contrato-button--light" type="button" onClick={exportarPdf} title="Na impressão, desative Cabeçalhos e rodapés para remover o endereço localhost do navegador"><FiDownload /> Exportar PDF</button><label className="contrato-version-select"><span>Versão</span><select value={draft.id ? (version?.id || "draft") : "draft"} onChange={e => abrirContrato(selected, e.target.value)}>{versions.map(row => <option key={row.id} value={row.id}>v{row.numero} · {row.fase}</option>)}{!draft.id && <option value="draft">v{draft.numero} · Nova versão</option>}</select></label>
+        <div className="contrato-action-group"><button className="contrato-button contrato-button--light" type="button" onClick={exportarPdf} disabled={pdfExportando} title="Gerar PDF sem cabeçalhos do navegador"><FiDownload /> {pdfExportando ? "Gerando PDF…" : "Exportar PDF"}</button><label className="contrato-version-select"><span>Versão</span><select value={draft.id ? (version?.id || "draft") : "draft"} onChange={e => abrirContrato(selected, e.target.value)}>{versions.map(row => <option key={row.id} value={row.id}>v{row.numero} · {row.fase}</option>)}{!draft.id && <option value="draft">v{draft.numero} · Nova versão</option>}</select></label>
           {!editing && <><button className="contrato-button contrato-button--light" type="button" onClick={criarNovaVersao} disabled={saving}><FiPlus /> Nova versão</button><button className="contrato-button contrato-button--light" type="button" onClick={() => setEditing(true)}><FiFileText /> Editar versão</button><button className="contrato-button contrato-button--danger" type="button" onClick={excluirContrato} disabled={saving}><FiTrash2 /></button></>}
         </div>
       </div>
@@ -510,8 +762,8 @@ export default function Contrato() {
             <div className="contrato-table-wrap"><table className="contrato-memorial-table"><thead><tr><th>Qtd.</th><th>Descrição do item</th><th>Descrição dos itens</th><th>Fotos</th></tr></thead><tbody>{(environment.itens || []).map((item, itemIndex) => <tr key={item.id || itemIndex}><td>{item.quantidade ?? 1}</td><td>{itemTitle(item)}</td><td className="contrato-memorial-description">{item.descricao_comercial || "—"}</td><td><FotosContrato fotos={[...(item.fotos_comercial || []), ...(item.fotos_coordenador || [])]} /></td></tr>)}</tbody></table></div>
           </div>)}
         </section>
-        <footer className="contrato-paper-footer"><span>ALME MARCENARIA</span><span>Código do projeto: {draft.termos?.codigo_projeto?.trim() || "—"}</span><span>Contrato · {cotacaoAtual.orcamento?.codigo || ""} · {draft.fase}</span></footer>
       </article>
+      <footer className="contrato-paper-footer contrato-print-footer"><span>ALME MARCENARIA</span><span>Código do projeto: {draft.termos?.codigo_projeto?.trim() || "—"}</span><span>Contrato · {cotacaoAtual.orcamento?.codigo || ""} · {draft.fase}</span></footer>
     </>}
   </main>;
 }
