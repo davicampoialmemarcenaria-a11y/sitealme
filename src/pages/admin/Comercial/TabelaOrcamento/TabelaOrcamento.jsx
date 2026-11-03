@@ -1312,7 +1312,7 @@ useEffect(() => {
                 "admin-users",
                 {
                     body: {
-                        action: "list"
+                        action: "list_responsaveis"
                     }
                 }
             );
