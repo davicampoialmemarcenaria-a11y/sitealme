@@ -129,7 +129,11 @@ export default function Login() {
             }
 
 
-            const tipo = perfil.roles.nome;
+            const rolePerfil = Array.isArray(perfil.roles)
+                ? perfil.roles[0]
+                : perfil.roles;
+
+            const tipo = rolePerfil?.nome;
 
 
             // =================================================
@@ -149,6 +153,7 @@ export default function Login() {
                     case "comercial":
                     case "producao":
                     case "financeiro":
+                    case "Agregado":
 
                         navigate("/admin");
 

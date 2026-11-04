@@ -1,17 +1,23 @@
 import {
     FiArrowRight,
     FiFileText,
-    FiBookOpen
+    FiBookOpen,
+    FiClipboard
 } from "react-icons/fi";
 
 import {
     useNavigate
 } from "react-router-dom";
 
+import {
+    useAuth
+} from "../../../contexts/AuthContext";
+
 import "./Financeiro.scss";
 
 export default function Financeiro() {
     const navigate = useNavigate();
+    const { role } = useAuth();
 
     function abrirExtratosUnificados() {
         navigate("/admin/financeiro/extratos-uni");
@@ -19,6 +25,10 @@ export default function Financeiro() {
 
     function abrirContratos() {
         navigate("/admin/financeiro/contrato");
+    }
+
+    function abrirFormularioCustos() {
+        navigate("/admin/financeiro/formulario-custo");
     }
 
     return (
@@ -43,7 +53,7 @@ export default function Financeiro() {
                 </div>
 
                 <div className="financeiro-cards">
-                    <button
+                    {role !== "Agregado" && <button
                         type="button"
                         className="financeiro-card"
                         onClick={abrirExtratosUnificados}
@@ -64,7 +74,7 @@ export default function Financeiro() {
                         <div className="financeiro-card-arrow" aria-hidden="true">
                             <FiArrowRight />
                         </div>
-                    </button>
+                    </button>}
 
                     <button
                         type="button"
@@ -81,6 +91,29 @@ export default function Financeiro() {
                             <h2>Contratos</h2>
                             <p>
                                 Acesse a área para preparar e organizar os contratos da ALME.
+                            </p>
+                        </div>
+
+                        <div className="financeiro-card-arrow" aria-hidden="true">
+                            <FiArrowRight />
+                        </div>
+                    </button>
+
+                    <button
+                        type="button"
+                        className="financeiro-card"
+                        onClick={abrirFormularioCustos}
+                        aria-label="Abrir Formulário de custos"
+                    >
+                        <div className="financeiro-card-icon" aria-hidden="true">
+                            <FiClipboard />
+                        </div>
+
+                        <div className="financeiro-card-content">
+                            <span>FINANCEIRO</span>
+                            <h2>Formulário de custos</h2>
+                            <p>
+                                Preencha e envie uma solicitação de custos pelo formulário do Pipefy.
                             </p>
                         </div>
 

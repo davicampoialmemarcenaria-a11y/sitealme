@@ -1,0 +1,207 @@
+.formulario-custo-page {
+    --custo-ink: #4b2108;
+    --custo-muted: #77716b;
+    --custo-line: #e8dfd6;
+    --custo-accent: #d38a17;
+
+    width: 100%;
+    min-height: 100%;
+    padding-bottom: 32px;
+    color: var(--custo-ink);
+}
+
+.formulario-custo-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 20px 28px;
+    margin-bottom: 26px;
+}
+
+.formulario-custo-back {
+    grid-column: 1 / -1;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+    color: var(--custo-muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 160ms ease;
+
+    &:hover {
+        color: var(--custo-ink);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--custo-accent);
+        outline-offset: 4px;
+        border-radius: 4px;
+    }
+}
+
+.formulario-custo-heading {
+    min-width: 0;
+
+    h1 {
+        margin: 7px 0 0;
+        color: var(--custo-ink);
+        font-size: clamp(29px, 4vw, 42px);
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        line-height: 1.12;
+    }
+
+    p {
+        max-width: 690px;
+        margin: 11px 0 0;
+        color: var(--custo-muted);
+        font-size: 14px;
+        line-height: 1.65;
+    }
+}
+
+.formulario-custo-eyebrow {
+    display: block;
+    color: var(--custo-accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+.formulario-custo-open-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid #e3d3c1;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--custo-ink);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+        border-color 160ms ease,
+        background 160ms ease,
+        transform 160ms ease;
+
+    svg {
+        width: 16px;
+        height: 16px;
+        color: var(--custo-accent);
+    }
+
+    &:hover {
+        transform: translateY(-1px);
+        border-color: var(--custo-accent);
+        background: #fffaf3;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(211, 138, 23, 0.32);
+        outline-offset: 3px;
+    }
+}
+
+.formulario-custo-panel {
+    overflow: hidden;
+    border: 1px solid var(--custo-line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 14px 38px rgba(61, 36, 17, 0.06);
+}
+
+.formulario-custo-panel-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #eee7df;
+    background: linear-gradient(110deg, #fffdf9 0%, #fbf5ec 100%);
+
+    h2 {
+        margin: 0;
+        color: var(--custo-ink);
+        font-size: 16px;
+        font-weight: 650;
+    }
+
+    p {
+        margin: 4px 0 0;
+        color: var(--custo-muted);
+        font-size: 12px;
+    }
+}
+
+.formulario-custo-panel-icon {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    place-items: center;
+    border: 1px solid #ead9c4;
+    border-radius: 12px;
+    background: #f5e9d9;
+    color: var(--custo-ink);
+
+    svg {
+        width: 19px;
+        height: 19px;
+    }
+}
+
+.formulario-custo-frame-wrap {
+    width: 100%;
+    min-height: 720px;
+    padding: 12px;
+    background: #f7f5f2;
+}
+
+.formulario-custo-frame {
+    display: block;
+    width: 100%;
+    height: max(78vh, 900px);
+    min-height: 720px;
+    border: 0;
+    border-radius: 10px;
+    background: #fff;
+}
+
+@media (max-width: 700px) {
+    .formulario-custo-header {
+        grid-template-columns: 1fr;
+        align-items: start;
+        gap: 14px;
+    }
+
+    .formulario-custo-open-link {
+        justify-self: start;
+    }
+
+    .formulario-custo-panel {
+        border-radius: 13px;
+    }
+
+    .formulario-custo-panel-heading {
+        padding: 15px;
+    }
+
+    .formulario-custo-frame-wrap {
+        min-height: 700px;
+        padding: 6px;
+    }
+
+    .formulario-custo-frame {
+        height: 82vh;
+        min-height: 700px;
+        border-radius: 7px;
+    }
+}

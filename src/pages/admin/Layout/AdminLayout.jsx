@@ -403,7 +403,10 @@ export default function AdminLayout() {
 
                         {
 
-                            role === "Administrativo Geral"
+                            (
+                                role === "Administrativo Geral" ||
+                                role === "Agregado"
+                            )
 
                             && (
 
@@ -442,6 +445,11 @@ export default function AdminLayout() {
                                 role ===
                                     "comercial"
 
+                                ||
+
+                                role ===
+                                    "Agregado"
+
                             )
 
                             && (
@@ -479,6 +487,11 @@ export default function AdminLayout() {
                                 role ===
                                     "producao"
 
+                                ||
+
+                                role ===
+                                    "Agregado"
+
                             )
 
                             && (
@@ -515,6 +528,11 @@ export default function AdminLayout() {
 
                                 role ===
                                     "financeiro"
+
+                                ||
+
+                                role ===
+                                    "Agregado"
 
                             )
 
@@ -605,17 +623,16 @@ export default function AdminLayout() {
                                         </NavLink>
 
 
-                                        <NavLink
-
-                                            to="/admin/estoque"
-
-                                            onClick={fecharMenu}
-
-                                        >
-
-                                            Estoque
-
-                                        </NavLink>
+                                        {
+                                            role !== "Agregado" && (
+                                                <NavLink
+                                                    to="/admin/estoque"
+                                                    onClick={fecharMenu}
+                                                >
+                                                    Estoque
+                                                </NavLink>
+                                            )
+                                        }
 
 
                                     </div>

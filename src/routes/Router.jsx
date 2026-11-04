@@ -85,6 +85,12 @@ import Comercial
 import ExtratosUni
     from "../pages/admin/Financeiro/ExtratosUni/ExtratosUni";
 
+import Contrato
+    from "../pages/admin/Financeiro/Contrato/Contrato";
+
+import FormularioCusto
+    from "../pages/admin/Financeiro/Formulariocusto/Formulariocusto";
+
 import TabelaPreco
     from "../pages/admin/Comercial/TabelaPreco/TabelaPreco";
 
@@ -99,10 +105,9 @@ import TabelaOrcamento
     import Memorial
     from "../pages/admin/Comercial/Memorial/Memorial";
 
-    import Memorialprod
+import Memorialprod
     from "../pages/admin/Producao/Memorialprod/Memorialprod";
 
-     import Contrato from "../pages/admin/Financeiro/Contrato/Contrato";
 
 /*
 =====================================================
@@ -201,7 +206,8 @@ function AdminInicio() {
     */
 
     if (
-        role === "Administrativo Geral"
+        role === "Administrativo Geral" ||
+        role === "Agregado"
     ) {
 
         return (
@@ -408,7 +414,8 @@ export default function Router() {
                                 "Administrativo Geral",
                                 "comercial",
                                 "producao",
-                                "financeiro"
+                                "financeiro",
+                                "Agregado"
                             ]}
                         >
                             <AdminLayout />
@@ -439,7 +446,8 @@ export default function Router() {
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
-                                    "comercial"
+                                    "comercial",
+                                    "Agregado"
                                 ]}
                             >
                                 <Comercial />
@@ -505,7 +513,8 @@ export default function Router() {
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
-                                    "comercial"
+                                    "comercial",
+                                    "Agregado"
                                 ]}
                             >
                                 <TabelaOrcamento />
@@ -524,7 +533,8 @@ export default function Router() {
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
-                                    "producao"
+                                    "producao",
+                                    "Agregado"
                                 ]}
                             >
                                 <Producao />
@@ -573,6 +583,23 @@ export default function Router() {
                         }
                     />
 
+                    {/* Memoriais aprovados para Produção; todos os perfis podem comentar. */}
+                    <Route
+                        path="producao/memorialprod"
+                        element={
+                            <ProtectedRoute
+                                allowedRoles={[
+                                    "Administrativo Geral",
+                                    "comercial",
+                                    "producao",
+                                    "financeiro"
+                                ]}
+                            >
+                                <Memorialprod />
+                            </ProtectedRoute>
+                        }
+                    />
+
 
                   
 {/* =================================================
@@ -606,7 +633,8 @@ export default function Router() {
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
-                                    "producao"
+                                    "producao",
+                                    "Agregado"
                                 ]}
                             >
                                 <Cronogramas />
@@ -625,7 +653,8 @@ export default function Router() {
                             <ProtectedRoute
                                 allowedRoles={[
                                     "Administrativo Geral",
-                                    "producao"
+                                    "producao",
+                                    "Agregado"
                                 ]}
                             >
                                 <Cronograma />
@@ -645,10 +674,30 @@ export default function Router() {
         <ProtectedRoute
             allowedRoles={[
                 "Administrativo Geral",
-                "financeiro"
+                "financeiro",
+                "Agregado"
             ]}
         >
             <Financeiro />
+        </ProtectedRoute>
+    }
+/>
+
+{/* =================================================
+    FORMULÁRIO DE CUSTOS
+    URL: /admin/financeiro/formulario-custo
+================================================= */}
+<Route
+    path="financeiro/formulario-custo"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "Administrativo Geral",
+                "financeiro",
+                "Agregado"
+            ]}
+        >
+            <FormularioCusto />
         </ProtectedRoute>
     }
 />
@@ -672,18 +721,21 @@ export default function Router() {
     }
 />
 
-
-
+{/* =================================================
+    CONTRATOS
+    URL: /admin/financeiro/contrato
+================================================= */}
 <Route
     path="financeiro/contrato"
     element={
         <ProtectedRoute
             allowedRoles={[
                 "Administrativo Geral",
-                "financeiro"
+                "financeiro",
+                "Agregado"
             ]}
         >
-            <Contrato/>
+            <Contrato />
         </ProtectedRoute>
     }
 />
@@ -730,25 +782,11 @@ export default function Router() {
         <ProtectedRoute
             allowedRoles={[
                 "Administrativo Geral",
-                "comercial"
+                "comercial",
+                "Agregado"
             ]}
         >
             <Memorial />
-        </ProtectedRoute>
-    }
-/>
-
-
-<Route
-    path="producao/memorialprod"
-    element={
-        <ProtectedRoute
-            allowedRoles={[
-                "Administrativo Geral",
-                "producao"
-            ]}
-        >
-            <Memorialprod />
         </ProtectedRoute>
     }
 />

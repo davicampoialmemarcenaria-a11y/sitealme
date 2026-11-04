@@ -5,13 +5,16 @@ import {
     FiDollarSign,
     FiFolder,
     FiFileText,
-    FiGitBranch,
-    FiBookOpen
+    FiGitBranch
 } from "react-icons/fi";
 
 import {
     useNavigate
 } from "react-router-dom";
+
+import {
+    useAuth
+} from "../../../contexts/AuthContext";
 
 import "./Producao.scss";
 
@@ -19,6 +22,7 @@ export default function Producao() {
 
     const navigate =
         useNavigate();
+    const { role } = useAuth();
 
     return (
 
@@ -61,7 +65,7 @@ export default function Producao() {
                     CARD OBRAS
                 ================================================= */}
 
-                <button
+                {role !== "Agregado" && <button
                     type="button"
                     className="producao-card"
                     onClick={() =>
@@ -108,7 +112,7 @@ export default function Producao() {
 
                     </div>
 
-                </button>
+                </button>}
 
 
                 {/* =================================================
@@ -171,7 +175,7 @@ export default function Producao() {
                     CARD INFORMAÇÕES FINANCEIRAS
                 ================================================= */}
 
-                <button
+                {role !== "Agregado" && <button
                     type="button"
                     className="producao-card"
                     onClick={() => {
@@ -220,7 +224,22 @@ export default function Producao() {
 
                     </div>
 
-                </button>
+                </button>}
+
+
+                {role !== "Agregado" && <button
+                    type="button"
+                    className="producao-card"
+                    onClick={() => navigate("/admin/producao/memorialprod")}
+                >
+                    <div className="producao-card-icon"><FiFileText /></div>
+                    <div className="producao-card-content">
+                        <span>PRODUÇÃO</span>
+                        <h2>Memoriais descritivos</h2>
+                        <p>Consulte memoriais aprovados e registre comentários nos itens.</p>
+                    </div>
+                    <div className="producao-card-arrow"><FiArrowRight /></div>
+                </button>}
 
 
                
@@ -228,7 +247,7 @@ export default function Producao() {
     CARD FLUXO
 ================================================= */}
 
-<button
+{role !== "Agregado" && <button
     type="button"
     className="producao-card"
     onClick={() => {
@@ -257,43 +276,7 @@ export default function Producao() {
     <div className="producao-card-arrow">
         <FiArrowRight />
     </div>
-</button>
-
-               
-{/* =================================================
-    CARD MEMORIAL DESCRITIVO
-================================================= */}
-
-<button
-    type="button"
-    className="producao-card"
-    onClick={() => {
-        navigate("/admin/producao/memorialprod");
-    }}
->
-    <div className="producao-card-icon">
-        <FiBookOpen />
-    </div>
-
-    <div className="producao-card-content">
-        <span>
-            PRODUÇÃO
-        </span>
-
-        <h2>
-            Memorial Descritivo
-        </h2>
-
-        <p>
-            Consulte e acompanhe os memoriais descritivos das obras.
-            
-        </p>
-    </div>
-
-    <div className="producao-card-arrow">
-        <FiArrowRight />
-    </div>
-</button>
+</button>}
             </section>
 
         </section>

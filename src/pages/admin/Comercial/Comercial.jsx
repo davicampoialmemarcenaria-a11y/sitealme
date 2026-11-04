@@ -33,7 +33,8 @@ export default function Comercial() {
 
     if (
         role !== "Administrativo Geral" &&
-        role !== "comercial"
+        role !== "comercial" &&
+        role !== "Agregado"
     ) {
 
         return null;
@@ -83,7 +84,7 @@ export default function Comercial() {
                     CARD TABELA DE PREÇOS
                 ================================================= */}
 
-                <button
+                {role !== "Agregado" && <button
                     type="button"
                     className="comercial-card"
                     onClick={() =>
@@ -130,14 +131,14 @@ export default function Comercial() {
 
                     </div>
 
-                </button>
+                </button>}
 
 
                 {/* =================================================
                     CARD TABELA DE CORES
                 ================================================= */}
 
-                <button
+                {role !== "Agregado" && <button
                     type="button"
                     className="comercial-card"
                     onClick={() =>
@@ -184,7 +185,7 @@ export default function Comercial() {
 
                     </div>
 
-                </button>
+                </button>}
 
 
                 {/* =================================================
