@@ -327,7 +327,6 @@ export default function Memorial() {
       pdf.text("MEMORIAL DESCRITIVO", pageWidth - margin, 9.5, { align: "right" });
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(7);
-      
 
       pdf.setFillColor(colors.stripe);
       pdf.setDrawColor(colors.border);
@@ -408,12 +407,17 @@ export default function Memorial() {
         });
         const photos = (await Promise.all(photosUnique.map(carregarFoto))).filter(Boolean);
 
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(7.5);
+        // Mede o nome do item com a mesma fonte/tamanho usados na primeira linha.
+        // Nomes longos de MDF não podem ser medidos em fonte menor e depois
+        // desenhados em negrito, pois ultrapassariam a borda da coluna.
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
         const itemLines = pdf.splitTextToSize(
           formatarDescricaoItem(item),
-          widths[1] - 7
+          widths[1] - 9
         );
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.7);
         const descriptionLines = pdf.splitTextToSize(String(item.descricao_comercial || "—"), widths[2] - 8);
         const maxRow = pageHeight - 82;
         const descriptionTextHeight = descriptionLines.length * 3.6 + 10;
