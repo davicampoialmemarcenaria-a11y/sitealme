@@ -6157,6 +6157,65 @@ const totaisColunas = useMemo(() => {
 }, [ambientesCalculados]);
 
 
+/*
+=================================================
+VALORES DO RESUMO FINANCEIRO DO PAINEL
+=================================================
+
+No painel, o RT usa o percentual que mais se repete
+entre os itens aplicado ao total com RT arredondado.
+O over é o restante após descontar o RT e o mínimo
+da proposta ALME.
+=================================================
+*/
+
+const resumoFinanceiroPainel = useMemo(() => {
+
+    const frequenciasPercentualRt = new Map();
+
+    ambientesCalculados.forEach(ambiente => {
+        ambiente.itens.forEach(item => {
+            const percentual = Number(
+                numberValue(item.calculadoRtArquitetoPercentual).toFixed(8)
+            );
+            const chave = String(percentual);
+            const atual = frequenciasPercentualRt.get(chave);
+
+            frequenciasPercentualRt.set(chave, {
+                percentual,
+                quantidade: (atual?.quantidade || 0) + 1
+            });
+        });
+    });
+
+    const percentualRtMaisFrequente = [...frequenciasPercentualRt.values()]
+        .reduce((maisFrequente, atual) =>
+            !maisFrequente || atual.quantidade > maisFrequente.quantidade
+                ? atual
+                : maisFrequente,
+        null)?.percentual || 0;
+
+    const valorComRtArredondado = numberValue(
+        totaisColunas.valorComRtArredondado
+    );
+    const valorRt = Math.round(
+        (valorComRtArredondado * percentualRtMaisFrequente + Number.EPSILON) * 100
+    ) / 100;
+    const overParaAnalista = Math.round(
+        (valorComRtArredondado - valorRt - numberValue(
+            totaisColunas.valorMinimoPropostaAlme
+        ) + Number.EPSILON) * 100
+    ) / 100;
+
+    return {
+        percentualRtMaisFrequente,
+        valorRt,
+        overParaAnalista
+    };
+
+}, [ambientesCalculados, totaisColunas]);
+
+
 
 /*
 =================================================
@@ -11982,7 +12041,7 @@ const deveCriarNovaVersao =
             <strong>
                 {
                     money(
-                        totaisColunas.overAnalista
+                        resumoFinanceiroPainel.overParaAnalista
                     )
                 }
             </strong>
@@ -12020,7 +12079,7 @@ const deveCriarNovaVersao =
             <strong>
                 {
                     money(
-                        totaisColunas.rt
+                        resumoFinanceiroPainel.valorRt
                     )
                 }
             </strong>
