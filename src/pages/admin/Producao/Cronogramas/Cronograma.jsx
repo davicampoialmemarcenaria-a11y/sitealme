@@ -196,6 +196,8 @@ TIPOS DE LINHA
 =====================================================
 */
 
+const STATUS_AGUARDANDO_CLIENTE = "AGUARDANDO LIBERAÇÃO DO CLIENTE";
+
 const TIPOS_LINHA = [
     {
         valor: "singular",
@@ -1660,7 +1662,7 @@ export default function Cronograma() {
                         );
 
                     return `
-                        <tr class="row-${escaparHtml(tipo)}">
+                        <tr class="row-${escaparHtml(String(linha.observacoes || "").trim().toLocaleUpperCase("pt-BR") === STATUS_AGUARDANDO_CLIENTE ? "amarela" : tipo)}">
 
                             <td class="item-cell">
                                 <div class="item-cell-content">
@@ -2782,6 +2784,14 @@ export default function Cronograma() {
             className="cronograma-page"
         >
 
+            <style>
+                {`
+                    .cronograma-row.status-aguardando-cliente > td {
+                        background-color: #fff2b3 !important;
+                    }
+                `}
+            </style>
+
             <div
                 className="cronograma-topbar"
             >
@@ -3146,8 +3156,7 @@ export default function Cronograma() {
 
                                     <th className="col-date">
                                         DATA DE FINALIZAÇÃO
-                                        <br />
-                                        REALIZADA
+                                        
                                     </th>
 
                                     <th className="col-obs">
@@ -3195,7 +3204,7 @@ export default function Cronograma() {
                                                         className={
                                                             `cronograma-row tipo-${normalizarTipoLinha(
                                                                 linha.tipo
-                                                            )}${linhaArrastadaId === linha.id ? " is-dragging" : ""}`
+                                                            )}${String(linha.observacoes || "").trim().toLocaleUpperCase("pt-BR") === STATUS_AGUARDANDO_CLIENTE ? " status-aguardando-cliente" : ""}${linhaArrastadaId === linha.id ? " is-dragging" : ""}`
                                                         }
                                                         onDragOver={event => event.preventDefault()}
                                                         onDrop={event => reordenarLinha(event, linha.id)}
@@ -3277,7 +3286,11 @@ export default function Cronograma() {
                                                                     )
                                                                 }
                                                                 placeholder="Status"
+                                                                list="cronograma-status-sugestoes"
                                                             />
+                                                            <datalist id="cronograma-status-sugestoes">
+                                                                <option value={STATUS_AGUARDANDO_CLIENTE} />
+                                                            </datalist>
 
                                                         </td>
 
