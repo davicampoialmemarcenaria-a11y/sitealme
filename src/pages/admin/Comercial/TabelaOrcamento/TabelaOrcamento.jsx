@@ -1104,6 +1104,9 @@ const [
     setCampoMoedaFocado
 ] = useState("");
 
+// Evita aplicar duas vezes o mesmo ajuste durante efeitos repetidos em desenvolvimento.
+const precosProcessadosNovosItensRef = useRef(new Map());
+
 
 const mostrarAviso = (mensagem, tipo = "erro") => {
     setAvisoPersonalizado({
@@ -2151,8 +2154,31 @@ useEffect(() => {
         }
 
         if (dados.valorFinalDesejado !== undefined) {
+            const somaNovosItensLegados = (dados.ambientes || []).reduce(
+                (total, ambiente) =>
+                    total + (ambiente.itens || []).reduce(
+                        (subtotal, item) =>
+                            subtotal + (
+                                item.over_final_novo
+                                    ? Math.max(0, numberValue(item.over_final_preco_contabilizado))
+                                    : 0
+                            ),
+                        0
+                    ),
+                0
+            );
+
+            // Estados anteriores ao v6 armazenavam o total atualizado
+            // dentro do campo original. Recuperamos o valor-base 1 vez.
+            const valorBaseRestaurado = dados.overFinalSeparadoV2
+                ? numberValue(dados.valorFinalDesejado)
+                : Math.max(
+                    0,
+                    numberValue(dados.valorFinalDesejado) - somaNovosItensLegados
+                );
+
             setValorFinalDesejado(
-                dados.valorFinalDesejado
+                String(valorBaseRestaurado)
             );
         }
 
@@ -2234,6 +2260,8 @@ useEffect(
 
                     valorFinalDesejado,
 
+                    overFinalSeparadoV2: true,
+
                     overFinalAplicado,
 
                     arquitetoManual,
@@ -2266,6 +2294,8 @@ useEffect(
                     multiplicador,
 
                     valorFinalDesejado,
+
+                    overFinalSeparadoV2: true,
 
                     overFinalAplicado,
 
@@ -2980,7 +3010,17 @@ function sincronizarScrollTabelaOrcamento(
                     over_analista_percentual:
                         row.over_analista_percentual ?? 0,
                     rt_arquiteto_percentual:
-                        row.percentual_rt ?? 0
+                        row.percentual_rt ?? 0,
+                    over_final_novo:
+                        Boolean(row.over_final_novo),
+                    over_final_percentual_base:
+                        row.over_final_percentual_base ?? null,
+                    over_final_preco_final_travado:
+                        row.over_final_preco_final_travado ?? null,
+                    over_final_preco_contabilizado:
+                        row.over_final_preco_contabilizado ?? 0,
+                    over_final_valor_com_rt_processado:
+                        row.over_final_valor_com_rt_processado ?? ""
                 });
             });
 
@@ -3047,7 +3087,9 @@ setMultiplicador(
 );
 
 setValorFinalDesejado(
-    version.valor_final_desejado ?? ""
+    version.valor_final_desejado_base ??
+    version.valor_final_desejado ??
+    ""
 );
 
 setOverFinalAplicado(
@@ -3453,25 +3495,16 @@ const excluirOrcamento = row => {
             ambienteId
         ) => {
 
+            if (ambientes.length <= 1) {
+                return;
+            }
+
             setAmbientes(
-                atual => {
-
-                    if (
-                        atual.length <= 1
-                    ) {
-
-                        return atual;
-
-                    }
-
-
-                    return atual.filter(
+                atual =>
+                    atual.filter(
                         ambiente =>
-                            ambiente.id !==
-                            ambienteId
-                    );
-
-                }
+                            ambiente.id !== ambienteId
+                    )
             );
 
         };
@@ -3523,6 +3556,33 @@ const excluirOrcamento = row => {
             ambienteId
         ) => {
 
+            const itemNovo = novoItem();
+
+            /*
+            Se o Over Final já estiver aplicado, marca o item como novo.
+            Depois que ele receber os dados e tiver um Preço Final de
+            Todos calculado, esse valor será somado ao Valor Final Desejado.
+
+            O controle fica no rascunho da sessão. O banco não precisa
+            de novas colunas.
+            */
+            if (
+                Number(versaoAtual) >= 2 &&
+                overFinalAplicado
+            ) {
+                itemNovo.over_final_novo = true;
+                itemNovo.over_final_preco_contabilizado = 0;
+                itemNovo.over_final_valor_com_rt_processado = "";
+
+                // Congela o percentual que já estava aplicado antes da inclusão.
+                // O preço do novo item será calculado por essa referência,
+                // sem usar o percentual temporariamente reduzido pelo próprio item.
+                itemNovo.over_final_percentual_base = Math.max(
+                    0,
+                    numberValue(percentualOverFinal)
+                );
+            }
+
             setAmbientes(
                 atual =>
                     atual.map(
@@ -3538,7 +3598,7 @@ const excluirOrcamento = row => {
 
                                         ...ambiente.itens,
 
-                                        novoItem()
+                                        itemNovo
 
                                     ]
 
@@ -6307,6 +6367,20 @@ const percentualOverFinal = useMemo(() => {
         return 0;
     }
 
+    // Depois da primeira aplicação, o percentual passa a ser uma
+    // referência fixa da versão. A entrada de novos itens não o reduz.
+    const percentualCongelado = ambientes
+        .flatMap(ambiente => ambiente.itens || [])
+        .find(item =>
+            item.over_final_percentual_base !== undefined &&
+            item.over_final_percentual_base !== null &&
+            item.over_final_percentual_base !== ""
+        )?.over_final_percentual_base;
+
+    if (percentualCongelado !== undefined) {
+        return Math.max(0, numberValue(percentualCongelado));
+    }
+
     const valorSolicitado =
         numberValue(
             valorFinalDesejado
@@ -6348,7 +6422,8 @@ const percentualOverFinal = useMemo(() => {
     versaoAtual,
     overFinalAplicado,
     valorFinalDesejado,
-    valorComRtTotal
+    valorComRtTotal,
+    ambientes
 ]);
 
 
@@ -6394,20 +6469,48 @@ const dadosOverFinalPorItem = useMemo(() => {
                             item.calculadoRtArquitetoPercentual
                         );
 
-                    const overNegociado =
-                        overFinalAplicado
-                            ? valorComRt *
-                              percentualOverFinal
-                            : 0;
+                    // Cada item conserva sua própria diluição.
+                    // Itens antigos usam o preço congelado no momento
+                    // da aplicação; itens novos usam o percentual-base
+                    // registrado quando foram adicionados.
+                    const percentualItem =
+                        item.over_final_novo
+                            ? Math.max(0, numberValue(item.over_final_percentual_base))
+                            : item.over_final_percentual_base !== undefined &&
+                              item.over_final_percentual_base !== null &&
+                              item.over_final_percentual_base !== ""
+                                ? Math.max(0, numberValue(item.over_final_percentual_base))
+                                : percentualOverFinal;
 
                     const valorMaisOverFinal =
-                        valorComRt +
-                        overNegociado;
+                        valorComRt * (1 + (overFinalAplicado ? percentualItem : 0));
 
+                    const precoCalculado =
+                        Math.round(valorMaisOverFinal / 10) * 10;
+
+                    const temPrecoCongelado =
+                        item.over_final_preco_final_travado !== null &&
+                        item.over_final_preco_final_travado !== undefined &&
+                        item.over_final_preco_final_travado !== "" &&
+                        Number.isFinite(Number(item.over_final_preco_final_travado));
+
+                    const precoCongelado =
+                        !item.over_final_novo && temPrecoCongelado
+                            ? numberValue(item.over_final_preco_final_travado)
+                            : null;
+
+                    // Fonte única de verdade:
+                    // - itens existentes mantêm o preço congelado na aplicação inicial;
+                    // - itens adicionados depois calculam seu preço com o percentual-base
+                    //   congelado no momento da inclusão, sem depender de valor contabilizado
+                    //   anteriormente nem de um percentual recalculado pelo total.
                     const precoFinalTodos =
-                        Math.round(
-                            valorMaisOverFinal / 10
-                        ) * 10;
+                        overFinalAplicado && precoCongelado !== null
+                            ? precoCongelado
+                            : precoCalculado;
+
+                    const overNegociado =
+                        precoFinalTodos - valorComRt;
 
                     itens.push({
 
@@ -6434,118 +6537,9 @@ const dadosOverFinalPorItem = useMemo(() => {
         }
     );
 
-    /*
-    =================================================
-    RECONCILIAÇÃO DO TOTAL
-    =================================================
-
-    O arredondamento individual pode criar uma pequena
-    diferença entre a soma dos itens e o valor solicitado.
-    Quando isso acontece, ajustamos os preços finais em
-    blocos de R$ 10 para que a soma feche exatamente.
-    =================================================
-    */
-
-    if (
-        overFinalAplicado &&
-        itens.length > 0
-    ) {
-
-        const valorSolicitado =
-            numberValue(
-                valorFinalDesejado
-            );
-
-        const somaArredondada =
-            itens.reduce(
-                (total, item) =>
-                    total +
-                    item.precoFinalTodos,
-                0
-            );
-
-        const diferenca =
-            valorSolicitado -
-            somaArredondada;
-
-        const diferencaEmDezenas =
-            Math.round(
-                diferenca / 10
-            );
-
-        const diferencaReconstruida =
-            diferencaEmDezenas * 10;
-
-        if (
-            Math.abs(
-                diferenca -
-                diferencaReconstruida
-            ) < 0.01
-        ) {
-
-            const passo =
-                diferencaReconstruida > 0
-                    ? 10
-                    : -10;
-
-            let passosRestantes =
-                Math.abs(
-                    diferencaEmDezenas
-                );
-
-            let indice = 0;
-
-            while (
-                passosRestantes > 0 &&
-                itens.length > 0
-            ) {
-
-                const itemAlvo =
-                    itens[
-                        indice % itens.length
-                    ];
-
-                /*
-                Nunca deixamos um item ficar
-                com preço final negativo.
-                */
-
-                if (
-                    passo > 0 ||
-                    itemAlvo.precoFinalTodos >= 10
-                ) {
-
-                    itemAlvo.precoFinalTodos +=
-                        passo;
-
-                    passosRestantes--;
-
-                }
-
-                indice++;
-
-                /*
-                Segurança contra loop infinito.
-                */
-
-                if (
-                    indice >
-                    itens.length *
-                    (
-                        Math.abs(
-                            diferencaEmDezenas
-                        ) + 1
-                    ) *
-                    2
-                ) {
-                    break;
-                }
-
-            }
-
-        }
-
-    }
+    // Não redistribuímos diferenças entre todos os itens aqui.
+    // Os preços já aplicados ficam congelados; somente os novos
+    // itens recebem o percentual-base e entram como acréscimo.
 
     const resultado = {};
 
@@ -6574,6 +6568,201 @@ const dadosOverFinalPorItem = useMemo(() => {
     valorFinalDesejado
 ]);
 
+
+/*
+=================================================
+ATUALIZAR O VALOR DESEJADO PELO PREÇO DO ITEM NOVO
+=================================================
+
+Cada item adicionado depois da aplicação do Over Final
+recebe o percentual que estava vigente antes de sua inclusão.
+O seu preço é calculado de forma independente:
+
+    Valor com RT × (1 + percentual anterior)
+
+Depois, arredondamos para a dezena mais próxima, seguindo
+a mesma regra da coluna "Preço final de todos".
+
+Assim, o novo item acrescenta somente o próprio preço ao
+Valor Final Desejado. Ele não é precificado usando um percentual
+que já caiu por ter entrado no total, nem recebe uma parcela
+do valor que já pertencia aos itens antigos.
+=================================================
+*/
+useEffect(() => {
+
+    const precosProcessados =
+        precosProcessadosNovosItensRef.current;
+
+    if (
+        Number(versaoAtual) < 2 ||
+        !overFinalAplicado
+    ) {
+        precosProcessados.clear();
+        return;
+    }
+
+    const itensCalculadosPorId = new Map();
+
+    ambientesCalculados.forEach(ambiente => {
+        ambiente.itens.forEach(item => {
+            itensCalculadosPorId.set(item.id, item);
+        });
+    });
+
+    // Remove assinaturas de itens que já não existem no orçamento.
+    const idsAtuais = new Set(itensCalculadosPorId.keys());
+    for (const itemId of precosProcessados.keys()) {
+        if (!idsAtuais.has(itemId)) {
+            precosProcessados.delete(itemId);
+        }
+    }
+
+    let houveAtualizacao = false;
+
+    const ambientesAtualizados = ambientes.map(ambiente => {
+
+        let ambienteAlterado = false;
+
+        const itensAtualizados = ambiente.itens.map(item => {
+
+            if (!item.over_final_novo) {
+                return item;
+            }
+
+            const itemCalculado = itensCalculadosPorId.get(item.id);
+            const valorComRt = Math.max(
+                0,
+                numberValue(itemCalculado?.calculadoValorComRt)
+            );
+
+            const precoAnterior = Math.max(
+                0,
+                numberValue(item.over_final_preco_contabilizado)
+            );
+
+            // Se o usuário limpar a seleção ou deixar o item sem valor,
+            // removemos do alvo o preço que havia sido contabilizado.
+            if (!item.base_item_id || valorComRt <= 0) {
+
+                const tinhaRegistro =
+                    precoAnterior >= 0.01 ||
+                    Boolean(item.over_final_valor_com_rt_processado);
+
+                if (!tinhaRegistro) {
+                    return item;
+                }
+
+                precosProcessados.delete(item.id);
+                houveAtualizacao = true;
+                ambienteAlterado = true;
+
+                return {
+                    ...item,
+                    over_final_preco_contabilizado: 0,
+                    over_final_valor_com_rt_processado: ""
+                };
+            }
+
+            const percentualBase = Math.max(
+                0,
+                numberValue(item.over_final_percentual_base)
+            );
+
+            const assinatura =
+                `${valorComRt.toFixed(6)}|${percentualBase.toFixed(8)}`;
+
+            // A mudança automática do Valor Final Desejado não deve
+            // disparar novamente o cálculo do mesmo item.
+            if (
+                item.over_final_valor_com_rt_processado === assinatura ||
+                precosProcessados.get(item.id) === assinatura
+            ) {
+                return item;
+            }
+
+            // Mesmo cálculo da coluna, porém usando o percentual congelado
+            // antes da inclusão do item no orçamento.
+            const precoFinalTodosAtual = Math.max(
+                0,
+                Math.round(
+                    (
+                        valorComRt *
+                        (1 + percentualBase)
+                    ) / 10
+                ) * 10
+            );
+
+            // Atualiza a referência antes dos setters para evitar duplicidade
+            // em execuções repetidas do efeito no React Strict Mode.
+            precosProcessados.set(item.id, assinatura);
+            houveAtualizacao = true;
+            ambienteAlterado = true;
+
+            return {
+                ...item,
+                over_final_preco_contabilizado: precoFinalTodosAtual,
+                over_final_valor_com_rt_processado: assinatura
+            };
+
+        });
+
+        return ambienteAlterado
+            ? {
+                ...ambiente,
+                itens: itensAtualizados
+            }
+            : ambiente;
+
+    });
+
+    if (!houveAtualizacao) {
+        return;
+    }
+
+    setAmbientes(ambientesAtualizados);
+
+}, [
+    ambientesCalculados,
+    ambientes,
+    overFinalAplicado,
+    percentualOverFinal,
+    valorFinalDesejado,
+    versaoAtual
+]);
+
+/*
+=================================================
+VALOR FINAL DESEJADO 2 — SOMA REAL DOS PREÇOS FINAIS
+=================================================
+
+O Valor Final Desejado 2 é exatamente a soma da coluna
+"Preço final de todos" de todos os itens, antigos e novos.
+Os antigos usam o preço travado na aplicação inicial.
+Os novos usam o mesmo percentual-base congelado quando
+foram adicionados. Ao adicionar/remover/editar um item novo,
+a soma acompanha o preço efetivo exibido na própria linha.
+=================================================
+*/
+const valorFinalDesejado2 = useMemo(() => {
+
+    if (!overFinalAplicado) {
+        return null;
+    }
+
+    const total = Object.values(dadosOverFinalPorItem).reduce(
+        (soma, item) => soma + Math.max(0, numberValue(item.precoFinalTodos)),
+        0
+    );
+
+    return Math.round((total + Number.EPSILON) * 100) / 100;
+
+}, [dadosOverFinalPorItem, overFinalAplicado]);
+
+const valorFinalDesejadoEfetivo =
+    valorFinalDesejado2 !== null
+        ? valorFinalDesejado2
+        : numberValue(valorFinalDesejado);
 
 /*
 =================================================
@@ -6623,7 +6812,7 @@ const totaisOverFinal = useMemo(() => {
             ? Math.max(
                 0,
                 numberValue(
-                    valorFinalDesejado
+                    valorFinalDesejadoEfetivo
                 ) -
                 numberValue(
                     valorComRtTotal
@@ -6648,7 +6837,7 @@ const totaisOverFinal = useMemo(() => {
 }, [
     dadosOverFinalPorItem,
     overFinalAplicado,
-    valorFinalDesejado,
+    valorFinalDesejadoEfetivo,
     valorComRtTotal,
     totaisColunas
 ]);
@@ -7227,10 +7416,10 @@ const capaDataUrl = await criarCapaDataUrl();
             const valorTotalPdf =
                 overFinalAplicado &&
                 numberValue(
-                    valorFinalDesejado
+                    valorFinalDesejadoEfetivo
                 ) > 0
                     ? numberValue(
-                        valorFinalDesejado
+                        valorFinalDesejadoEfetivo
                     )
                     : numberValue(
                         totaisColunas
@@ -7792,7 +7981,7 @@ doc.setTextColor(
                 if (
                     overFinalAplicado &&
                     numberValue(
-                        valorFinalDesejado
+                        valorFinalDesejadoEfetivo
                     ) > 0
                 ) {
 
@@ -7971,7 +8160,7 @@ doc.setTextColor(
             doc.text(
                 overFinalAplicado &&
                     numberValue(
-                        valorFinalDesejado
+                        valorFinalDesejadoEfetivo
                     ) > 0
                     ? "Valor final alcançado após análise do orçamento."
                     : "Valor final alcançado após análise do orçamento.",
@@ -8403,6 +8592,12 @@ const deveCriarNovaVersao =
                 over_total:
                     overTotal,
                 valor_final_desejado:
+                    overFinalAplicado
+                        ? numberValue(valorFinalDesejadoEfetivo)
+                        : valorFinalDesejado === ""
+                            ? null
+                            : numberValue(valorFinalDesejado),
+                valor_final_desejado_base:
                     valorFinalDesejado === ""
                         ? null
                         : numberValue(valorFinalDesejado),
@@ -8493,6 +8688,8 @@ const deveCriarNovaVersao =
                                 dadosVersao.over_total,
                             valor_final_desejado:
                                 dadosVersao.valor_final_desejado,
+                            valor_final_desejado_base:
+                                dadosVersao.valor_final_desejado_base,
                             over_final_aplicado:
                                 dadosVersao.over_final_aplicado
                         })
@@ -8666,7 +8863,21 @@ const deveCriarNovaVersao =
                                 preco_final:
                                     numberValue(item.calculadoValorComRtArredondado),
                                 rt_final_arquiteto:
-                                    numberValue(item.calculadoValorComRtArredondado)
+                                    numberValue(item.calculadoValorComRtArredondado),
+                                over_final_novo:
+                                    Boolean(item.over_final_novo),
+                                over_final_percentual_base:
+                                    item.over_final_percentual_base == null
+                                        ? null
+                                        : numberValue(item.over_final_percentual_base),
+                                over_final_preco_final_travado:
+                                    item.over_final_preco_final_travado == null
+                                        ? null
+                                        : numberValue(item.over_final_preco_final_travado),
+                                over_final_preco_contabilizado:
+                                    numberValue(item.over_final_preco_contabilizado),
+                                over_final_valor_com_rt_processado:
+                                    item.over_final_valor_com_rt_processado || ""
                             })
                             .select("*")
                             .single();
@@ -8753,6 +8964,8 @@ const deveCriarNovaVersao =
                         ambientes,
                         multiplicador,
                         valorFinalDesejado,
+                        valorFinalDesejado2: valorFinalDesejadoEfetivo,
+                        overFinalSeparadoV2: true,
                         overFinalAplicado,
                         arquitetoManual,
                         atualizadoEm: Date.now()
@@ -12450,9 +12663,10 @@ const deveCriarNovaVersao =
                 </strong>
 
                 <small>
-                    Informe o valor final desejado para
-                    distribuir o acréscimo proporcionalmente
-                    entre os itens desta versão.
+                    Informe o Valor Final Desejado 1 e clique em OK para
+                    definir a diluição inicial. Depois disso, a base fica
+                    bloqueada; novos itens recebem o mesmo percentual e o
+                    Valor Final Desejado 2 acompanha a soma dos preços finais.
 
                         <br />
     <br />
@@ -12478,7 +12692,9 @@ const deveCriarNovaVersao =
             <div className="orcamento-over-final-campo">
 
                 <label htmlFor="orcamento-valor-final-desejado">
-                    Valor final desejado
+                    {overFinalAplicado
+                        ? "Valor Final Desejado 1 (base bloqueada)"
+                        : "Valor Final Desejado 1 (base)"}
                 </label>
 
                 <div className="orcamento-over-final-controle">
@@ -12488,6 +12704,7 @@ const deveCriarNovaVersao =
                         type="number"
                         min="0"
                         step="0.01"
+                        disabled={overFinalAplicado}
                         value={valorFinalDesejado}
                         onChange={
                             event =>
@@ -12498,6 +12715,7 @@ const deveCriarNovaVersao =
                         placeholder="0,00"
                     />
 
+                    {!overFinalAplicado && (
                     <button
                         type="button"
                         className="orcamento-over-final-ok"
@@ -12561,16 +12779,67 @@ if (
                                 return;
                             }
 
-                            setOverFinalAplicado(
-                                true
-                            );
+                            // Calcula a diluição inicial uma única vez e congela
+                            // o preço final de cada item já existente.
+                            const percentualInicial = valorComRtTotal > 0
+                                ? Math.max(0, (valor - valorComRtTotal) / valorComRtTotal)
+                                : 0;
+
+                            const precosIniciais = [];
+                            ambientesCalculados.forEach(ambiente => {
+                                ambiente.itens.forEach(item => {
+                                    const valorComRt = Math.max(0, numberValue(item.calculadoValorComRt));
+                                    precosIniciais.push({
+                                        chave: `${ambiente.id}::${item.id}`,
+                                        preco: Math.round((valorComRt * (1 + percentualInicial)) / 10) * 10
+                                    });
+                                });
+                            });
+
+                            // Distribui apenas o resíduo de arredondamento da
+                            // aplicação inicial. Depois disso, os preços travam.
+                            let diferencaInicial = valor - precosIniciais.reduce((soma, item) => soma + item.preco, 0);
+                            let passos = Math.round(diferencaInicial / 10);
+                            let indiceAjuste = 0;
+                            while (passos !== 0 && precosIniciais.length > 0) {
+                                const itemAjuste = precosIniciais[indiceAjuste % precosIniciais.length];
+                                const passo = passos > 0 ? 10 : -10;
+                                if (passo > 0 || itemAjuste.preco >= 10) {
+                                    itemAjuste.preco += passo;
+                                    passos += passo > 0 ? -1 : 1;
+                                }
+                                indiceAjuste += 1;
+                                if (indiceAjuste > precosIniciais.length * (Math.abs(Math.round(diferencaInicial / 10)) + 1) * 2) break;
+                            }
+
+                            const precosPorChave = new Map(precosIniciais.map(item => [item.chave, item.preco]));
+
+                            setAmbientes(atual => atual.map(ambiente => ({
+                                ...ambiente,
+                                itens: ambiente.itens.map(item => ({
+                                    ...item,
+                                    over_final_novo: false,
+                                    over_final_percentual_base: percentualInicial,
+                                    over_final_preco_final_travado: precosPorChave.get(`${ambiente.id}::${item.id}`) ?? 0
+                                }))
+                            })));
+
+                            setOverFinalAplicado(true);
 
                         }}
                     >
                         OK
                     </button>
+                    )}
 
                 </div>
+
+                {overFinalAplicado && valorFinalDesejado2 !== null && (
+                    <div className="orcamento-over-final-resumo">
+                        <span>Valor Final Desejado 2 (atualizado)</span>
+                        <strong>{money(valorFinalDesejado2)}</strong>
+                    </div>
+                )}
 
             </div>
 
