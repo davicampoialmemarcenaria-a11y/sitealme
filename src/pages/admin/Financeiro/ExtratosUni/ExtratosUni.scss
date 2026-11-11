@@ -742,3 +742,40 @@
         transform: none;
     }
 }
+
+
+/* =====================================================
+   CUSTO REALIZADO - COMPARAÇÃO COM A META
+===================================================== */
+
+.extratos-uni-cost-realized {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+
+    strong {
+        font-weight: 700;
+        color: #431c01;
+    }
+
+    .extratos-uni-cost-difference {
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    &.is-over-budget {
+        strong,
+        .extratos-uni-cost-difference {
+            color: #c62828;
+        }
+    }
+
+    &.is-under-budget {
+        strong,
+        .extratos-uni-cost-difference {
+            color: #218838;
+        }
+    }
+}

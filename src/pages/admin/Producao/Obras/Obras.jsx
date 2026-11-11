@@ -606,12 +606,16 @@ async function carregarOrcamentosAprovados() {
         }
 
 
-        const orcamentosPrincipais = (data || []).filter((orcamento) => {
-            const identificacao = `${orcamento.nome || ""} ${orcamento.codigo || ""}`;
-            return !/\b(ADTO|ADITIVO|ADIT)\b/i.test(identificacao);
-        });
+        /*
+=====================================================
+ORÇAMENTOS APROVADOS
+INCLUINDO ORÇAMENTOS PRINCIPAIS E ADITIVOS
+=====================================================
+*/
 
-        setOrcamentosAprovados(orcamentosPrincipais);
+setOrcamentosAprovados(
+    data || []
+);
 
     }
 

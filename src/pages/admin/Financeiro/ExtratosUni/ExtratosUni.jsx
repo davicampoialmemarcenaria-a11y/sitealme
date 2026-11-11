@@ -726,52 +726,103 @@ export default function ExtratosUni() {
     // CAMPOS MANUAIS DA TABELA
     // =====================================================
 
-    function renderCampoManual(
+    
+function renderCampoManual(
+    obra,
+    campo,
+    label
+) {
+    const id = chaveObra(obra.id);
+
+    const manual =
+        rascunhos[id] ||
+        registrosSalvos[id] ||
+        MANUAL_VAZIO;
+
+    const editavel = editandoId === id;
+
+    // =====================================================
+    // COMPARAÇÃO ENTRE CUSTO REALIZADO E META DE CUSTO
+    // =====================================================
+
+    const info = obterInformacaoFinanceira(
         obra,
-        campo,
-        label
+        informacoesFinanceirasPorObra
+    );
+
+    const custoRealizado = numeroOuNulo(
+        manual.custo_realizado
+    );
+
+    const metaCusto = numeroOuNulo(
+        info.meta_custo ?? obra.meta_custo
+    );
+
+    let diferencaCusto = null;
+    let classeCusto = "";
+
+    if (
+        campo === "custo_realizado" &&
+        custoRealizado !== null &&
+        metaCusto !== null
     ) {
-        const id = chaveObra(obra.id);
-
-        const manual =
-            rascunhos[id] ||
-            registrosSalvos[id] ||
-            MANUAL_VAZIO;
-
-        const editavel = editandoId === id;
-
-        return (
-            <td key={campo}>
-                {editavel ? (
-                    <label className="extratos-uni-input-label">
-                        <span className="extratos-uni-sr-only">
-                            {label} — {obra.nome}
-                        </span>
-
-                        <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            inputMode="decimal"
-                            value={manual[campo] ?? ""}
-                            onChange={(event) =>
-                                alterarCampoManual(
-                                    obra.id,
-                                    campo,
-                                    event.target.value
-                                )
-                            }
-                            placeholder="0,00"
-                        />
-                    </label>
-                ) : (
-                    <span className="extratos-uni-money">
-                        {formatarMoeda(manual[campo])}
-                    </span>
-                )}
-            </td>
+        diferencaCusto = Math.abs(
+            custoRealizado - metaCusto
         );
+
+        if (custoRealizado > metaCusto) {
+            classeCusto = "is-over-budget";
+        } else if (custoRealizado < metaCusto) {
+            classeCusto = "is-under-budget";
+        }
     }
+
+    return (
+        <td key={campo}>
+            {editavel ? (
+                <label className="extratos-uni-input-label">
+                    <span className="extratos-uni-sr-only">
+                        {label} — {obra.nome}
+                    </span>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputMode="decimal"
+                        value={manual[campo] ?? ""}
+                        onChange={(event) =>
+                            alterarCampoManual(
+                                obra.id,
+                                campo,
+                                event.target.value
+                            )
+                        }
+                        placeholder="0,00"
+                    />
+                </label>
+            ) : campo === "custo_realizado" ? (
+                <div
+                    className={`extratos-uni-cost-realized ${classeCusto}`}
+                >
+                    {classeCusto && (
+                        <span className="extratos-uni-cost-difference">
+                            ({formatarMoeda(diferencaCusto)})
+                        </span>
+                    )}
+
+                    <strong>
+                        {formatarMoeda(custoRealizado)}
+                    </strong>
+                </div>
+            ) : (
+                <span className="extratos-uni-money">
+                    {formatarMoeda(manual[campo])}
+                </span>
+            )}
+        </td>
+    );
+}
 
     // =====================================================
     // RENDER

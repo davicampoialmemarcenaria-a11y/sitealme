@@ -28,6 +28,8 @@ import { supabase } from "../../../../services/supabase";
 
 import logoAlme from "../../../../imgs/logoamarela.png";
 
+import imgCapaPdf from "../../../../imgs/imgcapapdf.png";
+
 import "./TabelaOrcamento.scss";
 
 
@@ -3594,61 +3596,104 @@ const excluirOrcamento = row => {
     =================================================
     */
 
-    const atualizarItem =
-        (
-            ambienteId,
-            itemId,
-            campo,
-            valor
-        ) => {
+   
+/*
+=================================================
+ATUALIZAR ITEM
+=================================================
+*/
 
-            setAmbientes(
-                atual =>
-                    atual.map(
-                        ambiente => {
+const atualizarItem = (
+    ambienteId,
+    itemId,
+    campo,
+    valor
+) => {
 
-                            if (
-                                ambiente.id !==
-                                ambienteId
-                            ) {
+    setAmbientes(atual => {
 
-                                return ambiente;
+        /*
+        =================================================
+        REPLICAÇÃO INICIAL DO PERCENTUAL DE RT
+        =================================================
 
-                            }
+        Quando o usuário altera o RT do primeiro item
+        do orçamento, replica o percentual para todos
+        os demais itens, inclusive de outros ambientes.
 
+        Depois, os itens podem ser editados individualmente.
+        =================================================
+        */
 
-                            return {
+        const primeiroAmbiente = atual.find(
+            ambiente =>
+                Array.isArray(ambiente.itens) &&
+                ambiente.itens.length > 0
+        );
 
-                                ...ambiente,
+        const primeiroItem =
+            primeiroAmbiente?.itens?.[0];
 
-                                itens:
-                                    ambiente.itens.map(
-                                        item =>
+        const alterandoRtDoPrimeiroItem =
+            campo === "rt_arquiteto_percentual" &&
+            primeiroAmbiente?.id === ambienteId &&
+            primeiroItem?.id === itemId;
 
-                                            item.id ===
-                                            itemId
+        /*
+        =================================================
+        SE FOR O PRIMEIRO ITEM: ATUALIZA TODOS OS RTS
+        =================================================
+        */
 
-                                                ? {
+        if (alterandoRtDoPrimeiroItem) {
 
-                                                    ...item,
+            return atual.map(ambiente => ({
+                ...ambiente,
 
-                                                    [campo]:
-                                                        valor
+                itens: ambiente.itens.map(item => ({
+                    ...item,
 
-                                                }
+                    rt_arquiteto_percentual: valor
+                }))
+            }));
 
-                                                : item
+        }
 
-                                    )
+        /*
+        =================================================
+        DEMAIS ITENS: ATUALIZA SOMENTE O ITEM SELECIONADO
+        =================================================
+        */
 
-                            };
+        return atual.map(ambiente => {
 
-                        }
-                    )
-            );
+            if (ambiente.id !== ambienteId) {
+                return ambiente;
+            }
 
-        };
+            return {
+                ...ambiente,
 
+                itens: ambiente.itens.map(item => {
+
+                    if (item.id !== itemId) {
+                        return item;
+                    }
+
+                    return {
+                        ...item,
+
+                        [campo]: valor
+                    };
+
+                })
+            };
+
+        });
+
+    });
+
+};
 
 
 /*
@@ -6755,41 +6800,40 @@ ${novoCronograma}`;
             const corTexto = "#2F2118";
             const corCinza = "#766A61";
 
-            const carregarImagemDataUrl = async url => {
+           const carregarImagemDataUrl = async url => {
+    try {
+        const response = await fetch(url);
 
-                const response =
-                    await fetch(url);
+        if (!response.ok) {
+            throw new Error(
+                `Erro ao carregar imagem. Status: ${response.status}`
+            );
+        }
 
-                if (!response.ok) {
-                    throw new Error(
-                        "Não foi possível carregar a logo da ALME."
-                    );
-                }
+        const blob = await response.blob();
 
-                const blob =
-                    await response.blob();
+        if (!blob.type.includes("image")) {
+            throw new Error(
+                `O arquivo carregado não é uma imagem. Tipo: ${blob.type}`
+            );
+        }
 
-                return new Promise(
-                    (resolve, reject) => {
+        return await new Promise((resolve, reject) => {
+            const reader = new FileReader();
 
-                        const reader =
-                            new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(
+                new Error("Erro ao converter imagem para Data URL.")
+            );
 
-                        reader.onloadend = () =>
-                            resolve(
-                                reader.result
-                            );
+            reader.readAsDataURL(blob);
+        });
 
-                        reader.onerror = reject;
-
-                        reader.readAsDataURL(
-                            blob
-                        );
-
-                    }
-                );
-
-            };
+    } catch (error) {
+        console.error("Erro ao carregar imagem da capa:", error);
+        throw error;
+    }
+};
 
             const criarMarcaDataUrl = async () => {
 
@@ -6862,7 +6906,7 @@ ${novoCronograma}`;
                         corMarrom;
 
                     context.font =
-                        '700 56px "Montserrat", Arial, sans-serif';
+    '400 56px "Montserrat", Arial, sans-serif';
 
                     context.textBaseline =
                         "middle";
@@ -6892,6 +6936,169 @@ ${novoCronograma}`;
 
             const marcaDataUrl =
                 await criarMarcaDataUrl();
+
+             
+
+const criarCapaDataUrl = async () => {
+    try {
+        const canvas = document.createElement("canvas");
+
+        canvas.width = 1240;
+        canvas.height = 1754;
+
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+            throw new Error(
+                "Não foi possível criar o canvas da capa."
+            );
+        }
+
+        // Fundo branco
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        // Carrega diretamente a imagem importada pelo React
+        const imagemCapa = await new Promise((resolve, reject) => {
+            const imagem = new Image();
+
+            imagem.onload = () => {
+                resolve(imagem);
+            };
+
+            imagem.onerror = () => {
+                reject(
+                    new Error(
+                        `Falha ao carregar a imagem da capa: ${imgCapaPdf}`
+                    )
+                );
+            };
+
+            imagem.src = imgCapaPdf;
+        });
+
+        // Desenha a imagem ocupando toda a página
+       const larguraImagem = 700;
+const alturaImagem = 1000;
+
+const posicaoX = (canvas.width - larguraImagem) / 2;
+const posicaoY = (canvas.height - alturaImagem) / 3;
+
+context.drawImage(
+    imagemCapa,
+    posicaoX,
+    posicaoY,
+    larguraImagem,
+    alturaImagem
+);
+
+
+// ========================================
+// TEXTO INSTITUCIONAL DA CAPA
+// ========================================
+
+// Posição e largura do bloco
+const margemDireitaTexto = 85;
+const larguraMaximaTexto = 460;
+
+const posicaoTextoX =
+    canvas.width - margemDireitaTexto;
+
+let posicaoTextoY = 1435;
+
+// Estilo do texto
+context.fillStyle = "#2F2118";
+context.font = '400 15px "Montserrat", Arial, sans-serif';
+context.textAlign = "right";
+context.textBaseline = "top";
+
+// Texto de apresentação
+const textoApresentacao =
+    "O orçamento abaixo representa o início de uma conexão que não deve se limitar à entrega do projeto em questão. Queremos estar ao seu lado como um parceiro além da marcenaria. Nossa experiência, acumulada nos resultados para todos os envolvidos, e este benefício tende a melhorar com a sua participação. Obrigado pela oportunidade e conte com a nossa equipe.";
+
+// Função para quebrar o texto automaticamente
+const desenharTextoQuebrado = (
+    texto,
+    x,
+    y,
+    larguraMaxima,
+    alturaLinha
+) => {
+    const palavras = texto.split(/\s+/);
+    const linhas = [];
+    let linhaAtual = "";
+
+    palavras.forEach(palavra => {
+        const teste = linhaAtual
+            ? `${linhaAtual} ${palavra}`
+            : palavra;
+
+        if (
+            context.measureText(teste).width > larguraMaxima &&
+            linhaAtual
+        ) {
+            linhas.push(linhaAtual);
+            linhaAtual = palavra;
+        } else {
+            linhaAtual = teste;
+        }
+    });
+
+    if (linhaAtual) {
+        linhas.push(linhaAtual);
+    }
+
+    linhas.forEach((linha, indice) => {
+        context.fillText(
+            linha,
+            x,
+            y + (indice * alturaLinha)
+        );
+    });
+
+    return linhas.length * alturaLinha;
+};
+
+// Desenha o texto principal
+const alturaTexto = desenharTextoQuebrado(
+    textoApresentacao,
+    posicaoTextoX,
+    posicaoTextoY,
+    larguraMaximaTexto,
+    25
+);
+
+// Assinatura
+posicaoTextoY += alturaTexto + 25;
+
+context.font = 'italic 16px "Montserrat", Arial, sans-serif';
+
+context.fillText(
+    "Time Alme Marcenaria",
+    posicaoTextoX,
+    posicaoTextoY
+);
+
+        return canvas.toDataURL("image/png");
+
+    } catch (error) {
+        console.error(
+            "Erro ao criar capa do PDF:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+
+const capaDataUrl = await criarCapaDataUrl();
 
             const formatarMedidaCm = value => {
 
@@ -7527,11 +7734,24 @@ ${novoCronograma}`;
 
             };
 
-            desenharMarca();
+           // Primeira página: capa
+doc.addImage(
+    capaDataUrl,
+    "PNG",
+    0,
+    0,
+    pageWidth,
+    pageHeight
+);
 
-            doc.setTextColor(
-                corTexto
-            );
+// O conteúdo do orçamento começa na segunda página
+doc.addPage();
+
+desenharMarca();
+
+doc.setTextColor(
+    corTexto
+);
 
             doc.setFont(
                 "helvetica",
@@ -7836,9 +8056,9 @@ ${novoCronograma}`;
                     pagina
                 );
 
-                desenharRodape();
-
-            }
+                if (pagina > 1) {
+    desenharRodape();
+}}
 
             const nomeArquivo =
                 `orcamento-${sanitizarNomeArquivo(orcamento.nome)}${versaoAtual ? `-v${versaoAtual}` : ""}.pdf`;
@@ -11954,23 +12174,7 @@ const deveCriarNovaVersao =
         </div>
 
 
-        {/* VALOR COM DESCONTO / ADICIONAL */}
 
-        <div className="orcamento-total-card">
-
-            <span>
-                Valor com desconto ou adicional
-            </span>
-
-            <strong>
-                {
-                    money(
-                        totaisColunas.valorComDescontoAdicional
-                    )
-                }
-            </strong>
-
-        </div>
 
 
         {/* VALOR MÍNIMO ALME */}
@@ -12310,6 +12514,14 @@ const deveCriarNovaVersao =
                                         .valorMinimoPropostaAlme
                                 );
 
+                                // Como os preços finais são arredondados em blocos
+// de R$ 10,00, o mínimo permitido também precisa
+// ser arredondado para cima.
+const menorValorFinalPermitido =
+    Math.ceil(
+        (minimo - 0.000001) / 10
+    ) * 10;
+
                             if (
                                 valor <= 0
                             ) {
@@ -12324,18 +12536,21 @@ const deveCriarNovaVersao =
                                 return;
                             }
 
-                            const valorComRtAtual =
-                                numberValue(
-                                    valorComRtTotal
-                                );
+                            
+const valorComRtAtual =
+    numberValue(
+        valorComRtTotal
+    );
 
-                            if (
-                                valor <
-                                valorComRtAtual
-                            ) {
-                                mostrarAviso("O valor final desejado não pode ser menor que a soma dos valores com RT atuais.")
-                                return;
-                            }
+if (
+    valor < menorValorFinalPermitido
+) {
+    mostrarAviso(
+        `O valor final desejado precisa ser de pelo menos ${money(menorValorFinalPermitido)}, considerando o arredondamento dos itens.`
+    );
+    return;
+}
+
 
                             if (
                                 Math.abs(
