@@ -3,6 +3,7 @@ import {
     useEffect,
     useMemo,
     useState
+    
 } from "react";
 
 import {
@@ -20,6 +21,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../../services/supabase";
 import "./ExtratosUni.scss";
+
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FiDownload } from "react-icons/fi";
 
 const MANUAL_VAZIO = {
     custo_realizado: "",
@@ -722,6 +727,380 @@ export default function ExtratosUni() {
         return maximo - adiantado;
     }
 
+
+// =====================================================
+// EXPORTAR EXTRATOS UNIFICADOS EM PDF
+// =====================================================
+
+function exportarPDF() {
+    if (!obrasFiltradas.length) {
+        setErro("Não há obras para exportar.");
+        return;
+    }
+
+    const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a3",
+    });
+
+    const dataAtual = new Date().toLocaleDateString("pt-BR");
+
+    // CORES DA IDENTIDADE VISUAL ALME
+    const CORES = {
+        marrom: [67, 28, 1],
+        marromClaro: [137, 73, 10],
+        verde: [35, 130, 75],
+        vermelho: [190, 45, 45],
+        texto: [65, 65, 65],
+        cinza: [115, 115, 115],
+        bege: [248, 246, 242],
+        branco: [255, 255, 255],
+    };
+
+    // =====================================================
+    // CABEÇALHO DO PDF
+    // =====================================================
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...CORES.marrom);
+    doc.setFontSize(19);
+
+    doc.text("ALME MARCENARIA", 14, 15);
+
+    doc.setFontSize(13);
+    doc.text("Extratos unificados", 14, 23);
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...CORES.texto);
+    doc.setFontSize(9);
+
+    doc.text(
+        `Relatório gerado em: ${dataAtual}`,
+        14,
+        30
+    );
+
+    doc.text(
+        `Categoria: ${
+            abaAtiva === "ocultas"
+                ? "Obras ocultas"
+                : "Obras em andamento"
+        }`,
+        14,
+        35
+    );
+
+    doc.text(
+        `Total de obras: ${obrasFiltradas.length}`,
+        14,
+        40
+    );
+
+    // =====================================================
+    // PREPARAR DADOS DA TABELA
+    // =====================================================
+
+    const dadosExportacao = obrasFiltradas.map((obra) => {
+        const id = chaveObra(obra.id);
+
+        const info = obterInformacaoFinanceira(
+            obra,
+            informacoesFinanceirasPorObra
+        );
+
+        const manual =
+            rascunhos[id] ||
+            registrosSalvos[id] ||
+            MANUAL_VAZIO;
+
+        const custoRealizado = numeroOuNulo(
+            manual.custo_realizado
+        );
+
+        const metaCusto = numeroOuNulo(
+            info.meta_custo ?? obra.meta_custo
+        );
+
+        const possivel = possivelAdto(obra.id);
+            
+
+        // STATUS DO CUSTO
+        let statusCusto = "neutro";
+        let diferenca = "—";
+
+        if (
+            custoRealizado !== null &&
+            metaCusto !== null
+        ) {
+            const valorDiferenca = Math.abs(
+                custoRealizado - metaCusto
+            );
+
+            if (custoRealizado > metaCusto) {
+                statusCusto = "acima";
+
+                diferenca =
+                    `Ultrapassou: ${formatarMoeda(valorDiferenca)}`;
+
+            } else if (custoRealizado < metaCusto) {
+                statusCusto = "abaixo";
+
+                diferenca =
+                    `Restante: ${formatarMoeda(valorDiferenca)}`;
+
+            } else {
+                statusCusto = "igual";
+                diferenca = "Dentro da meta";
+            }
+        }
+
+        return {
+            statusCusto,
+            possivel,
+
+            linha: [
+                `${obra.nome || "Obra sem nome"} (#${obra.id})`,
+
+                formatarMoeda(
+                    info.valor_destinado_producao ??
+                    obra.valor_destinado_producao
+                ),
+
+                formatarMoeda(
+                    info.meta_custo ??
+                    obra.meta_custo
+                ),
+
+                formatarMoeda(
+                    info.teto_custo ??
+                    obra.teto_custo
+                ),
+
+                formatarMoeda(custoRealizado),
+
+                diferenca,
+
+                formatarMoeda(
+                    manual.maximo_adto_marceneiro_12_5
+                ),
+
+                formatarMoeda(
+                    manual.adto_marceneiro
+                ),
+
+                formatarMoeda(possivel),
+
+                obra.rdo_nome || "—",
+
+                obra.marceneiro_nome || "—",
+            ],
+        };
+    });
+
+    const linhas = dadosExportacao.map(
+        (item) => item.linha
+    );
+
+    // =====================================================
+    // GERAR TABELA
+    // =====================================================
+
+    autoTable(doc, {
+        startY: 46,
+
+        head: [[
+            "Obra",
+            "Valor destinado",
+            "Meta de custo",
+            "Teto de custo",
+            "Custo realizado",
+            "Diferença",
+            "Máx. adto. 12,5%",
+            "Adto. marceneiro",
+            "Possível adto.",
+            "RDO responsável",
+            "Marceneiro",
+        ]],
+
+        body: linhas,
+
+        theme: "grid",
+
+        styles: {
+            font: "helvetica",
+            fontSize: 7,
+            textColor: CORES.texto,
+            cellPadding: 2.5,
+            overflow: "linebreak",
+            valign: "middle",
+            lineColor: [220, 216, 210],
+            lineWidth: 0.15,
+        },
+
+        headStyles: {
+            fillColor: CORES.marrom,
+            textColor: CORES.branco,
+            fontStyle: "bold",
+            fontSize: 7,
+            halign: "center",
+            valign: "middle",
+            cellPadding: 3,
+        },
+
+        alternateRowStyles: {
+            fillColor: CORES.bege,
+        },
+
+        columnStyles: {
+            0: { cellWidth: 38 },
+            1: { cellWidth: 25 },
+            2: { cellWidth: 23 },
+            3: { cellWidth: 23 },
+            4: { cellWidth: 23 },
+            5: { cellWidth: 30 },
+            6: { cellWidth: 25 },
+            7: { cellWidth: 25 },
+            8: { cellWidth: 23 },
+            9: { cellWidth: 28 },
+            10: { cellWidth: 28 },
+        },
+
+        margin: {
+            top: 46,
+            left: 10,
+            right: 10,
+            bottom: 15,
+        },
+
+        // =================================================
+        // COLORIR OS INDICADORES FINANCEIROS
+        // =================================================
+
+        didParseCell: function (data) {
+            if (data.section !== "body") {
+                return;
+            }
+
+            const indiceLinha = data.row.index;
+            const indiceColuna = data.column.index;
+
+            const registro = dadosExportacao[indiceLinha];
+
+            if (!registro) {
+                return;
+            }
+
+            // CUSTO REALIZADO
+            if (indiceColuna === 4) {
+                if (registro.statusCusto === "acima") {
+                    data.cell.styles.textColor =
+                        CORES.vermelho;
+
+                    data.cell.styles.fontStyle = "bold";
+
+                } else if (registro.statusCusto === "abaixo") {
+                    data.cell.styles.textColor =
+                        CORES.verde;
+
+                    data.cell.styles.fontStyle = "bold";
+                }
+            }
+
+            // DIFERENÇA ENTRE CUSTO E META
+            if (indiceColuna === 5) {
+                if (registro.statusCusto === "acima") {
+                    data.cell.styles.textColor =
+                        CORES.vermelho;
+
+                    data.cell.styles.fontStyle = "bold";
+
+                } else if (registro.statusCusto === "abaixo") {
+                    data.cell.styles.textColor =
+                        CORES.verde;
+
+                    data.cell.styles.fontStyle = "bold";
+
+                } else if (registro.statusCusto === "igual") {
+                    data.cell.styles.textColor =
+                        CORES.marromClaro;
+
+                    data.cell.styles.fontStyle = "bold";
+                }
+            }
+
+            // POSSÍVEL ADIANTAMENTO
+            if (
+                indiceColuna === 8 &&
+                registro.possivel !== null
+            ) {
+                if (registro.possivel < 0) {
+                    data.cell.styles.textColor =
+                        CORES.vermelho;
+
+                    data.cell.styles.fontStyle = "bold";
+
+                } else if (registro.possivel > 0) {
+                    data.cell.styles.textColor =
+                        CORES.verde;
+
+                    data.cell.styles.fontStyle = "bold";
+                }
+            }
+        },
+
+        // =================================================
+        // RODAPÉ E PAGINAÇÃO
+        // =================================================
+
+        didDrawPage: function () {
+            const pagina = doc.internal.getNumberOfPages();
+
+            const largura = doc.internal.pageSize.getWidth();
+            const altura = doc.internal.pageSize.getHeight();
+
+            doc.setDrawColor(...CORES.marrom);
+            doc.setLineWidth(0.3);
+
+            doc.line(
+                10,
+                altura - 12,
+                largura - 10,
+                altura - 12
+            );
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(...CORES.cinza);
+
+            doc.text(
+                "ALME Marcenaria | Gestão e confiança acima de tudo",
+                10,
+                altura - 7
+            );
+
+            doc.text(
+                `Página ${pagina}`,
+                largura - 10,
+                altura - 7,
+                { align: "right" }
+            );
+        },
+    });
+
+    // =====================================================
+    // SALVAR PDF
+    // =====================================================
+
+    doc.save(
+        `Extratos_Unificados_${new Date()
+            .toISOString()
+            .slice(0, 10)}.pdf`
+    );
+
+    setSucesso("PDF exportado com sucesso!");
+}
+
     // =====================================================
     // CAMPOS MANUAIS DA TABELA
     // =====================================================
@@ -855,6 +1234,17 @@ function renderCampoManual(
                         <FiArrowLeft />
                         Voltar
                     </button>
+
+
+<button
+    type="button"
+    className="extratos-uni-button extratos-uni-button-secondary"
+    onClick={exportarPDF}
+    disabled={carregando || obrasFiltradas.length === 0}
+>
+    <FiDownload />
+    Exportar PDF
+</button>
 
                     <button
                         type="button"
