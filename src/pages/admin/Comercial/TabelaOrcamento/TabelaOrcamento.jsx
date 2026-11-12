@@ -3242,34 +3242,29 @@ setOverFinalAplicado(
                     String(urlVersaoId || "");
 
                 if (
-                    mesmaCotacao &&
-                    mesmaVersao &&
-                    Array.isArray(dados.ambientes)
-                ) {
+    mesmaCotacao &&
+    mesmaVersao &&
+    Array.isArray(dados.ambientes)
+) {
 
-                    deveCarregarDoBanco = false;
+    // Não interrompe a consulta ao banco.
+    // O Supabase precisa atualizar a lista de versões.
 
-                    /*
-                    Se a URL não possui versão, sincroniza a URL com
-                    a versão real do estado sem desmontar a tela.
-                    */
-                    if (
-                        !urlVersaoId &&
-                        dados.versaoId
-                    ) {
+    if (
+        !urlVersaoId &&
+        dados.versaoId
+    ) {
 
-                        setSearchParams(
-                            {
-                                orcamento:
-                                    urlOrcamentoId,
-                                versao:
-                                    dados.versaoId
-                            },
-                            { replace: true }
-                        );
+        setSearchParams(
+            {
+                orcamento: urlOrcamentoId,
+                versao: dados.versaoId
+            },
+            { replace: true }
+        );
 
-                    }
-                }
+    }
+}
             }
 
         } catch (error) {
@@ -3283,12 +3278,47 @@ setOverFinalAplicado(
 
         if (deveCarregarDoBanco) {
 
-            carregarOrcamento(
-                urlOrcamentoId,
-                urlVersaoId || ""
+    // Não existe estado local válido.
+    // Carrega a versão completa pelo banco.
+    carregarOrcamento(
+        urlOrcamentoId,
+        urlVersaoId || ""
+    );
+
+} else {
+
+    // Existe estado local válido.
+    // Preserva os ambientes e itens da sessão,
+    // mas atualiza a lista de versões pelo Supabase.
+
+    const atualizarVersoes = async () => {
+
+        try {
+
+            const { data, error } = await supabase
+                .from("orcamento_versoes")
+                .select("*")
+                .eq("orcamento_id", urlOrcamentoId)
+                .order("versao", { ascending: false });
+
+            if (error) throw error;
+
+            setVersoesOrcamento(data || []);
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao atualizar lista de versões:",
+                error
             );
 
         }
+
+    };
+
+    atualizarVersoes();
+
+}
 
     }, [
         isEditor,
@@ -3373,7 +3403,44 @@ setOverFinalAplicado(
         });
     };
 
+// =====================================================
+// LIBERAR ALTERAÇÃO DO VALOR FINAL DESEJADO — V2
+// =====================================================
 
+const liberarAlteracaoValorFinal = () => {
+
+    if (Number(versaoAtual) < 2) {
+        return;
+    }
+
+    // Limpa o controle de processamento dos novos itens.
+    precosProcessadosNovosItensRef.current.clear();
+
+    // Remove o congelamento dos preços de todos os itens.
+    setAmbientes(atual =>
+        atual.map(ambiente => ({
+            ...ambiente,
+
+            itens: ambiente.itens.map(item => ({
+                ...item,
+
+                over_final_novo: false,
+                over_final_percentual_base: null,
+                over_final_preco_final_travado: null,
+                over_final_preco_contabilizado: 0,
+                over_final_valor_com_rt_processado: "",
+            })),
+        }))
+    );
+
+    // Libera novamente o campo e o botão OK.
+    setOverFinalAplicado(false);
+
+    mostrarAviso(
+        "Valor liberado para alteração. Informe o novo valor e clique em OK.",
+        "sucesso"
+    );
+};
     const trocarVersao = event => {
 
         const selectedVersionId = event.target.value;
@@ -6485,29 +6552,36 @@ const dadosOverFinalPorItem = useMemo(() => {
                     const valorMaisOverFinal =
                         valorComRt * (1 + (overFinalAplicado ? percentualItem : 0));
 
-                    const precoCalculado =
-                        Math.round(valorMaisOverFinal / 10) * 10;
+                   
+const precoCalculado =
+    Math.round(valorMaisOverFinal / 10) * 10;
 
-                    const temPrecoCongelado =
-                        item.over_final_preco_final_travado !== null &&
-                        item.over_final_preco_final_travado !== undefined &&
-                        item.over_final_preco_final_travado !== "" &&
-                        Number.isFinite(Number(item.over_final_preco_final_travado));
+const temPrecoCongelado =
+    item.over_final_preco_final_travado !== null &&
+    item.over_final_preco_final_travado !== undefined &&
+    item.over_final_preco_final_travado !== "" &&
+    Number.isFinite(Number(item.over_final_preco_final_travado));
 
-                    const precoCongelado =
-                        !item.over_final_novo && temPrecoCongelado
-                            ? numberValue(item.over_final_preco_final_travado)
-                            : null;
+const precoCongelado =
+    !item.over_final_novo && temPrecoCongelado
+        ? numberValue(item.over_final_preco_final_travado)
+        : null;
 
-                    // Fonte única de verdade:
-                    // - itens existentes mantêm o preço congelado na aplicação inicial;
-                    // - itens adicionados depois calculam seu preço com o percentual-base
-                    //   congelado no momento da inclusão, sem depender de valor contabilizado
-                    //   anteriormente nem de um percentual recalculado pelo total.
-                    const precoFinalTodos =
-                        overFinalAplicado && precoCongelado !== null
-                            ? precoCongelado
-                            : precoCalculado;
+// A partir da V3, se o item tiver desconto ou adicional,
+// o preço final acompanha o Valor + Over final atualizado.
+const possuiDescontoOuAdicional =
+    numberValue(item.calculadoDescontoAdicional) !== 0;
+
+const deveAtualizarPrecoPeloOver =
+    Number(versaoAtual) >= 3 &&
+    possuiDescontoOuAdicional;
+
+const precoFinalTodos =
+    deveAtualizarPrecoPeloOver
+        ? precoCalculado
+        : overFinalAplicado && precoCongelado !== null
+            ? precoCongelado
+            : precoCalculado;
 
                     const overNegociado =
                         precoFinalTodos - valorComRt;
@@ -12714,7 +12788,16 @@ const deveCriarNovaVersao =
                         }
                         placeholder="0,00"
                     />
-
+{overFinalAplicado && Number(versaoAtual) >= 2 && (
+    <button
+        type="button"
+        className="orcamento-over-final-ok"
+        onClick={liberarAlteracaoValorFinal}
+    >
+        <FiEdit2 />
+        Alterar valor
+    </button>
+)}
                     {!overFinalAplicado && (
                     <button
                         type="button"
