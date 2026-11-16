@@ -7776,6 +7776,21 @@ const capaDataUrl = await criarCapaDataUrl();
                         item
                     );
 
+                    const quantidadeFormatada =
+    new Intl.NumberFormat(
+        "pt-BR",
+        {
+            maximumFractionDigits: 2
+        }
+    ).format(
+        Math.max(
+            0,
+            numberValue(item.quantidade ?? 1)
+        )
+    );
+
+const textoQuantidade =
+    `Quantidade: ${quantidadeFormatada}`;
                 const corMdf =
                     item.mdf_nome ||
                     "-";
@@ -7801,6 +7816,11 @@ const capaDataUrl = await criarCapaDataUrl();
                         String(itemNome),
                         larguraTextoItem
                     );
+const linhasQuantidade =
+    doc.splitTextToSize(
+        String(textoQuantidade),
+        larguraTextoItem
+    );
 
                 const linhasDimensoes =
                     doc.splitTextToSize(
@@ -7820,20 +7840,25 @@ const capaDataUrl = await criarCapaDataUrl();
                 const espacamentoInferior = 9;
 
                 const alturaTexto =
-                    (
-                        linhasItem.length *
-                        alturaLinhaTexto
-                    ) +
-                    espacoParagrafo +
-                    (
-                        linhasDimensoes.length *
-                        alturaLinhaTexto
-                    ) +
-                    espacoParagrafo +
-                    (
-                        linhasCorMdf.length *
-                        alturaLinhaTexto
-                    );
+    (
+        linhasItem.length *
+        alturaLinhaTexto
+    ) +
+    espacoParagrafo +
+    (
+        linhasQuantidade.length *
+        alturaLinhaTexto
+    ) +
+    espacoParagrafo +
+    (
+        linhasDimensoes.length *
+        alturaLinhaTexto
+    ) +
+    espacoParagrafo +
+    (
+        linhasCorMdf.length *
+        alturaLinhaTexto
+    );
 
                 const alturaLinha = Math.max(
                     50,
@@ -7934,6 +7959,31 @@ const capaDataUrl = await criarCapaDataUrl();
                         alturaLinhaTexto
                     ) +
                     espacoParagrafo;
+
+// QUANTIDADE DO ITEM
+doc.setFont(
+    "helvetica",
+    "normal"
+);
+
+doc.setFontSize(7);
+
+doc.setTextColor(
+    corCinza
+);
+
+doc.text(
+    linhasQuantidade,
+    margem + 4,
+    linhaAtual
+);
+
+linhaAtual +=
+    (
+        linhasQuantidade.length *
+        alturaLinhaTexto
+    ) +
+    espacoParagrafo;
 
                 doc.setFont(
                     "helvetica",
