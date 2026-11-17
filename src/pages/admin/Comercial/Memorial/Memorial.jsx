@@ -149,14 +149,49 @@ export default function Memorial() {
   const orcamentosPesquisados = useMemo(() => orcamentosDisponiveis.filter(q => `${q.nome || ""} ${q.codigo || ""} ${q.cliente || ""}`.toLowerCase().includes(buscaOrcamento.trim().toLowerCase())), [orcamentosDisponiveis, buscaOrcamento]);
   const nomeResponsavel = id => usuarios.find(u => String(u.id) === String(id))?.nome || usuarios.find(u => String(u.id) === String(id))?.username || usuarios.find(u => String(u.id) === String(id))?.email || "—";
 
-  const carregarMemorial = async (memorial, versionId = null) => {
+ 
+const carregarMemorial = async (memorial, versionId = null) => {
     setErro("");
-    const { data: rows, error: versionError } = await supabase.from("memorial_versoes").select("*").eq("memorial_id", memorial.id).order("numero", { ascending: false });
-    if (versionError) { setErro(errText(versionError)); return; }
-    const selected = (rows || []).find(v => v.id === versionId) || rows?.[0];
-    setSelecionado(memorial); setVersoes(rows || []); setVersao(selected || null);
-    setDados(selected ? { ...selected, itens: selected.itens || [] } : null);
-  };
+
+    const { data: rows, error: versionError } = await supabase
+        .from("memorial_versoes")
+        .select("*")
+        .eq("memorial_id", memorial.id)
+        .order("numero", { ascending: false });
+
+    if (versionError) {
+        setErro(errText(versionError));
+        return;
+    }
+
+    const selected =
+        (rows || []).find(v => v.id === versionId) || rows?.[0];
+
+    setSelecionado(memorial);
+    setVersoes(rows || []);
+    setVersao(selected || null);
+
+    setDados(
+        selected
+            ? {
+                ...selected,
+
+                // Recupera os dados principais do orçamento
+                // armazenados no registro do memorial.
+                orcamento_id: memorial.orcamento_id,
+                nome_orcamento: memorial.nome_orcamento || "",
+                cliente: memorial.cliente || "",
+                codigo_orcamento: memorial.codigo_orcamento || "",
+                assistente: memorial.assistente || "",
+                vendedor: memorial.vendedor || "",
+
+                // Mantém os itens da versão selecionada.
+                itens: selected.itens || []
+            }
+            : null
+    );
+};
+
 
   const abrirNovo = async quote => {
     setErro(""); setSucesso("");

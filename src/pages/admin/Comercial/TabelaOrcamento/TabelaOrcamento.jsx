@@ -3019,8 +3019,16 @@ function sincronizarScrollTabelaOrcamento(
                         row.over_final_preco_final_travado ?? null,
                     over_final_preco_contabilizado:
                         row.over_final_preco_contabilizado ?? 0,
-                    over_final_valor_com_rt_processado:
-                        row.over_final_valor_com_rt_processado ?? ""
+                    
+over_final_valor_com_rt_processado:
+    row.over_final_valor_com_rt_processado ||
+    (
+        row.over_final_preco_final_travado != null &&
+        row.over_final_percentual_base != null
+            ? `${numberValue(row.valor_mais_rt).toFixed(6)}|${numberValue(row.over_final_percentual_base).toFixed(8)}`
+            : ""
+    )
+
                 });
             });
 
@@ -6567,6 +6575,21 @@ const precoCongelado =
         ? numberValue(item.over_final_preco_final_travado)
         : null;
 
+
+
+const assinaturaAtual =
+    `${valorComRt.toFixed(6)}|${percentualItem.toFixed(8)}`;
+
+const precoCongeladoEstaAtualizado =
+    item.over_final_valor_com_rt_processado === assinaturaAtual;
+
+const medidaAlteradaNaV3 =
+    Number(versaoAtual) >= 3 &&
+    !item.over_final_novo &&
+    temPrecoCongelado &&
+    !precoCongeladoEstaAtualizado;
+
+
 // A partir da V3, se o item tiver desconto ou adicional,
 // o preço final acompanha o Valor + Over final atualizado.
 const possuiDescontoOuAdicional =
@@ -6576,12 +6599,14 @@ const deveAtualizarPrecoPeloOver =
     Number(versaoAtual) >= 3 &&
     possuiDescontoOuAdicional;
 
+
 const precoFinalTodos =
-    deveAtualizarPrecoPeloOver
+    deveAtualizarPrecoPeloOver || medidaAlteradaNaV3
         ? precoCalculado
         : overFinalAplicado && precoCongelado !== null
             ? precoCongelado
             : precoCalculado;
+
 
                     const overNegociado =
                         precoFinalTodos - valorComRt;
@@ -6698,11 +6723,22 @@ useEffect(() => {
 
         let ambienteAlterado = false;
 
-        const itensAtualizados = ambiente.itens.map(item => {
+        
+const itensAtualizados = ambiente.itens.map(item => {
 
-            if (!item.over_final_novo) {
-                return item;
-            }
+    // Na V2, mantemos o comportamento anterior:
+    // somente itens novos são recalculados.
+    // A partir da V3, itens antigos também podem ser
+    // recalculados quando o Valor com RT mudar.
+    if (
+        !item.over_final_novo &&
+        Number(versaoAtual) < 3
+    ) {
+        return item;
+    }
+
+   
+
 
             const itemCalculado = itensCalculadosPorId.get(item.id);
             const valorComRt = Math.max(
@@ -6773,11 +6809,28 @@ useEffect(() => {
             houveAtualizacao = true;
             ambienteAlterado = true;
 
-            return {
-                ...item,
-                over_final_preco_contabilizado: precoFinalTodosAtual,
-                over_final_valor_com_rt_processado: assinatura
-            };
+            
+return {
+    ...item,
+
+    // Itens novos continuam atualizando seu valor contabilizado.
+    over_final_preco_contabilizado:
+        item.over_final_novo
+            ? precoFinalTodosAtual
+            : item.over_final_preco_contabilizado,
+
+    // Itens antigos atualizam seu preço congelado
+    // somente quando o Valor com RT mudar.
+    over_final_preco_final_travado:
+        !item.over_final_novo && Number(versaoAtual) >= 3
+            ? precoFinalTodosAtual
+            : item.over_final_preco_final_travado,
+
+    // Registra a nova referência para não recalcular
+    // repetidamente o mesmo valor.
+    over_final_valor_com_rt_processado: assinatura
+};
+
 
         });
 
@@ -12918,16 +12971,34 @@ if (
                                 ? Math.max(0, (valor - valorComRtTotal) / valorComRtTotal)
                                 : 0;
 
-                            const precosIniciais = [];
-                            ambientesCalculados.forEach(ambiente => {
-                                ambiente.itens.forEach(item => {
-                                    const valorComRt = Math.max(0, numberValue(item.calculadoValorComRt));
-                                    precosIniciais.push({
-                                        chave: `${ambiente.id}::${item.id}`,
-                                        preco: Math.round((valorComRt * (1 + percentualInicial)) / 10) * 10
-                                    });
-                                });
-                            });
+                            
+const precosIniciais = [];
+
+ambientesCalculados.forEach(ambiente => {
+    ambiente.itens.forEach(item => {
+
+        const valorComRt = Math.max(
+            0,
+            numberValue(item.calculadoValorComRt)
+        );
+
+        precosIniciais.push({
+            chave: `${ambiente.id}::${item.id}`,
+
+            preco: Math.round(
+                (
+                    valorComRt *
+                    (1 + percentualInicial)
+                ) / 10
+            ) * 10,
+
+            assinatura:
+                `${valorComRt.toFixed(6)}|${percentualInicial.toFixed(8)}`
+        });
+
+    });
+});
+
 
                             // Distribui apenas o resíduo de arredondamento da
                             // aplicação inicial. Depois disso, os preços travam.
@@ -12947,15 +13018,39 @@ if (
 
                             const precosPorChave = new Map(precosIniciais.map(item => [item.chave, item.preco]));
 
-                            setAmbientes(atual => atual.map(ambiente => ({
-                                ...ambiente,
-                                itens: ambiente.itens.map(item => ({
-                                    ...item,
-                                    over_final_novo: false,
-                                    over_final_percentual_base: percentualInicial,
-                                    over_final_preco_final_travado: precosPorChave.get(`${ambiente.id}::${item.id}`) ?? 0
-                                }))
-                            })));
+                            
+const assinaturasPorChave = new Map(
+    precosIniciais.map(item => [
+        item.chave,
+        item.assinatura
+    ])
+);
+
+setAmbientes(atual => atual.map(ambiente => ({
+    ...ambiente,
+
+    itens: ambiente.itens.map(item => {
+
+        const chave = `${ambiente.id}::${item.id}`;
+
+        return {
+            ...item,
+
+            over_final_novo: false,
+
+            over_final_percentual_base:
+                percentualInicial,
+
+            over_final_preco_final_travado:
+                precosPorChave.get(chave) ?? 0,
+
+            over_final_valor_com_rt_processado:
+                assinaturasPorChave.get(chave) ?? ""
+        };
+
+    })
+})));
+
 
                             setOverFinalAplicado(true);
 
