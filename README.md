@@ -3,7 +3,7 @@
 > Plataforma web desenvolvida para centralizar, organizar e integrar os processos comerciais, produtivos, administrativos e operacionais da ALME Marcenaria.
 
 <p align="center">
-  <img src="public/logo.png" alt="ALME Marcenaria" width="180" />
+  <img src="src/imgs/passarobranco.png" alt="ALME Marcenaria" width="180" />
 </p>
 
 <p align="center">
