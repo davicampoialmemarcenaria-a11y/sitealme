@@ -1,0 +1,66 @@
+
+flowchart TD
+    START["Usuário acessa a aplicação"]
+    PROVIDER["AuthProvider"]
+    SESSION["supabase.auth.getSession()"]
+    CHECK{"Existe sessão?"}
+
+    LOGIN["Tela de Login"]
+    AUTH["Supabase Auth"]
+    USER["Usuário autenticado"]
+
+    ROLE_QUERY["Consultar user_roles"]
+    ROLE_JOIN["Relacionar com roles"]
+    ROLE_NAME["Recuperar roles.nome"]
+    ROLE_STATE["Atualizar estado role no AuthContext"]
+
+    LISTENER["onAuthStateChange"]
+    GUARD["ProtectedRoute"]
+    AUTH_CHECK{"Usuário autenticado?"}
+    ROLE_CHECK{"Perfil autorizado?"}
+
+    ACCESS["Liberar acesso à rota"]
+    DENIED["Redirecionar para /"]
+    REDIRECT["Redirecionar para /login"]
+
+    LOGOUT["logout()"]
+    SIGNOUT["supabase.auth.signOut()"]
+    CLEAR["Limpar user e role"]
+
+    START --> PROVIDER
+    PROVIDER --> SESSION
+    SESSION --> CHECK
+
+    CHECK -->|Não| LOGIN
+    LOGIN --> AUTH
+    AUTH --> USER
+
+    CHECK -->|Sim| USER
+    USER --> ROLE_QUERY
+    ROLE_QUERY --> ROLE_JOIN
+    ROLE_JOIN --> ROLE_NAME
+    ROLE_NAME --> ROLE_STATE
+
+    AUTH --> LISTENER
+    LISTENER --> ROLE_QUERY
+
+    ROLE_STATE --> GUARD
+    GUARD --> AUTH_CHECK
+
+    AUTH_CHECK -->|Não| REDIRECT
+    AUTH_CHECK -->|Sim| ROLE_CHECK
+
+    ROLE_CHECK -->|Sim| ACCESS
+    ROLE_CHECK -->|Não| DENIED
+
+    USER --> LOGOUT
+    LOGOUT --> SIGNOUT
+    SIGNOUT --> CLEAR
+
+    classDef success fill:#e5f5e9,stroke:#39834a,color:#183d22
+    classDef warning fill:#fff2df,stroke:#bd8124,color:#593900
+    classDef process fill:#e8f0fe,stroke:#3768a6,color:#172b4d
+
+    class ACCESS success
+    class DENIED,REDIRECT warning
+    class PROVIDER,SESSION,ROLE_QUERY,ROLE_JOIN,ROLE_NAME,ROLE_STATE,GUARD,LISTENER process

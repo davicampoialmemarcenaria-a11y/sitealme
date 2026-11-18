@@ -1,0 +1,106 @@
+
+flowchart TB
+    USER["Usuários da plataforma"]
+
+    subgraph FRONT["FRONTEND — REACT + VITE"]
+        MAIN["main.jsx"]
+        APP["App.jsx"]
+        ROUTER["routes/Router.jsx"]
+        AUTH_PROVIDER["contexts/AuthContext.jsx"]
+        PROTECTED["components/ProtectedRoute.jsx"]
+
+        subgraph PUBLIC["ÁREA PÚBLICA"]
+            HOME["Home"]
+            ABOUT["Sobre"]
+            CONTACT["Contato"]
+            USA["EUA"]
+            FAQ["Dúvidas"]
+            CARPENTER["Marceneiro"]
+            PUBLIC_NEWS["Notícias"]
+            PUBLIC_PROJECTS["Projetos"]
+            LOGIN["Login"]
+        end
+
+        subgraph ADMIN["PAINEL ADMINISTRATIVO"]
+            LAYOUT["AdminLayout"]
+
+            subgraph MODULES["MÓDULOS"]
+                COMMERCIAL["Comercial"]
+                BUDGET["Orçamentos"]
+                MEMORIAL["Memorial Descritivo"]
+                COLORS["Tabela de Cores"]
+                PRICING["Tabela de Preços"]
+
+                PRODUCTION["Produção"]
+                WORKS["Obras"]
+                SCHEDULE["Cronogramas"]
+                FLOW["Fluxo"]
+                PRODUCTION_MEMORIAL["Memorial de Produção"]
+                INFO["Informações Financeiras"]
+
+                FINANCE["Financeiro"]
+                CONTRACTS["Contratos"]
+                STATEMENTS["Extratos"]
+
+                STOCK["Estoque"]
+                USERS["Usuários"]
+                NEWS["Gestão de Notícias"]
+                PROJECTS["Gestão de Projetos"]
+                DASHBOARD["Dashboard"]
+            end
+        end
+
+        SERVICES["src/services/supabase.js"]
+    end
+
+    subgraph BACKEND["SUPABASE"]
+        AUTH["Supabase Auth"]
+        DB[("PostgreSQL")]
+        STORAGE["Supabase Storage"]
+        EDGE["Edge Functions"]
+
+        subgraph FUNCTIONS["FUNÇÕES EDGE"]
+            F1["admin-users"]
+            F2["admin-obras"]
+            F3["admin-cronogramas"]
+            F4["admin-documentos"]
+            F5["admin-documentos-alme"]
+            F6["admin-inforfi"]
+        end
+    end
+
+    USER --> MAIN
+    MAIN --> AUTH_PROVIDER
+    AUTH_PROVIDER --> APP
+    APP --> ROUTER
+
+    ROUTER --> PUBLIC
+    ROUTER --> PROTECTED
+    PROTECTED --> LAYOUT
+    LAYOUT --> MODULES
+
+    AUTH_PROVIDER --> SERVICES
+    SERVICES --> AUTH
+    SERVICES --> DB
+    SERVICES --> STORAGE
+    SERVICES --> EDGE
+
+    EDGE --> FUNCTIONS
+    FUNCTIONS --> DB
+    FUNCTIONS --> STORAGE
+
+    COMMERCIAL --> SERVICES
+    PRODUCTION --> SERVICES
+    FINANCE --> SERVICES
+    STOCK --> SERVICES
+    NEWS --> SERVICES
+    PROJECTS --> SERVICES
+    USERS --> SERVICES
+
+    classDef frontend fill:#e8f0fe,stroke:#3768a6,color:#172b4d
+    classDef backend fill:#e8f5e9,stroke:#39834a,color:#183d22
+    classDef module fill:#fff4df,stroke:#b77b20,color:#593900
+
+    class MAIN,APP,ROUTER,AUTH_PROVIDER,PROTECTED,SERVICES frontend
+    class AUTH,DB,STORAGE,EDGE,F1,F2,F3,F4,F5,F6 backend
+    class COMMERCIAL,BUDGET,MEMORIAL,COLORS,PRICING,PRODUCTION,WORKS,SCHEDULE,FLOW,PRODUCTION_MEMORIAL,INFO,FINANCE,CONTRACTS,STATEMENTS,STOCK,USERS,NEWS,PROJECTS,DASHBOARD module

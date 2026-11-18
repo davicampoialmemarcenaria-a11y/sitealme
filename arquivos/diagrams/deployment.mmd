@@ -1,0 +1,65 @@
+
+flowchart TD
+    START(["INÍCIO"])
+    DEV["Desenvolvimento no VS Code"]
+    TEST["Testes no ambiente local"]
+    LINT["npm run lint"]
+    BUILD["npm run build"]
+    BUILD_CHECK{"Build concluído sem erros?"}
+
+    PREVIEW["npm run preview"]
+    VALIDATION{"Aplicação validada?"}
+
+    ZIP["Compactar conteúdo da pasta dist"]
+    BACKUP["Backup da versão atual"]
+    
+    GIT["git add ."]
+    COMMIT["git commit"]
+    PUSH["git push — GitHub"]
+
+    HOST["Acessar HostGator"]
+    UPLOAD["Enviar arquivo ZIP"]
+    EXTRACT["Descompactar no diretório do domínio"]
+    CHECK["Verificar index.html, assets e rotas"]
+    FINAL{"Publicação funcionando?"}
+
+    SUCCESS(["PUBLICAÇÃO CONCLUÍDA"])
+    ROLLBACK["Restaurar versão anterior"]
+    FIX["Corrigir problemas no ambiente local"]
+
+    START --> DEV
+    DEV --> TEST
+    TEST --> LINT
+    LINT --> BUILD
+    BUILD --> BUILD_CHECK
+
+    BUILD_CHECK -->|Não| FIX
+    BUILD_CHECK -->|Sim| PREVIEW
+    PREVIEW --> VALIDATION
+
+    VALIDATION -->|Não| FIX
+    VALIDATION -->|Sim| ZIP
+
+    ZIP --> BACKUP
+    BACKUP --> GIT
+    GIT --> COMMIT
+    COMMIT --> PUSH
+
+    PUSH --> HOST
+    HOST --> UPLOAD
+    UPLOAD --> EXTRACT
+    EXTRACT --> CHECK
+    CHECK --> FINAL
+
+    FINAL -->|Sim| SUCCESS
+    FINAL -->|Não| ROLLBACK
+    ROLLBACK --> FIX
+    FIX --> DEV
+
+    classDef success fill:#e5f5e9,stroke:#39834a,color:#183d22
+    classDef process fill:#e8f0fe,stroke:#3768a6,color:#172b4d
+    classDef warning fill:#fff2df,stroke:#bd8124,color:#593900
+
+    class SUCCESS success
+    class DEV,TEST,LINT,BUILD,PREVIEW,ZIP,BACKUP,GIT,COMMIT,PUSH,HOST,UPLOAD,EXTRACT,CHECK process
+    class ROLLBACK,FIX warning
