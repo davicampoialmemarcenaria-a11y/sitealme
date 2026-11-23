@@ -14,7 +14,9 @@ import {
     FiPrinter,
     FiRefreshCw,
     FiCheck,
-    FiMenu
+    FiMenu,
+    FiEye,
+    FiEyeOff
 } from "react-icons/fi";
 
 import {
@@ -309,6 +311,37 @@ function normalizarLinhas(lista) {
 
 /*
 =====================================================
+ORDENAR LINHAS POR DATA DE FINALIZAÇÃO
+=====================================================
+*/
+
+function ordenarLinhasPorData(lista) {
+    return [...lista]
+        .map((linha, indiceOriginal) => {
+            const valor = String(linha?.data_realizada || "");
+            const dataValida =
+                /^\d{4}-\d{2}-\d{2}$/.test(valor) &&
+                !Number.isNaN(
+                    new Date(`${valor}T00:00:00`).getTime()
+                );
+
+            return {
+                linha,
+                indiceOriginal,
+                timestamp: dataValida
+                    ? new Date(`${valor}T00:00:00`).getTime()
+                    : Number.POSITIVE_INFINITY
+            };
+        })
+        .sort((a, b) =>
+            a.timestamp - b.timestamp ||
+            a.indiceOriginal - b.indiceOriginal
+        )
+        .map(item => item.linha);
+}
+
+/*
+=====================================================
 FORMATAÇÃO DE DATAS
 =====================================================
 */
@@ -487,6 +520,9 @@ export default function Cronograma() {
     ] = useState([]);
 
     const [linhaArrastadaId, setLinhaArrastadaId] = useState(null);
+
+    // Controla apenas a exibição das linhas no PDF; não altera o cronograma salvo.
+    const [linhasOcultasPdf, setLinhasOcultasPdf] = useState(() => new Set());
 
     const [
         sharepointId,
@@ -1130,6 +1166,28 @@ export default function Cronograma() {
 
     /*
     =================================================
+    VISIBILIDADE DA LINHA NO PDF
+    =================================================
+    */
+
+    function alternarVisibilidadePdf(id) {
+        const identificador = String(id);
+
+        setLinhasOcultasPdf(prev => {
+            const atualizadas = new Set(prev);
+
+            if (atualizadas.has(identificador)) {
+                atualizadas.delete(identificador);
+            } else {
+                atualizadas.add(identificador);
+            }
+
+            return atualizadas;
+        });
+    }
+
+    /*
+    =================================================
     SHAREPOINT
     =================================================
     */
@@ -1645,8 +1703,14 @@ export default function Cronograma() {
         =============================================
         */
 
+        const linhasVisiveisPdf =
+            linhasOrdenadas.filter(
+                linha =>
+                    !linhasOcultasPdf.has(String(linha.id))
+            );
+
         const linhasHtml =
-            linhas.map(
+            linhasVisiveisPdf.map(
                 (
                     linha,
                     index
@@ -2741,6 +2805,13 @@ export default function Cronograma() {
         versao?.numero ??
         "-";
 
+    // A ordem visual e a ordem do PDF seguem a data de finalização.
+    // Linhas sem data ficam no final; datas iguais preservam a ordem manual.
+    const linhasOrdenadas = useMemo(
+        () => ordenarLinhasPorData(linhas),
+        [linhas]
+    );
+
     /*
     =================================================
     LOADING
@@ -2788,6 +2859,49 @@ export default function Cronograma() {
                 {`
                     .cronograma-row.status-aguardando-cliente > td {
                         background-color: #fff2b3 !important;
+                    }
+
+                    .cronograma-row-actions {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                    }
+
+                    .cronograma-row-visibility {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 32px;
+                        height: 32px;
+                        padding: 0;
+                        border: 1px solid #d8d0c6;
+                        border-radius: 6px;
+                        background: #fff;
+                        color: #89490a;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    }
+
+                    .cronograma-row-visibility:hover {
+                        background: #f5eee7;
+                        border-color: #89490a;
+                    }
+
+                    .cronograma-row-visibility svg {
+                        width: 16px;
+                        height: 16px;
+                    }
+
+                    .cronograma-row-visibility.is-hidden {
+                        background: #f5eee7;
+                        color: #8a4b16;
+                        border-color: #c99b70;
+                    }
+
+                    .cronograma-row-visibility:focus-visible {
+                        outline: 2px solid #89490a;
+                        outline-offset: 2px;
                     }
                 `}
             </style>
@@ -3177,7 +3291,7 @@ export default function Cronograma() {
                             <tbody>
 
                                 {
-                                    linhas.length ===
+                                    linhasOrdenadas.length ===
                                         0
                                         ? (
                                             <tr>
@@ -3192,7 +3306,7 @@ export default function Cronograma() {
                                             </tr>
                                         )
                                         : (
-                                            linhas.map(
+                                            linhasOrdenadas.map(
                                                 (
                                                     linha,
                                                     index
@@ -3351,6 +3465,37 @@ export default function Cronograma() {
 
                                                         <td>
 
+                                                            <div className="cronograma-row-actions">
+
+                                                            <button
+                                                                type="button"
+                                                                className={`cronograma-row-visibility ${
+                                                                    linhasOcultasPdf.has(String(linha.id))
+                                                                        ? "is-hidden"
+                                                                        : ""
+                                                                }`}
+                                                                onClick={() =>
+                                                                    alternarVisibilidadePdf(linha.id)
+                                                                }
+                                                                title={
+                                                                    linhasOcultasPdf.has(String(linha.id))
+                                                                        ? "Exibir esta linha no PDF"
+                                                                        : "Ocultar esta linha no PDF"
+                                                                }
+                                                                aria-label={
+                                                                    linhasOcultasPdf.has(String(linha.id))
+                                                                        ? "Exibir linha no PDF"
+                                                                        : "Ocultar linha no PDF"
+                                                                }
+                                                                aria-pressed={linhasOcultasPdf.has(String(linha.id))}
+                                                            >
+                                                                {
+                                                                    linhasOcultasPdf.has(String(linha.id))
+                                                                        ? <FiEyeOff />
+                                                                        : <FiEye />
+                                                                }
+                                                            </button>
+
                                                             <button
                                                                 type="button"
                                                                 className="cronograma-row-delete"
@@ -3363,6 +3508,8 @@ export default function Cronograma() {
                                                             >
                                                                 <FiTrash2 />
                                                             </button>
+
+                                                            </div>
 
                                                         </td>
 
