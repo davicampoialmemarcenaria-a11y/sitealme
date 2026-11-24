@@ -2011,3 +2011,312 @@ RESPONSIVO
     }
 
 }
+
+
+/*
+=====================================================
+ALTERNÂNCIA DE VISUALIZAÇÃO
+=====================================================
+*/
+
+.obras-visualizacao-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 18px;
+    padding: 4px;
+    border: 1px solid #e3ddd7;
+    border-radius: 9px;
+    background: #f4f0ec;
+}
+
+.obras-visualizacao-toggle button {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #756960;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.obras-visualizacao-toggle button:hover {
+    background: #ebe5df;
+    color: #4b2108;
+}
+
+.obras-visualizacao-toggle button.ativa {
+    background: #fff;
+    color: #4b2108;
+    box-shadow: 0 2px 6px rgba(60, 35, 18, .08);
+}
+
+
+/*
+=====================================================
+KANBAN - ÁREA GERAL
+=====================================================
+*/
+
+.obras-kanban {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(250px, 1fr));
+    align-items: start;
+    gap: 16px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 12px;
+}
+
+.obras-kanban-coluna {
+    min-width: 250px;
+    min-height: 300px;
+    padding: 14px;
+    border: 1px solid #e8e1da;
+    border-radius: 12px;
+    background: #faf8f6;
+    transition: border-color .2s, background .2s;
+}
+
+.obras-kanban-coluna.drag-over {
+    border-color: #d38a17;
+    background: #fff8ed;
+}
+
+
+/*
+=====================================================
+KANBAN - CABEÇALHO DA COLUNA
+=====================================================
+*/
+
+.obras-kanban-coluna-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-bottom: 13px;
+    border-bottom: 1px solid #e8e1da;
+}
+
+.obras-kanban-coluna-titulo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.obras-kanban-coluna-titulo h3 {
+    margin: 0;
+    color: #4b2108;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.obras-kanban-contador {
+    min-width: 25px;
+    height: 25px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 7px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: #eee8e2;
+    color: #6d5c50;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/*
+=====================================================
+KANBAN - INDICADORES DAS FASES
+=====================================================
+*/
+
+.obras-kanban-indicador {
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.obras-kanban-indicador.preparacao {
+    background: #d38a17;
+}
+
+.obras-kanban-indicador.andamento {
+    background: #4d83ad;
+}
+
+.obras-kanban-indicador.finalizado {
+    background: #5c805d;
+}
+
+.obras-kanban-indicador.cancelado {
+    background: #a04444;
+}
+
+
+/*
+=====================================================
+KANBAN - LISTA DE CARTÕES
+=====================================================
+*/
+
+.obras-kanban-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    min-height: 230px;
+}
+
+.obras-kanban-vazio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    padding: 15px;
+    border: 1px dashed #ddd5ce;
+    border-radius: 9px;
+    color: #aaa;
+    font-size: 12px;
+    text-align: center;
+}
+
+
+/*
+=====================================================
+KANBAN - CARTÃO
+=====================================================
+*/
+
+.obras-kanban-card {
+    padding: 15px;
+    border: 1px solid #e8e1da;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 2px 7px rgba(60, 35, 18, .04);
+    cursor: grab;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+
+.obras-kanban-card:hover {
+    transform: translateY(-2px);
+    border-color: #d8c7b5;
+    box-shadow: 0 5px 14px rgba(60, 35, 18, .08);
+}
+
+.obras-kanban-card:active {
+    cursor: grabbing;
+}
+
+.obras-kanban-card.dragging {
+    opacity: .45;
+    transform: rotate(1deg);
+}
+
+.obras-kanban-card-topo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.obras-kanban-card h4 {
+    margin: 0;
+    color: #4b2108;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.obras-kanban-card-cliente {
+    display: block;
+    margin-top: 4px;
+    color: #93877e;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.obras-kanban-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 11px;
+    border-top: 1px solid #f0ece8;
+}
+
+.obras-kanban-card-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #756960;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.obras-kanban-card-info-item svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: #b19b87;
+    font-size: 13px;
+}
+
+.obras-kanban-card-valor {
+    margin-top: 12px;
+    color: #4b2108;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.obras-kanban-card-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f0ece8;
+}
+
+
+/*
+=====================================================
+KANBAN - RESPONSIVIDADE
+=====================================================
+*/
+
+@media (max-width: 1200px) {
+    .obras-kanban {
+        grid-template-columns: repeat(4, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .obras-visualizacao-toggle {
+        display: flex;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .obras-visualizacao-toggle button {
+        flex: 1;
+        padding: 0 8px;
+    }
+
+    .obras-kanban {
+        grid-template-columns: repeat(4, minmax(260px, 1fr));
+    }
+}

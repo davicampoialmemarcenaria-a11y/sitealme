@@ -2826,3 +2826,275 @@
     background: #4b2108;
     color: #fff;
 }
+
+
+/* =====================================================
+   KANBAN DE ORÇAMENTOS
+===================================================== */
+
+.orcamento-kanban {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(270px, 1fr));
+    gap: 18px;
+    align-items: start;
+    overflow-x: auto;
+    padding: 8px 2px 18px;
+}
+
+.orcamento-kanban-coluna {
+    min-width: 270px;
+    background: #f5f4f1;
+    border: 1px solid #e5e1dc;
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 300px;
+}
+
+.orcamento-kanban-coluna-header {
+    margin-bottom: 14px;
+}
+
+.orcamento-kanban-titulo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    h3 {
+        margin: 0;
+        color: #431c01;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    span {
+        display: block;
+        margin-top: 4px;
+        color: #77716b;
+        font-size: 11px;
+    }
+}
+
+.orcamento-kanban-contador {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 7px;
+    border-radius: 8px;
+    background: #e7e1da;
+    color: #431c01;
+    font-size: 12px;
+}
+
+.orcamento-kanban-cartoes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.orcamento-kanban-card {
+    background: #fff;
+    border: 1px solid #e8e4df;
+    border-radius: 10px;
+    padding: 14px;
+    box-shadow: 0 2px 7px rgba(45, 30, 15, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 14px rgba(45, 30, 15, 0.09);
+    }
+
+    h4 {
+        margin: 12px 0 14px;
+        color: #321b0c;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+}
+
+.orcamento-kanban-card-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.orcamento-kanban-codigo {
+    color: #89490a;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.orcamento-kanban-dados {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+    }
+
+    span {
+        color: #89827b;
+        font-size: 10px;
+    }
+
+    strong {
+        color: #4a4038;
+        font-size: 12px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+    }
+}
+
+.orcamento-kanban-valores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 12px 0;
+    border-top: 1px solid #eeeae5;
+    border-bottom: 1px solid #eeeae5;
+
+    div {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 0;
+    }
+
+    span {
+        color: #89827b;
+        font-size: 10px;
+    }
+
+    strong {
+        color: #431c01;
+        font-size: 12px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+}
+
+.orcamento-kanban-atualizacao {
+    margin-top: 10px;
+    color: #99918a;
+    font-size: 10px;
+}
+
+.orcamento-kanban-acoes {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+
+    button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 11px;
+    }
+
+    .orcamento-lista-editar {
+        flex: 1;
+    }
+}
+
+.orcamento-kanban-vazio {
+    padding: 22px 10px;
+    border: 1px dashed #d8d0c7;
+    border-radius: 8px;
+    color: #938a81;
+    font-size: 11px;
+    text-align: center;
+}
+
+/* Identificação visual das fases */
+
+.orcamento-kanban-rascunho {
+    border-top: 3px solid #a9a29a;
+}
+
+.orcamento-kanban-em_analise {
+    border-top: 3px solid #d48821;
+}
+
+.orcamento-kanban-aprovado {
+    border-top: 3px solid #527c5b;
+}
+
+.orcamento-kanban-cancelado {
+    border-top: 3px solid #a65b50;
+}
+
+/* Responsividade */
+
+@media (max-width: 1200px) {
+    .orcamento-kanban {
+        grid-template-columns: repeat(4, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .orcamento-kanban {
+        grid-template-columns: repeat(4, minmax(250px, 1fr));
+    }
+}
+
+/* =====================================================
+   ARRASTE DO KANBAN
+===================================================== */
+
+.orcamento-kanban-card {
+    cursor: grab;
+    user-select: none;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.orcamento-kanban-card-arrastando {
+    opacity: 0.4;
+    transform: scale(0.97);
+    border: 1px dashed #89490a;
+}
+
+.orcamento-kanban-card-movendo {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.orcamento-kanban-coluna {
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.orcamento-kanban-coluna-destacada {
+    background: #eee8df;
+    border: 1px dashed #89490a;
+    box-shadow: inset 0 0 0 1px rgba(137, 73, 10, 0.12);
+}
+
+.orcamento-kanban-coluna-destacada
+.orcamento-kanban-vazio {
+    background: #fff;
+    border-color: #d48821;
+    color: #89490a;
+}

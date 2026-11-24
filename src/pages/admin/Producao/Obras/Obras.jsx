@@ -14,7 +14,9 @@ import {
     FiSearch,
     FiFilter,
     FiCheck,
-    FiRotateCcw
+    FiRotateCcw,
+    FiGrid,
+    FiList
 } from "react-icons/fi";
 
 import {
@@ -56,7 +58,7 @@ const FORM_INICIAL = {
 
     dias_finalizacao_esperado: "",
 
-    fase: "",
+    fase: "Preparação",
 
     // Dados financeiros preenchidos somente pela tela Obras.
     teto_custo: "",
@@ -106,6 +108,18 @@ const ROLE_MARCENEIRO = 5;
 
 const ROLE_PROJETISTA = 3;
 
+/*
+=====================================================
+FASES DO KANBAN DE OBRAS
+=====================================================
+*/
+
+const FASES_OBRA = [
+    "Preparação",
+    "Andamento",
+    "Finalizado",
+    "Cancelado"
+];
 
 /*
 =====================================================
@@ -259,7 +273,43 @@ const [
         setDesconcluindo
     ] = useState(false);
 
+/*
+=====================================================
+VISUALIZAÇÃO DO KANBAN
+=====================================================
+*/
 
+const [
+    visualizacaoObras,
+    setVisualizacaoObras
+] = useState("kanban");
+
+
+/*
+=====================================================
+ARRASTAR CARTÕES
+=====================================================
+*/
+
+const [
+    obraArrastadaId,
+    setObraArrastadaId
+] = useState(null);
+
+const [
+    colunaFaseHover,
+    setColunaFaseHover
+] = useState(null);
+
+const [
+    faseAtualizandoId,
+    setFaseAtualizandoId
+] = useState(null);
+
+const [
+    mensagemKanban,
+    setMensagemKanban
+] = useState(null);
     /*
     =================================================
     MODAIS
@@ -1399,6 +1449,231 @@ setOrcamentosAprovados(
         setFiltroResponsavel("");
 
     }
+
+/*
+=====================================================
+MOVER OBRA PARA OUTRA FASE
+=====================================================
+*/
+
+async function moverObraParaFase(
+    obraId,
+    novaFase
+) {
+
+    const obra = obras.find(
+        item => String(item.id) === String(obraId)
+    );
+
+    if (!obra) {
+        return;
+    }
+
+    if (!FASES_OBRA.includes(novaFase)) {
+        setMensagemKanban({
+            tipo: "erro",
+            texto: "Essa fase não é permitida."
+        });
+
+        return;
+    }
+
+    if (obra.fase === novaFase) {
+        return;
+    }
+
+    if (faseAtualizandoId !== null) {
+        return;
+    }
+
+    setMensagemKanban(null);
+    setFaseAtualizandoId(obra.id);
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabase.functions.invoke(
+            "admin-obras",
+            {
+                body: {
+                    action: "update_phase",
+                    id: obra.id,
+                    fase: novaFase
+                }
+            }
+        );
+
+        if (error) {
+            throw error;
+        }
+
+        if (data?.error) {
+            throw new Error(data.error);
+        }
+
+        if (!data?.obra) {
+            throw new Error(
+                "O servidor não confirmou a alteração da fase."
+            );
+        }
+
+        setObras(atual =>
+            atual.map(item =>
+                String(item.id) === String(obra.id)
+                    ? {
+                        ...item,
+                        fase: data.obra.fase
+                    }
+                    : item
+            )
+        );
+
+        setMensagemKanban({
+            tipo: "sucesso",
+            texto: `${obra.nome}: fase alterada para ${novaFase}.`
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao alterar fase da obra:",
+            error
+        );
+
+        setMensagemKanban({
+            tipo: "erro",
+            texto:
+                error?.message ||
+                "Não foi possível alterar a fase da obra."
+        });
+
+    } finally {
+
+        setFaseAtualizandoId(null);
+        setObraArrastadaId(null);
+        setColunaFaseHover(null);
+
+    }
+
+}
+
+
+/*
+=====================================================
+INICIAR ARRASTE
+=====================================================
+*/
+
+function iniciarArrasteObra(
+    event,
+    obra
+) {
+
+    if (faseAtualizandoId !== null) {
+        event.preventDefault();
+        return;
+    }
+
+    setObraArrastadaId(obra.id);
+
+    event.dataTransfer.effectAllowed = "move";
+
+    event.dataTransfer.setData(
+        "text/plain",
+        String(obra.id)
+    );
+
+}
+
+
+/*
+=====================================================
+ARRASTAR SOBRE COLUNA
+=====================================================
+*/
+
+function arrastarSobreColuna(
+    event,
+    fase
+) {
+
+    event.preventDefault();
+
+    if (faseAtualizandoId !== null) {
+        return;
+    }
+
+    event.dataTransfer.dropEffect = "move";
+
+    setColunaFaseHover(fase);
+
+}
+
+
+/*
+=====================================================
+SAIR DA COLUNA
+=====================================================
+*/
+
+function sairDaColuna(event) {
+
+    if (
+        !event.currentTarget.contains(
+            event.relatedTarget
+        )
+    ) {
+        setColunaFaseHover(null);
+    }
+
+}
+
+
+/*
+=====================================================
+SOLTAR CARTÃO
+=====================================================
+*/
+
+function soltarObraNaColuna(
+    event,
+    novaFase
+) {
+
+    event.preventDefault();
+
+    const obraId =
+        event.dataTransfer.getData("text/plain") ||
+        obraArrastadaId;
+
+    setColunaFaseHover(null);
+
+    if (!obraId) {
+        return;
+    }
+
+    moverObraParaFase(
+        obraId,
+        novaFase
+    );
+
+}
+
+
+/*
+=====================================================
+FINALIZAR ARRASTE
+=====================================================
+*/
+
+function finalizarArrasteObra() {
+
+    setObraArrastadaId(null);
+    setColunaFaseHover(null);
+
+}
 
 /*
 =====================================================
@@ -2991,7 +3266,47 @@ function selecionarOrcamentoAprovado(
                     </strong>
 
                 </div>
+{
+    aba === "ativas" && (
 
+        <div className="obras-visualizacao-toggle">
+
+            <button
+                type="button"
+                className={
+                    visualizacaoObras === "kanban"
+                        ? "ativa"
+                        : ""
+                }
+                onClick={() =>
+                    setVisualizacaoObras("kanban")
+                }
+                title="Visualização Kanban"
+            >
+                <FiGrid />
+                Kanban
+            </button>
+
+            <button
+                type="button"
+                className={
+                    visualizacaoObras === "lista"
+                        ? "ativa"
+                        : ""
+                }
+                onClick={() =>
+                    setVisualizacaoObras("lista")
+                }
+                title="Visualização em tabela"
+            >
+                <FiList />
+                Lista
+            </button>
+
+        </div>
+
+    )
+}
 
                 {
 
@@ -3037,6 +3352,11 @@ function selecionarOrcamentoAprovado(
             ================================================= */}
 
             <section className="obras-content">
+                {mensagemKanban && (
+    <div className={`obras-kanban-mensagem ${mensagemKanban.tipo}`}>
+        {mensagemKanban.texto}
+    </div>
+)}
 
 
                 <div className="obras-section-title">
@@ -3149,12 +3469,199 @@ function selecionarOrcamentoAprovado(
 
                         )
 
-                        : (
+                        
+: (
 
-                            <div
-    className="obras-table-wrapper"
-    style={{ overflowX: "auto", width: "100%" }}
->
+    aba === "ativas" && visualizacaoObras === "kanban" ? (
+
+        <div className="obras-kanban">
+
+            {FASES_OBRA.map((fase) => {
+
+                const obrasDaFase = obrasFiltradas.filter((obra) => {
+                    const faseObra = obra.fase || "Preparação";
+                    return faseObra === fase;
+                });
+
+                return (
+                    <div
+                        key={fase}
+                        className={`obras-kanban-coluna ${
+                            colunaFaseHover === fase ? "drag-over" : ""
+                        }`}
+                        onDragOver={(event) => arrastarSobreColuna(event, fase)}
+                        onDragLeave={sairDaColuna}
+                        onDrop={(event) => soltarObraNaColuna(event, fase)}
+                    >
+
+                        <div className="obras-kanban-coluna-header">
+
+                            <div className="obras-kanban-coluna-titulo">
+                                <span
+                                    className={`obras-kanban-indicador ${
+                                        fase === "Preparação"
+                                            ? "preparacao"
+                                            : fase === "Andamento"
+                                                ? "andamento"
+                                                : fase === "Finalizado"
+                                                    ? "finalizado"
+                                                    : "cancelado"
+                                    }`}
+                                />
+
+                                <strong>{fase}</strong>
+                            </div>
+
+                            <span className="obras-kanban-contador">
+                                {obrasDaFase.length}
+                            </span>
+
+                        </div>
+
+                        <div className="obras-kanban-lista">
+
+                            {obrasDaFase.length === 0 ? (
+
+                                <div className="obras-kanban-vazio">
+                                    Nenhuma obra nesta fase.
+                                </div>
+
+                            ) : (
+
+                                obrasDaFase.map((obra) => (
+
+                                    <article
+                                        key={obra.id}
+                                        className={`obras-kanban-card ${
+                                            obraArrastadaId === obra.id
+                                                ? "dragging"
+                                                : ""
+                                        }`}
+                                        draggable={faseAtualizandoId === null}
+                                        onDragStart={(event) =>
+                                            iniciarArrasteObra(event, obra)
+                                        }
+                                        onDragEnd={finalizarArrasteObra}
+                                    >
+
+                                        <div className="obras-kanban-card-topo">
+
+                                            <div>
+                                                <strong className="obras-kanban-card-cliente">
+                                                    {obra.nome || "Obra sem nome"}
+                                                </strong>
+
+                                                <small>
+                                                    #{obra.id}
+                                                </small>
+                                            </div>
+
+                                        </div>
+
+                                        <div className="obras-kanban-card-info">
+
+                                            <div className="obras-kanban-card-info-item">
+                                                <span>Cliente</span>
+                                                <strong>
+                                                    {obra.cliente_nome || "-"}
+                                                </strong>
+                                            </div>
+
+                                            <div className="obras-kanban-card-info-item">
+                                                <span>Endereço</span>
+                                                <strong>
+                                                    {obra.endereco || "-"}
+                                                </strong>
+                                            </div>
+
+                                            <div className="obras-kanban-card-info-item">
+                                                <span>Arquiteto / Empresa</span>
+                                                <strong>
+                                                    {obra.arquiteto_empresa || "-"}
+                                                </strong>
+                                            </div>
+
+                                            <div className="obras-kanban-card-info-item">
+                                                <span>Início previsto</span>
+                                                <strong>
+                                                    {formatarData(obra.data_inicio_esperada)}
+                                                </strong>
+                                            </div>
+
+                                            <div className="obras-kanban-card-info-item">
+                                                <span>Responsáveis</span>
+                                                <strong>
+                                                    {obra.rdo_nome || "-"}
+                                                </strong>
+                                                <strong>
+                                                    {obra.marceneiro_nome || "-"}
+                                                </strong>
+                                                <strong>
+                                                    {obra.projetista_nome || "-"}
+                                                </strong>
+                                            </div>
+
+                                        </div>
+
+                                        <div className="obras-kanban-card-valor">
+                                            {formatarMoeda(obra.valor)}
+                                        </div>
+
+                                        <div className="obras-kanban-card-acoes">
+
+                                            <button
+                                                type="button"
+                                                className="obra-action edit"
+                                                title="Editar obra"
+                                                onClick={() => abrirEdicao(obra)}
+                                            >
+                                                <FiEdit2 />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="obra-action complete"
+                                                title="Concluir obra"
+                                                onClick={() => abrirConclusao(obra)}
+                                            >
+                                                <FiCheck />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="obra-action delete"
+                                                title="Excluir obra"
+                                                onClick={() => abrirExclusao(obra)}
+                                            >
+                                                <FiTrash2 />
+                                            </button>
+
+                                        </div>
+
+                                        {faseAtualizandoId === obra.id && (
+                                            <small>Atualizando fase...</small>
+                                        )}
+
+                                    </article>
+
+                                ))
+
+                            )}
+
+                        </div>
+
+                    </div>
+                );
+            })}
+
+        </div>
+
+    ) : (
+
+        <div
+            className="obras-table-wrapper"
+            style={{ overflowX: "auto", width: "100%" }}
+        >
 
 
                                <table
@@ -3674,7 +4181,7 @@ function selecionarOrcamentoAprovado(
 
                             </div>
 
-                        )
+                        ) )
 
                 }
 
@@ -4002,34 +4509,34 @@ function selecionarOrcamentoAprovado(
                                     </div>
 
 
-                                    <div className="obras-form-group">
+                                   
+<div className="obras-form-group">
 
-                                        <label>
-                                            Fase atual
-                                        </label>
+    <label>
+        Fase atual
+    </label>
 
+    <select
+        name="fase"
+        value={form.fase || "Preparação"}
+        onChange={alterarCampo}
+    >
 
-                                        <input
+        {FASES_OBRA.map(fase => (
 
-                                            type="text"
+            <option
+                key={fase}
+                value={fase}
+            >
+                {fase}
+            </option>
 
-                                            name="fase"
+        ))}
 
-                                            value={
-                                                form.fase
-                                            }
+    </select>
 
-                                            onChange={
-                                                alterarCampo
-                                            }
+</div>
 
-                                            placeholder="Digite a fase atual da obra"
-
-                                            autoComplete="off"
-
-                                        />
-
-                                    </div>
 
 
                                     <div className="obras-form-group">

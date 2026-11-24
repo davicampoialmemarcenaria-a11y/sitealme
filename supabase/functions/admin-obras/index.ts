@@ -2594,6 +2594,28 @@ Deno.serve(
 
             }
 
+/*
+=========================================
+ATUALIZAR SOMENTE A FASE
+=========================================
+*/
+
+if (
+    action === "update_phase"
+) {
+
+    const obra = await atualizarFaseObra(
+        body,
+        acesso
+    );
+
+    return jsonResponse({
+        success: true,
+        obra
+    });
+
+}
+
 
             /*
             =========================================

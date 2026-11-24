@@ -1052,6 +1052,19 @@ export default function TabelaOrcamento() {
     const [carregandoLista, setCarregandoLista] =
         useState(false);
 
+        // =====================================================
+// ARRASTE DO KANBAN
+// =====================================================
+
+const [orcamentoArrastadoId, setOrcamentoArrastadoId] =
+    useState(null);
+
+const [colunaEmDestaque, setColunaEmDestaque] =
+    useState(null);
+
+const [orcamentoMovendoId, setOrcamentoMovendoId] =
+    useState(null);
+
     const [erroLista, setErroLista] =
         useState("");
 
@@ -1066,6 +1079,9 @@ const [confirmacaoPersonalizada, setConfirmacaoPersonalizada] =
 
     const [salvando, setSalvando] =
         useState(false);
+
+        const [atualizandoStatus, setAtualizandoStatus] =
+    useState(false);
 
     const [orcamentoId, setOrcamentoId] =
         useState(urlOrcamentoId || "");
@@ -1153,7 +1169,9 @@ const pedirConfirmacao = ({
 
 });
 
-
+// Guarda o último status confirmado no banco de dados.
+// A próxima etapa só poderá ser liberada depois de salvar.
+const [statusSalvo, setStatusSalvo] = useState("rascunho");
     /*
     =================================================
     AMBIENTES
@@ -2815,7 +2833,66 @@ function sincronizarScrollTabelaOrcamento(
     };
 
     
+// =====================================================
+// VALIDAR TRANSIÇÃO ENTRE STATUS
+// =====================================================
 
+const validarTransicaoStatus = (statusAtual, novoStatus) => {
+
+    const atual = statusValue(statusAtual);
+    const novo = statusValue(novoStatus);
+
+    // Permanecer na mesma fase é permitido.
+    if (atual === novo) {
+        return null;
+    }
+
+    // Rascunho só pode avançar para Em análise
+    // ou ser cancelado.
+    if (atual === "rascunho") {
+
+        if (novo === "aprovado") {
+            return "Este orçamento está em Rascunho. Você precisa movê-lo para Em análise antes de aprová-lo.";
+        }
+
+        if (novo !== "em_analise" && novo !== "cancelado") {
+            return "Não é possível realizar essa alteração a partir de Rascunho.";
+        }
+    }
+
+    // Em análise pode avançar para Aprovado
+    // ou ser cancelado.
+    if (atual === "em_analise") {
+
+        if (novo === "rascunho") {
+            return "Um orçamento em análise não pode retornar diretamente para Rascunho.";
+        }
+
+        if (novo !== "aprovado" && novo !== "cancelado") {
+            return "Não é possível realizar essa alteração.";
+        }
+    }
+
+    // Aprovado pode retornar para Em análise
+    // ou ser cancelado.
+    if (atual === "aprovado") {
+
+        if (novo === "rascunho") {
+            return "Um orçamento aprovado não pode retornar diretamente para Rascunho. Mova-o para Em análise.";
+        }
+
+        if (novo !== "em_analise" && novo !== "cancelado") {
+            return "Não é possível realizar essa alteração.";
+        }
+    }
+
+    // Cancelado não pode sair dessa fase.
+    if (atual === "cancelado") {
+        return "Um orçamento cancelado não pode ter seu status alterado.";
+    }
+
+    return null;
+};
 
     /*
     =================================================
@@ -3058,6 +3135,9 @@ over_final_valor_com_rt_processado:
 
 });
 
+setStatusSalvo(
+    statusValue(quote.status || "rascunho")
+);
             setArquitetoManual(
                 Boolean(
                     quote.arquiteto_manual
@@ -3411,6 +3491,165 @@ setOverFinalAplicado(
         });
     };
 
+    // =====================================================
+// MOVER ORÇAMENTO ENTRE AS FASES DO KANBAN
+// =====================================================
+
+const moverOrcamentoKanban = async (orcamentoId, novoStatus) => {
+
+    if (!orcamentoId || !novoStatus) return;
+
+    if (orcamentoMovendoId) return;
+
+    const orcamentoAtual = listaOrcamentos.find(
+        item => String(item.id) === String(orcamentoId)
+    );
+
+    if (!orcamentoAtual) return;
+
+    const statusAtual = statusValue(orcamentoAtual.status);
+    const statusDestino = statusValue(novoStatus);
+
+    // Não faz nada se o cartão continuar na mesma coluna.
+    if (statusAtual === statusDestino) {
+        return;
+    }
+
+    // Aplica exatamente as mesmas regras do editor.
+    const mensagemErro = validarTransicaoStatus(
+        statusAtual,
+        statusDestino
+    );
+
+    if (mensagemErro) {
+
+        mostrarAviso(mensagemErro);
+
+        return;
+    }
+
+    try {
+
+        setOrcamentoMovendoId(orcamentoId);
+
+        const { error } = await supabase
+            .from("orcamentos")
+            .update({
+                status: statusDestino
+            })
+            .eq("id", orcamentoId);
+
+        if (error) {
+            throw error;
+        }
+
+        // Atualiza a lista somente depois da confirmação do banco.
+        await carregarListaOrcamentos();
+
+        mostrarAviso(
+            `Orçamento movido para ${statusLabel(statusDestino)} com sucesso.`,
+            "sucesso"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao movimentar orçamento no Kanban:",
+            error
+        );
+
+        mostrarAviso(
+            error.message ||
+            "Não foi possível movimentar o orçamento. Tente novamente."
+        );
+
+    } finally {
+
+        setOrcamentoMovendoId(null);
+        setOrcamentoArrastadoId(null);
+        setColunaEmDestaque(null);
+
+    }
+
+};
+
+// =====================================================
+// INICIAR ARRASTE
+// =====================================================
+
+const iniciarArrasteOrcamento = (event, row) => {
+
+    if (orcamentoMovendoId) {
+        event.preventDefault();
+        return;
+    }
+
+    setOrcamentoArrastadoId(row.id);
+
+    event.dataTransfer.effectAllowed = "move";
+
+    event.dataTransfer.setData(
+        "text/plain",
+        String(row.id)
+    );
+
+};
+
+
+// =====================================================
+// ARRASTE SOBRE UMA COLUNA
+// =====================================================
+
+const arrastarSobreColuna = (event, status) => {
+
+    event.preventDefault();
+
+    event.dataTransfer.dropEffect = "move";
+
+    setColunaEmDestaque(status);
+
+};
+
+
+// =====================================================
+// SAIR DE UMA COLUNA
+// =====================================================
+
+const sairDaColuna = event => {
+
+    if (
+        event.currentTarget.contains(event.relatedTarget)
+    ) {
+        return;
+    }
+
+    setColunaEmDestaque(null);
+
+};
+
+
+// =====================================================
+// SOLTAR ORÇAMENTO NA COLUNA
+// =====================================================
+
+const soltarOrcamentoNaColuna = async (event, statusDestino) => {
+
+    event.preventDefault();
+
+    const idArrastado =
+        event.dataTransfer.getData("text/plain") ||
+        orcamentoArrastadoId;
+
+    setColunaEmDestaque(null);
+
+    if (!idArrastado) return;
+
+    await moverOrcamentoKanban(
+        idArrastado,
+        statusDestino
+    );
+
+};
 // =====================================================
 // LIBERAR ALTERAÇÃO DO VALOR FINAL DESEJADO — V2
 // =====================================================
@@ -3515,25 +3754,109 @@ const excluirOrcamento = row => {
     =================================================
     */
 
-    const atualizarCampo =
-        (
-            campo,
-            valor
-        ) => {
+ 
+const atualizarCampo = async (campo, valor) => {
 
-            setOrcamento(
-                atual => ({
+    if (campo === "status") {
 
-                    ...atual,
+        const novoStatus = statusValue(valor);
 
-                    [campo]:
-                        valor
+        const mensagemErro = validarTransicaoStatus(
+            statusSalvo,
+            novoStatus
+        );
 
-                })
+        if (mensagemErro) {
+            mostrarAviso(mensagemErro);
+            return;
+        }
+
+        if (salvando || atualizandoStatus) {
+            return;
+        }
+
+        // Não há registro no banco enquanto o orçamento
+        // ainda não foi criado pela primeira vez.
+        const idAtual = String(
+            orcamentoId ||
+            urlOrcamentoId ||
+            ""
+        ).trim();
+
+        if (!idAtual) {
+
+            setOrcamento(atual => ({
+                ...atual,
+                status: novoStatus
+            }));
+
+            setStatusSalvo(novoStatus);
+
+            mostrarAviso(
+                "Status definido. Ele será gravado quando o orçamento for salvo pela primeira vez.",
+                "sucesso"
             );
 
-        };
+            return;
+        }
 
+        try {
+
+            setAtualizandoStatus(true);
+
+            const { error } = await supabase
+                .from("orcamentos")
+                .update({
+                    status: novoStatus
+                })
+                .eq("id", idAtual);
+
+            if (error) {
+                throw error;
+            }
+
+            // Atualiza a interface somente depois
+            // da confirmação de gravação no banco.
+            setOrcamento(atual => ({
+                ...atual,
+                status: novoStatus
+            }));
+
+            setStatusSalvo(novoStatus);
+
+            mostrarAviso(
+                `Status atualizado para ${statusLabel(novoStatus)}.`,
+                "sucesso"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Erro ao atualizar status do orçamento:",
+                error
+            );
+
+            mostrarAviso(
+                error.message ||
+                "Não foi possível atualizar o status. Tente novamente."
+            );
+
+        } finally {
+
+            setAtualizandoStatus(false);
+
+        }
+
+        return;
+    }
+
+    // Os demais campos continuam funcionando como antes.
+    setOrcamento(atual => ({
+        ...atual,
+        [campo]: valor
+    }));
+
+};
 
     /*
     =================================================
@@ -7076,7 +7399,16 @@ ${novoCronograma}`;
     const gerarPdfOrcamento = async () => {
 
         try {
+if (
+    statusSalvo !== "aprovado" ||
+    orcamento.status !== "aprovado"
+) {
+    mostrarAviso(
+        "A exportação do PDF só está disponível para orçamentos aprovados."
+    );
 
+    return;
+}
             const itensComDados =
                 ambientesCalculados.some(
                     ambiente =>
@@ -7299,8 +7631,8 @@ const criarCapaDataUrl = async () => {
         });
 
         // Desenha a imagem ocupando toda a página
-       const larguraImagem = 700;
-const alturaImagem = 1000;
+       const larguraImagem = 500;
+const alturaImagem = 700;
 
 const posicaoX = (canvas.width - larguraImagem) / 2;
 const posicaoY = (canvas.height - alturaImagem) / 3;
@@ -8606,8 +8938,14 @@ const eraNovoOrcamento =
 })
                         .eq("id", quoteId);
 
-                if (quoteUpdateError) throw quoteUpdateError;
+               if (quoteUpdateError) throw quoteUpdateError;
             }
+
+            // O status só avança depois que a gravação
+            // do orçamento no banco foi confirmada.
+            setStatusSalvo(
+                statusValue(orcamento.status)
+            );
 
             const { data: versions, error: versionsError } =
                 await supabase
@@ -9396,6 +9734,42 @@ const deveCriarNovaVersao =
     );
   });
 
+
+const colunasKanban = [
+    {
+        status: "rascunho",
+        titulo: "Rascunho",
+        descricao: "Orçamentos em elaboração"
+    },
+    {
+        status: "em_analise",
+        titulo: "Em análise",
+        descricao: "Aguardando aprovação"
+    },
+    {
+        status: "aprovado",
+        titulo: "Aprovado",
+        descricao: "Orçamentos aprovados"
+    },
+    {
+        status: "cancelado",
+        titulo: "Cancelado",
+        descricao: "Orçamentos cancelados"
+    }
+];
+
+const orcamentosPorStatus = colunasKanban.reduce(
+    (grupos, coluna) => {
+        grupos[coluna.status] = orcamentosFiltrados.filter(
+            item => statusValue(item.status) === coluna.status
+        );
+
+        return grupos;
+    },
+    {}
+);
+
+
     /*
     =================================================
     RENDER
@@ -9589,132 +9963,209 @@ const deveCriarNovaVersao =
 
     </div>
 
-                    {carregandoLista && listaOrcamentos.length === 0 ? (
-                        <div className="orcamento-lista-loading">
-                            Carregando orçamentos...
+                  
+{carregandoLista && listaOrcamentos.length === 0 ? (
+    <div className="orcamento-lista-loading">
+        Carregando orçamentos...
+    </div>
+) : orcamentosFiltrados.length === 0 ? (
+    <div className="orcamento-lista-vazia">
+        <strong>Nenhum orçamento encontrado</strong>
+        <span>
+            {pesquisaCliente
+                ? "Tente pesquisar por outro cliente ou nome de orçamento."
+                : "Crie o primeiro orçamento para começar."}
+        </span>
+
+        {!pesquisaCliente && (
+            <button
+                type="button"
+                className="orcamento-salvar"
+                onClick={abrirNovoOrcamento}
+            >
+                <FiPlus />
+                Criar orçamento
+            </button>
+        )}
+    </div>
+) : (
+    <div className="orcamento-kanban">
+
+        {colunasKanban.map(coluna => {
+            const itens = orcamentosPorStatus[coluna.status] || [];
+
+            return (
+                <section
+    key={coluna.status}
+    className={`
+        orcamento-kanban-coluna
+        orcamento-kanban-${coluna.status}
+        ${colunaEmDestaque === coluna.status ? "orcamento-kanban-coluna-destacada" : ""}
+    `}
+    onDragOver={event =>
+        arrastarSobreColuna(event, coluna.status)
+    }
+    onDragLeave={sairDaColuna}
+    onDrop={event =>
+        soltarOrcamentoNaColuna(event, coluna.status)
+    }
+>
+
+                    <header className="orcamento-kanban-coluna-header">
+
+                        <div className="orcamento-kanban-titulo">
+                            <div>
+                                <h3>{coluna.titulo}</h3>
+                                <span>{coluna.descricao}</span>
+                            </div>
+
+                            <strong className="orcamento-kanban-contador">
+                                {itens.length}
+                            </strong>
                         </div>
-                    ) : orcamentosFiltrados.length === 0 ? (
-                        <div className="orcamento-lista-vazia">
-                            <strong>Nenhum orçamento cadastrado</strong>
-                            <span>
-                                Crie o primeiro orçamento para começar.
-                            </span>
-                            <button
-                                type="button"
-                                className="orcamento-salvar"
-                                onClick={abrirNovoOrcamento}
-                            >
-                                <FiPlus />
-                                Criar orçamento
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="orcamento-lista-table-wrapper">
-                            <table className="orcamento-lista-table">
-                                <thead>
-                                    <tr>
-                                       <th>Código</th>
 
-<th>Orçamento</th>
+                    </header>
 
-<th>Arquitetos/Empresa</th>
+                    <div className="orcamento-kanban-cartoes">
 
-<th>Assistente responsável</th>
+                        {itens.length === 0 ? (
+                            <div className="orcamento-kanban-vazio">
+                                Nenhum orçamento nesta fase.
+                            </div>
+                        ) : (
+                            itens.map(row => (
+                                <article
+    key={row.id}
+    className={`
+        orcamento-kanban-card
+        ${orcamentoArrastadoId === row.id ? "orcamento-kanban-card-arrastando" : ""}
+        ${orcamentoMovendoId === row.id ? "orcamento-kanban-card-movendo" : ""}
+    `}
+    draggable={!orcamentoMovendoId}
+    onDragStart={event =>
+        iniciarArrasteOrcamento(event, row)
+    }
+    onDragEnd={() => {
+        setOrcamentoArrastadoId(null);
+        setColunaEmDestaque(null);
+    }}
+>
 
-<th>Vendedor responsável</th>
+                                    <div className="orcamento-kanban-card-topo">
 
-<th>Versão</th>
+                                        <span className="orcamento-kanban-codigo">
+                                            {row.codigo || "Sem código"}
+                                        </span>
 
-<th>Valor mínimo</th>
+                                        <span className="orcamento-lista-versao">
+                                            V{row.versao_atual || 1}
+                                        </span>
 
-<th>Preço final</th>
+                                    </div>
 
-<th>Status</th>
+                                    <h4>
+                                        {row.nome || "Orçamento sem nome"}
+                                    </h4>
 
-<th>Atualizado</th>
+                                    <div className="orcamento-kanban-dados">
 
-<th>Ações</th>
-                                    </tr>
-                                </thead>
+                                        <div>
+                                            <span>Cliente</span>
+                                            <strong>{row.cliente || "—"}</strong>
+                                        </div>
 
-                                
-                                   <tbody>
-    {orcamentosFiltrados.map(row => (
-                                        <tr key={row.id}>
-                                            <td>
-                                                <strong>{row.codigo}</strong>
-                                            </td>
-                                            <td>{row.nome}</td>
-                                           <td>
-    {row.cliente || "—"}
-</td>
+                                        <div>
+                                            <span>Arquiteto / Empresa</span>
+                                            <strong>{row.arquiteto_empresa || "—"}</strong>
+                                        </div>
 
-<td>
-    {row.assistente_responsavel_nome || "—"}
-</td>
+                                        <div>
+                                            <span>Assistente responsável</span>
+                                            <strong>
+                                                {row.assistente_responsavel_nome || "—"}
+                                            </strong>
+                                        </div>
 
-<td>
-    {row.vendedor_responsavel_nome || "—"}
-</td>
+                                        <div>
+                                            <span>Vendedor responsável</span>
+                                            <strong>
+                                                {row.vendedor_responsavel_nome || "—"}
+                                            </strong>
+                                        </div>
 
-<td>
-    <span className="orcamento-lista-versao">
-        V{row.versao_atual || 1}
-    </span>
-</td>
-                                            <td>
+                                    </div>
+
+                                    <div className="orcamento-kanban-valores">
+
+                                        <div>
+                                            <span>Valor mínimo</span>
+                                            <strong>
                                                 {money(row.valor_minimo_total)}
-                                            </td>
-                                            <td className="orcamento-lista-preco-final">
-                                                {money(row.preco_final_total)}
-                                            </td>
-                                            <td>
-                                                <span className={`orcamento-lista-status orcamento-lista-status-${row.status}`}>
-                                                    {statusLabel(row.status)}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {row.updated_at
-                                                    ? new Date(row.updated_at).toLocaleString(
-                                                        "pt-BR",
-                                                        {
-                                                            day: "2-digit",
-                                                            month: "2-digit",
-                                                            year: "numeric",
-                                                            hour: "2-digit",
-                                                            minute: "2-digit"
-                                                        }
-                                                    )
-                                                    : "—"}
-                                            </td>
-                                            <td>
-                                                <div className="orcamento-lista-acoes-linha">
-                                                    <button
-                                                        type="button"
-                                                        className="orcamento-lista-editar"
-                                                        onClick={() => editarOrcamento(row)}
-                                                        title="Editar orçamento"
-                                                    >
-                                                        <FiEdit2 />
-                                                    </button>
+                                            </strong>
+                                        </div>
 
-                                                    <button
-                                                        type="button"
-                                                        className="orcamento-lista-excluir"
-                                                        onClick={() => excluirOrcamento(row)}
-                                                        title="Excluir orçamento"
-                                                    >
-                                                        <FiTrash2 />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                        <div>
+                                            <span>Preço final</span>
+                                            <strong>
+                                                {money(row.preco_final_total)}
+                                            </strong>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="orcamento-kanban-atualizacao">
+                                        Atualizado em{" "}
+                                        {row.updated_at
+                                            ? new Date(row.updated_at).toLocaleString(
+                                                "pt-BR",
+                                                {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit"
+                                                }
+                                            )
+                                            : "—"}
+                                    </div>
+
+                                    <div className="orcamento-kanban-acoes">
+
+                                        <button
+                                            type="button"
+                                            className="orcamento-lista-editar"
+                                            onClick={() => editarOrcamento(row)}
+                                            title="Editar orçamento"
+                                        >
+                                            <FiEdit2 />
+                                            Editar
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className="orcamento-lista-excluir"
+                                            onClick={() => excluirOrcamento(row)}
+                                            title="Excluir orçamento"
+                                        >
+                                            <FiTrash2 />
+                                        </button>
+
+                                    </div>
+
+                                </article>
+                            ))
+                        )}
+
+                    </div>
+
                 </section>
+            );
+        })}
+
+    </div>
+)}
+</section>
+
             </div>
         );
     }
@@ -9838,15 +10289,18 @@ const deveCriarNovaVersao =
                             gerarPdfOrcamento
                         }
                         disabled={
-                            carregandoBase ||
-                            !ambientesCalculados.some(
-                                ambiente =>
-                                    ambiente.itens.some(
-                                        item =>
-                                            item.base_item_id
-                                    )
-                            )
-                        }
+    carregandoBase ||
+    salvando ||
+    statusSalvo !== "aprovado" ||
+    orcamento.status !== "aprovado" ||
+    !ambientesCalculados.some(
+        ambiente =>
+            ambiente.itens.some(
+                item =>
+                    item.base_item_id
+            )
+    )
+}
                     >
 
                         <FiDownload />
@@ -10264,35 +10718,47 @@ const deveCriarNovaVersao =
                         </label>
 
                         <select
-                            value={
-                                orcamento.status
-                            }
-                            onChange={
-                                event =>
-                                    atualizarCampo(
-                                        "status",
-                                        event.target.value
-                                    )
-                            }
-                        >
+    value={orcamento.status}
+    disabled={salvando || atualizandoStatus}
+    onChange={event =>
+        atualizarCampo(
+            "status",
+            event.target.value
+        )
+    }
+>
+    <option
+    value="rascunho"
+    disabled={statusSalvo !== "rascunho"}
+>
+    Rascunho
+</option>
 
-                            <option value="rascunho">
-                                Rascunho
-                            </option>
+<option
+    value="em_analise"
+    disabled={
+        !["rascunho", "em_analise", "aprovado"].includes(statusSalvo)
+    }
+>
+    Em análise
+</option>
 
-                            <option value="em_analise">
-                                Em análise
-                            </option>
+<option
+    value="aprovado"
+    disabled={
+        !["em_analise", "aprovado"].includes(statusSalvo)
+    }
+>
+    Aprovado
+</option>
 
-                            <option value="aprovado">
-                                Aprovado
-                            </option>
-
-                            <option value="cancelado">
-                                Cancelado
-                            </option>
-
-                        </select>
+<option
+    value="cancelado"
+    disabled={statusSalvo === "cancelado"}
+>
+    Cancelado
+</option>
+</select>
 
                     </div>
 
