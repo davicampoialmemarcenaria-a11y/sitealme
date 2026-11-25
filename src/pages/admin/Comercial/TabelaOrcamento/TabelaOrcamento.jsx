@@ -8458,22 +8458,19 @@ doc.setTextColor(
 
             doc.setFontSize(5.5);
 
-            doc.text(
-                `Cliente: ${orcamento.cliente || "-"}`,
-                margem,
-                y
-            );
+          doc.text(
+    `Cliente: ${orcamento.cliente || "-"}`,
+    margem,
+    y
+);
 
-            doc.text(
-                `Status: ${statusLabel(orcamento.status)}`,
-                pageWidth - margem,
-                y,
-                {
-                    align: "right"
-                }
-            );
+doc.text(
+    `Vendedor: ${nomeUsuarioResponsavel(orcamento.vendedor_responsavel_id)}`,
+    margem,
+    y + 10
+);
 
-            y += 18;
+y += 22;
 
             if (
                 Number(versaoAtual) > 0
@@ -13570,3 +13567,4 @@ setAmbientes(atual => atual.map(ambiente => ({
     );
 
 }
+ 
