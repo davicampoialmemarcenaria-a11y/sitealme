@@ -304,11 +304,14 @@ function normalizarLinhas(lista) {
             tipo:
                 normalizarTipoLinha(
                     linha?.tipo
-                )
+                ),
+
+            // Recupera a configuração salva no banco.
+            ocultar_pdf:
+                linha?.ocultar_pdf === true
         })
     );
 }
-
 /*
 =====================================================
 ORDENAR LINHAS POR DATA DE FINALIZAÇÃO
@@ -521,8 +524,8 @@ export default function Cronograma() {
 
     const [linhaArrastadaId, setLinhaArrastadaId] = useState(null);
 
-    // Controla apenas a exibição das linhas no PDF; não altera o cronograma salvo.
-    const [linhasOcultasPdf, setLinhasOcultasPdf] = useState(() => new Set());
+    // Controla as linhas ocultas no PDF e sincroniza com o banco.
+const [linhasOcultasPdf, setLinhasOcultasPdf] = useState(() => new Set());
 
     const [
         sharepointId,
@@ -820,59 +823,98 @@ export default function Cronograma() {
                         }
                     }
 
-                    /*
-                    =========================================
-                    APLICAR
-                    =========================================
-                    */
+/*
+=========================================
+APLICAR
+=========================================
+*/
 
-                    if (
-                        rascunhoLocal &&
-                        Array.isArray(
-                            rascunhoLocal.linhas
-                        )
-                    ) {
-                        setSharepointId(
-                            String(
-                                rascunhoLocal.sharepointId ??
-                                sharepointServidor
-                            )
-                        );
+// RASCUNHO LOCAL COM ALTERAÇÕES PENDENTES
+if (
+    rascunhoLocal &&
+    rascunhoLocal.possuiAlteracoes === true &&
+    Array.isArray(
+        rascunhoLocal.linhas
+    )
+) {
+    setSharepointId(
+        String(
+            rascunhoLocal.sharepointId ??
+            sharepointServidor
+        )
+    );
 
-                        setDataContrato(
-                            rascunhoLocal.dataContrato ??
-                            dataContratoServidor
-                        );
+    setDataContrato(
+        rascunhoLocal.dataContrato ??
+        dataContratoServidor
+    );
 
-                        setLinhas(
-                            normalizarLinhas(
-                                rascunhoLocal.linhas
-                            )
-                        );
+    const linhasRascunho =
+        normalizarLinhas(
+            rascunhoLocal.linhas
+        );
 
-                        setPossuiAlteracoes(
-                            true
-                        );
-                    } else {
-                        setSharepointId(
-                            sharepointServidor
-                        );
+    setLinhas(
+        linhasRascunho
+    );
 
-                        setDataContrato(
-                            dataContratoServidor
-                        );
+    // Recupera as configurações de visibilidade do rascunho.
+    const ocultasRascunho =
+        Array.isArray(
+            rascunhoLocal.linhasOcultasPdf
+        )
+            ? rascunhoLocal.linhasOcultasPdf.map(
+                id => String(id)
+            )
+            : linhasRascunho
+                .filter(linha => linha.ocultar_pdf)
+                .map(linha => String(linha.id));
 
-                        setLinhas(
-                            linhasServidor.length >
-                            0
-                                ? linhasServidor
-                                : criarLinhasIniciais()
-                        );
+    setLinhasOcultasPdf(
+        new Set(ocultasRascunho)
+    );
 
-                        setPossuiAlteracoes(
-                            false
-                        );
-                    }
+    setPossuiAlteracoes(
+        true
+    );
+
+} else {
+
+    // DADOS DEFINITIVOS DO SUPABASE
+    setSharepointId(
+        sharepointServidor
+    );
+
+    setDataContrato(
+        dataContratoServidor
+    );
+
+    const linhasParaAplicar =
+        linhasServidor.length > 0
+            ? linhasServidor
+            : criarLinhasIniciais();
+
+    setLinhas(
+        linhasParaAplicar
+    );
+
+    // Recupera as linhas ocultas diretamente do banco.
+    setLinhasOcultasPdf(
+        new Set(
+            linhasParaAplicar
+                .filter(
+                    linha => linha.ocultar_pdf === true
+                )
+                .map(
+                    linha => String(linha.id)
+                )
+        )
+    );
+
+    setPossuiAlteracoes(
+        false
+    );
+}
 
                     setCarregadoDoServidor(
                         true
@@ -926,11 +968,26 @@ export default function Cronograma() {
                                         ""
                                     );
 
-                                    setLinhas(
-                                        normalizarLinhas(
-                                            parsed.linhas
-                                        )
-                                    );
+                                    const linhasRascunho =
+    normalizarLinhas(
+        parsed.linhas
+    );
+
+setLinhas(
+    linhasRascunho
+);
+
+setLinhasOcultasPdf(
+    new Set(
+        Array.isArray(parsed.linhasOcultasPdf)
+            ? parsed.linhasOcultasPdf.map(
+                id => String(id)
+            )
+            : linhasRascunho
+                .filter(linha => linha.ocultar_pdf)
+                .map(linha => String(linha.id))
+    )
+);
 
                                     setCarregadoDoServidor(
                                         true
@@ -982,48 +1039,49 @@ export default function Cronograma() {
         carregarCronograma
     ]);
 
-    /*
-    =================================================
-    STORAGE AUTOMÁTICO
-    =================================================
-    */
+   useEffect(() => {
+    if (
+        !storageKey ||
+        !carregadoDoServidor
+    ) {
+        return;
+    }
 
-    useEffect(() => {
-        if (
-            !storageKey ||
-            !carregadoDoServidor
-        ) {
-            return;
-        }
+    try {
+        localStorage.setItem(
+            storageKey,
+            JSON.stringify({
+                sharepointId,
+                dataContrato,
+                linhas,
 
-        try {
-            localStorage.setItem(
-                storageKey,
-                JSON.stringify({
-                    sharepointId,
-                    dataContrato,
-                    linhas,
-                    possuiAlteracoes,
-                    salvoLocalmenteEm:
-                        new Date().toISOString()
-                })
-            );
-        } catch (
+                // Guarda também os IDs das linhas ocultas.
+                linhasOcultasPdf:
+                    Array.from(linhasOcultasPdf),
+
+                possuiAlteracoes,
+
+                salvoLocalmenteEm:
+                    new Date().toISOString()
+            })
+        );
+    } catch (
+        error
+    ) {
+        console.error(
+            "Erro ao salvar rascunho local:",
             error
-        ) {
-            console.error(
-                "Erro ao salvar rascunho local:",
-                error
-            );
-        }
-    }, [
-        storageKey,
-        carregadoDoServidor,
-        sharepointId,
-        dataContrato,
-        linhas,
-        possuiAlteracoes
-    ]);
+        );
+    }
+}, [
+    storageKey,
+    carregadoDoServidor,
+    sharepointId,
+    dataContrato,
+    linhas,
+    linhasOcultasPdf,
+    possuiAlteracoes
+]);
 
     /*
     =================================================
@@ -1171,20 +1229,25 @@ export default function Cronograma() {
     */
 
     function alternarVisibilidadePdf(id) {
-        const identificador = String(id);
+    const identificador = String(id);
 
-        setLinhasOcultasPdf(prev => {
-            const atualizadas = new Set(prev);
+    setLinhasOcultasPdf(prev => {
+        const atualizadas = new Set(prev);
 
-            if (atualizadas.has(identificador)) {
-                atualizadas.delete(identificador);
-            } else {
-                atualizadas.add(identificador);
-            }
+        if (atualizadas.has(identificador)) {
+            atualizadas.delete(identificador);
+        } else {
+            atualizadas.add(identificador);
+        }
 
-            return atualizadas;
-        });
-    }
+        return atualizadas;
+    });
+
+    // Informa que existe uma alteração que precisa ser salva.
+    setPossuiAlteracoes(true);
+
+    setSucesso("");
+}
 
     /*
     =================================================
@@ -1313,34 +1376,44 @@ export default function Cronograma() {
                     null,
 
                 linhas:
-                    linhas.map(
-                        linha => ({
-                            item:
-                                String(
-                                    linha.item ??
-                                    ""
-                                ).trim(),
+    linhas.map(
+        linha => ({
+            // Mantém o mesmo ID da linha.
+            id:
+                linha.id,
 
-                            data_prevista:
-                                linha.data_prevista ||
-                                null,
+            item:
+                String(
+                    linha.item ??
+                    ""
+                ).trim(),
 
-                            data_realizada:
-                                linha.data_realizada ||
-                                null,
+            data_prevista:
+                linha.data_prevista ||
+                null,
 
-                            observacoes:
-                                String(
-                                    linha.observacoes ??
-                                    ""
-                                ).trim(),
+            data_realizada:
+                linha.data_realizada ||
+                null,
 
-                            tipo:
-                                normalizarTipoLinha(
-                                    linha.tipo
-                                )
-                        })
-                    )
+            observacoes:
+                String(
+                    linha.observacoes ??
+                    ""
+                ).trim(),
+
+            tipo:
+                normalizarTipoLinha(
+                    linha.tipo
+                ),
+
+            // Envia a configuração de visibilidade ao Supabase.
+            ocultar_pdf:
+                linhasOcultasPdf.has(
+                    String(linha.id)
+                )
+        })
+    )   
             };
 
             const {
