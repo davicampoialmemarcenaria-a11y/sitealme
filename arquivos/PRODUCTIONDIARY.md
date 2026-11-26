@@ -9,7 +9,7 @@ O objetivo é padronizar as alterações e atualizações feitas no software dur
 ## 2. Datas e Pendências
 
 
-**30/11/2026**-**4/12/2026** (Segunda-feira a Sexta-feira) - 
+**30/11/2026**-**04/12/2026** (Segunda-feira a Sexta-feira) - 
 
 - Ajustar a esteira do funil de vendas, com novas fases, travas e funcionalidades que serão destrinchadas durante o decorrer da semana
 
