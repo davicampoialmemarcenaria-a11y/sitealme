@@ -7631,11 +7631,11 @@ const criarCapaDataUrl = async () => {
         });
 
         // Desenha a imagem ocupando toda a página
-       const larguraImagem = 500;
-const alturaImagem = 700;
+       const larguraImagem = 400;
+const alturaImagem = 300;
 
 const posicaoX = (canvas.width - larguraImagem) / 2;
-const posicaoY = (canvas.height - alturaImagem) / 3;
+const posicaoY = (canvas.height - alturaImagem) / 24;
 
 context.drawImage(
     imagemCapa,
@@ -7885,21 +7885,16 @@ const capaDataUrl = await criarCapaDataUrl();
                             .valorComRtArredondado
                     );
 
-            const sanitizarNomeArquivo = value =>
-                String(value || "orcamento")
-                    .normalize("NFD")
-                    .replace(
-                        /[\u0300-\u036f]/g,
-                        ""
-                    )
-                    .replace(
-                        /[^a-zA-Z0-9_-]+/g,
-                        "-"
-                    )
-                    .replace(
-                        /^-+|-+$/g,
-                        ""
-                    ) || "orcamento";
+            const sanitizarNomeArquivo = value => {
+    const nome = String(value || "").trim();
+
+    return (
+        nome
+            .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "")
+            .replace(/[. ]+$/g, "")
+        || "ORÇAMENTO"
+    );
+};
 
             let y = 32;
 
@@ -8537,13 +8532,49 @@ y += 22;
 
                     doc.setFontSize(10);
 
-                    doc.text(
-                        `${ambienteIndex + 1}. ${ambiente.nome || "Ambiente"}`,
-                        margem + 10,
-                        y + 18
-                    );
+                   // NOME DO AMBIENTE
+doc.text(
+    `${ambienteIndex + 1}. ${ambiente.nome || "Ambiente"}`,
+    margem + 10,
+    y + 18
+);
 
-                    y += 36;
+// VALOR TOTAL DO AMBIENTE
+const valorTotalAmbientePdf =
+    itensDoAmbiente.reduce(
+        (total, item) => {
+
+            const itemPdf = {
+                ...item,
+                _ambienteId: ambiente.id
+            };
+
+            return total + obterPrecoPdf(itemPdf);
+
+        },
+        0
+    );
+
+const textoValorAmbiente =
+    `Valor total do ambiente: ${money(valorTotalAmbientePdf)}`;
+
+doc.setFont(
+    "helvetica",
+    "bold"
+);
+
+doc.setFontSize(9);
+
+doc.text(
+    textoValorAmbiente,
+    pageWidth - margem - 10,
+    y + 18,
+    {
+        align: "right"
+    }
+);
+
+y += 36;
 
                     if (
                         itensDoAmbiente.length === 0
@@ -8756,11 +8787,11 @@ y += 22;
 }}
 
             const nomeArquivo =
-                `orcamento-${sanitizarNomeArquivo(orcamento.nome)}${versaoAtual ? `-v${versaoAtual}` : ""}.pdf`;
+    `${sanitizarNomeArquivo(orcamento.nome)}.pdf`;
 
-            doc.save(
-                nomeArquivo
-            );
+doc.save(
+    nomeArquivo
+);
 
         } catch (error) {
 
@@ -9061,6 +9092,12 @@ const deveCriarNovaVersao =
                 0
             );
 
+            const precoFinalTodosTotal =
+    overFinalAplicado &&
+    numberValue(totaisOverFinal.precoFinalTodos) > 0
+        ? numberValue(totaisOverFinal.precoFinalTodos)
+        : null;
+
             const overTotal = ambientesCalculados.reduce(
                 (total, ambiente) =>
                     total + ambiente.itens.reduce(
@@ -9101,6 +9138,8 @@ const deveCriarNovaVersao =
                     valorRtTotal,
                 preco_final_total:
                     precoFinalTotal,
+                    preco_final_todos_total:
+    precoFinalTodosTotal,
                 over_total:
                     overTotal,
                 valor_final_desejado:
@@ -9196,6 +9235,8 @@ const deveCriarNovaVersao =
                                 dadosVersao.valor_rt_total,
                             preco_final_total:
                                 dadosVersao.preco_final_total,
+                                preco_final_todos_total:
+    dadosVersao.preco_final_todos_total,
                             over_total:
                                 dadosVersao.over_total,
                             valor_final_desejado:
@@ -9719,17 +9760,28 @@ const deveCriarNovaVersao =
     };
 
     const orcamentosFiltrados =
-  listaOrcamentos.filter(item => {
-    const pesquisa = normalizeText(pesquisaCliente);
+    listaOrcamentos.filter(item => {
 
-    const cliente = normalizeText(item.cliente || "");
-    const nomeOrcamento = normalizeText(item.nome || "");
+        const pesquisa = normalizeText(pesquisaCliente);
 
-    return (
-      cliente.includes(pesquisa) ||
-      nomeOrcamento.includes(pesquisa)
-    );
-  });
+        const cliente =
+            normalizeText(item.cliente || "");
+
+        const nomeOrcamento =
+            normalizeText(item.nome || "");
+
+        const nomeVendedor =
+            normalizeText(
+                item.vendedor_responsavel_nome || ""
+            );
+
+        return (
+            cliente.includes(pesquisa) ||
+            nomeOrcamento.includes(pesquisa) ||
+            nomeVendedor.includes(pesquisa)
+        );
+
+    });
 
 
 const colunasKanban = [
@@ -9939,7 +9991,7 @@ const orcamentosPorStatus = colunasKanban.reduce(
                             event.target.value
                         )
                 }
-                placeholder="Pesquisar por cliente..."
+                placeholder="Pesquisar por cliente, orçamento ou vendedor..."
             />
 
             {pesquisaCliente && (
@@ -10102,11 +10154,15 @@ const orcamentosPorStatus = colunasKanban.reduce(
                                         </div>
 
                                         <div>
-                                            <span>Preço final</span>
-                                            <strong>
-                                                {money(row.preco_final_total)}
-                                            </strong>
-                                        </div>
+    <span>Preço final</span>
+    <strong>
+        {money(
+            Number(row.preco_final_todos_total) > 0
+                ? row.preco_final_todos_total
+                : row.preco_final_total
+        )}
+    </strong>
+</div>
 
                                     </div>
 
@@ -10861,32 +10917,64 @@ const orcamentosPorStatus = colunasKanban.reduce(
 
                                 <div className="orcamento-ambiente-header">
 
-                                    <div className="orcamento-ambiente-identidade">
+                                   <div className="orcamento-ambiente-identidade">
 
-                                        <span>
-                                            AMBIENTE{" "}
-                                            {
-                                                ambienteIndex +
-                                                1
-                                            }
-                                        </span>
+    <span>
+        AMBIENTE{" "}
+        {
+            ambienteIndex +
+            1
+        }
+    </span>
 
-                                        <input
-                                            type="text"
-                                            value={
-                                                ambiente.nome
-                                            }
-                                            onChange={
-                                                event =>
-                                                    atualizarAmbiente(
-                                                        ambiente.id,
-                                                        event.target.value
-                                                    )
-                                            }
-                                            placeholder="Nome do ambiente"
-                                        />
+    <input
+        type="text"
+        value={
+            ambiente.nome
+        }
+        onChange={
+            event =>
+                atualizarAmbiente(
+                    ambiente.id,
+                    event.target.value
+                )
+        }
+        placeholder="Nome do ambiente"
+    />
 
-                                    </div>
+    <strong className="orcamento-ambiente-valor-total">
+        Valor total do ambiente:{" "}
+        {
+            money(
+                ambiente.itens.reduce(
+                    (total, item) => {
+
+                        if (overFinalAplicado) {
+
+                            const dadosItem =
+                                dadosOverFinalPorItem[
+                                    `${ambiente.id}::${item.id}`
+                                ];
+
+                            return total + numberValue(
+                                dadosItem?.precoFinalTodos ??
+                                item.calculadoValorComRtArredondado
+                            );
+
+                        }
+
+                        return total + numberValue(
+                            item.calculadoValorComRtArredondado
+                        );
+
+                    },
+                    0
+                )
+            )
+        }
+    </strong>
+
+</div>
 
 
                                     <div className="orcamento-ambiente-acoes">
