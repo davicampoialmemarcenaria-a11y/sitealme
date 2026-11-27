@@ -13,6 +13,9 @@ O objetivo é padronizar as alterações e atualizações feitas no software dur
 
 - Ajustar a esteira do funil de vendas, com novas fases, travas e funcionalidades que serão destrinchadas durante o decorrer da semana
 
+**27/11/2026** (Sexta-feira) -
+
+- [x] ~~Obrigar o cronograma a ser salvo antes de exportar o pdf~~
 
 **26/11/2026** (Quinta-feira) - Todas as tarefas foram concluidas até as 15h06m!
 
@@ -25,5 +28,4 @@ O objetivo é padronizar as alterações e atualizações feitas no software dur
 - [x] ~~Adição de filtro por nome do vendedor~~ 
 
 - [x] ~~Criação de preço total por ambientes.~~
-
 

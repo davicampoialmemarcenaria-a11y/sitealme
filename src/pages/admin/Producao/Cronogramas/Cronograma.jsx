@@ -1323,11 +1323,9 @@ setLinhasOcultasPdf(
     */
 
     async function salvarCronograma() {
-        if (
-            salvando
-        ) {
-            return;
-        }
+        if (salvando) {
+    return false;
+}
 
         const erroValidacao =
             validarFormulario();
@@ -1341,7 +1339,7 @@ setLinhasOcultasPdf(
 
             setSucesso("");
 
-            return;
+            return false;
         }
 
         setSalvando(
@@ -1474,6 +1472,7 @@ setLinhasOcultasPdf(
             );
 
             await carregarCronograma();
+            return true;
         } catch (
             err
         ) {
@@ -1486,6 +1485,7 @@ setLinhasOcultasPdf(
                 err?.message ||
                 "Não foi possível salvar o cronograma."
             );
+            return false;
         } finally {
             setSalvando(
                 false
@@ -1630,7 +1630,7 @@ setLinhasOcultasPdf(
     =================================================
     */
 
-    function imprimirCronograma() {
+    async function imprimirCronograma() {
         const popup =
             window.open(
                 "",
@@ -1647,6 +1647,24 @@ setLinhasOcultasPdf(
 
             return;
         }
+
+        /*
+=====================================================
+SALVAR ALTERAÇÕES ANTES DE GERAR O PDF
+=====================================================
+*/
+
+if (possuiAlteracoes) {
+    setErro("");
+    setSucesso("Salvando alterações antes de gerar o PDF...");
+
+    const salvou = await salvarCronograma();
+
+    if (!salvou) {
+        popup.close();
+        return;
+    }
+}
 
         /*
         =============================================
@@ -3030,15 +3048,11 @@ setLinhasOcultasPdf(
                 >
 
                     <button
-                        type="button"
-                        className="cronograma-btn-secondary"
-                        onClick={
-                            criarNovaVersao
-                        }
-                        disabled={
-                            salvando
-                        }
-                    >
+    type="button"
+    className="cronograma-btn-secondary"
+    onClick={imprimirCronograma}
+    disabled={salvando}
+>
 
                         <FiPlus />
 
